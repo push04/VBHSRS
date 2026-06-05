@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VB-HSRS Analysis Platform — Ministry of Railways, GoI · RDSO · NHSRCL</title>
+  <title>High Speed Rolling Stock Analysis Platform — Ministry of Railways, GoI · RDSO</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -945,14 +945,11 @@
       <div class="hdr-logos">
         <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Indian_railways_18_star_logo.jpg" class="hdr-logo"
           alt="Indian Railways">
-        <img
-          src="https://media.licdn.com/dms/image/v2/C4E12AQH-Anj_VmPQ9w/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1520097732555?e=1782345600&v=beta&t=_EF0ywa-q1Ra1MY2G2hfNTe3TXKD-0-HEfhORIRJ0wE"
-          class="hdr-logo" alt="NHSRCL">
       </div>
       <div class="hdr-title">
-        <div class="main">Vande Bharat to High Speed Rolling Stock Analysis Platform</div>
-        <div class="sub">Ministry of Railways, Government of India &nbsp;&middot;&nbsp; NHSRCL &nbsp;&middot;&nbsp;
-          VB-HSRS Performance &amp; Rail-Wheel Conversion Analyser</div>
+        <div class="main">High Speed Rolling Stock Analysis Platform</div>
+        <div class="sub">Ministry of Railways, Government of India &nbsp;&middot;&nbsp;
+          HSRS Performance &amp; Rail-Wheel Dynamics Analyser</div>
       </div>
     </div>
     <div class="tags">
@@ -990,7 +987,7 @@
             <div class="ctrl-row"><span class="ctrl-name">Motorization Ratio</span><span class="ctrl-val"
                 id="vMCRatio">100%</span></div>
             <input type="range" id="sMCRatio" min="50" max="100" step="10" value="100">
-            <div class="ctrl-sub">% powered axles. Vande Bharat / Shinkansen E5 baseline.</div>
+            <div class="ctrl-sub">% powered axles. Semi-HSR / Shinkansen E5 baseline.</div>
           </div>
           <div class="ctrl">
             <div class="ctrl-row"><span class="ctrl-name">Traction Motor Power</span><span class="ctrl-val"
@@ -2535,7 +2532,7 @@
     }
 
     const LINE_STYLES = {
-      vb: { color: '#1565C0', dash: [], width: 2, label: 'VB Express (Baseline)' },
+      vb: { color: '#1565C0', dash: [], width: 2, label: 'HSRS Baseline (160 km/h)' },
       cur: { color: '#C62828', dash: [], width: 2.5, label: 'Current Config' },
       mahsr: { color: '#1B5E20', dash: [6, 3], width: 2, label: 'MAHSR Target' }
     };
@@ -2566,7 +2563,7 @@
       // --- Chart 0: TE & Resistance ---
       createChart('c0', 'line', {
         labels: v_arr, datasets: [
-          ds('vb', 'VB TE (kN)', vbD.teData),
+          ds('vb', 'HSRS Baseline TE (kN)', vbD.teData),
           ds('cur', 'Current TE (kN)', curD.teData),
           ds('mahsr', 'MAHSR TE (kN)', mhD.teData),
           { label: 'VB Resist', data: vbD.resistData, borderColor: '#1565C0', borderDash: [3, 3], borderWidth: 1, tension: 0.3, pointRadius: 0 },
@@ -2684,7 +2681,7 @@
       // --- Chart 5: Energy Consumption vs Speed (kWh / 100 km) ---
       createChart('c5', 'line', {
         labels: v_arr, datasets: [
-          ds('vb', 'VB Express (kWh/100km)', v_arr.map(v => energyAt(v, Cvb, vbP))),
+          ds('vb', 'HSRS Baseline (kWh/100km)', v_arr.map(v => energyAt(v, Cvb, vbP))),
           ds('cur', 'Current Config (kWh/100km)', v_arr.map(v => energyAt(v, lastConsts, curP))),
           ds('mahsr', 'MAHSR Target (kWh/100km)', v_arr.map(v => energyAt(v, Cmh, mhP)))
         ]
@@ -2693,7 +2690,7 @@
       // --- Chart 6: Emergency Braking Distance vs Speed ---
       createChart('c6', 'line', {
         labels: v_arr, datasets: [
-          ds('vb', 'VB Express Stopping Dist. (m)', v_arr.map(v => brakeDist(v, Cvb, vbP))),
+          ds('vb', 'HSRS Baseline Stopping Dist. (m)', v_arr.map(v => brakeDist(v, Cvb, vbP))),
           ds('cur', 'Current Config Stopping Dist. (m)', v_arr.map(v => brakeDist(v, lastConsts, curP))),
           ds('mahsr', 'MAHSR Target Stopping Dist. (m)', v_arr.map(v => brakeDist(v, Cmh, mhP))),
           {
@@ -2708,7 +2705,7 @@
       const massCar = (lastConsts.totalMass_kg / curP.coaches);
       createChart('c7', 'line', {
         labels: fArr, datasets: [
-          ds('vb', 'VB Express FRF (dB)', fArr.map(f => frfAt(f, vbP.ks, lastConsts.totalMass_kg / vbP.coaches, 0.10))),
+          ds('vb', 'HSRS Baseline FRF (dB)', fArr.map(f => frfAt(f, vbP.ks, lastConsts.totalMass_kg / vbP.coaches, 0.10))),
           ds('cur', 'Current Config FRF (dB)', fArr.map(f => frfAt(f, curP.ks, massCar, 0.10))),
           ds('mahsr', 'MAHSR Target FRF (dB)', fArr.map(f => frfAt(f, mhP.ks, Cmh.totalMass_kg / mhP.coaches, 0.10))),
           {
@@ -2740,7 +2737,7 @@
       const timeArr = Array.from({ length: 60 }, (_, i) => i * 2);
       createChart('c8', 'line', {
         labels: timeArr, datasets: [
-          ds('vb', 'VB Express Disc Temp (°C)', simBrakeTemp(Cvb, vbP).map(t => +t.toFixed(1))),
+          ds('vb', 'HSRS Baseline Disc Temp (°C)', simBrakeTemp(Cvb, vbP).map(t => +t.toFixed(1))),
           ds('cur', 'Current Config Disc Temp (°C)', simBrakeTemp(lastConsts, curP).map(t => +t.toFixed(1))),
           ds('mahsr', 'MAHSR Target Disc Temp (°C)', simBrakeTemp(Cmh, mhP).map(t => +t.toFixed(1))),
           {
@@ -2753,7 +2750,7 @@
       // --- Chart 9: Archard Wheel Wear Rate vs Speed ---
       createChart('c9', 'line', {
         labels: v_arr, datasets: [
-          ds('vb', 'VB Express Wear (mm³/km)', v_arr.map(v => wearAt(v, Cvb, vbP))),
+          ds('vb', 'HSRS Baseline Wear (mm³/km)', v_arr.map(v => wearAt(v, Cvb, vbP))),
           ds('cur', 'Current Config Wear (mm³/km)', v_arr.map(v => wearAt(v, lastConsts, curP))),
           ds('mahsr', 'MAHSR Target Wear (mm³/km)', v_arr.map(v => wearAt(v, Cmh, mhP))),
           {
@@ -4030,7 +4027,24 @@
   font-size:8px;font-weight:900;letter-spacing:1px;
 }
 .lap-cc-hdr-l{display:flex;align-items:center;gap:4px;}
+
+/* ── VIBRATION & BEARINGS LAB ──────────────────────────────── */
+.vib-kpi-bar{display:flex;gap:0;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);scrollbar-width:none;}
+.vib-kpi-bar::-webkit-scrollbar{display:none;}
+.vib-kpi{flex-shrink:0;min-width:100px;padding:6px 10px;border-right:1px solid var(--border);font-family:var(--mono);}
+.vib-kpi-lbl{font-size:7.5px;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;}
+.vib-kpi-val{font-size:12px;font-weight:700;color:var(--txt);margin-top:1px;}
+.vib-kpi.ok{background:#E8F5E9;}.vib-kpi.warn{background:#FFF9C4;}.vib-kpi.crit{background:#FFEBEE;}
+.vib-section-hdr{padding:8px 16px;color:#fff;font-family:var(--mono);font-size:10px;font-weight:700;
+  letter-spacing:1px;display:flex;align-items:center;gap:10px;}
+.vib-sec-num{background:#fff;padding:1px 7px;border-radius:3px;font-size:8px;font-weight:900;letter-spacing:1px;}
+.bear-status{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;display:inline-block;}
+.bear-ok{background:#E8F5E9;color:#1B5E20;}.bear-warn{background:#FFF9C4;color:#F57F17;}.bear-crit{background:#FFEBEE;color:#B71C1C;}
+.vib-reset-btn{font-family:var(--mono);font-size:9px;font-weight:700;padding:4px 12px;border:1.5px solid #B71C1C;
+  border-radius:4px;background:#FFEBEE;color:#B71C1C;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.vib-reset-btn:hover{background:#B71C1C;color:#fff;}
 `;
+
       document.head.appendChild(lapStyle);
 
       // ─── inject HTML ─────────────────────────────────────────────────────
@@ -4042,7 +4056,7 @@
 <div id="lap-panel">
   <div id="lap-hdr">
     <div class="lap-title">MAHSR Live Analysis &amp; Material Science
-      <small>NHSRCL · Rail-Wheel Tribology · Real-Time</small>
+      <small>Rail-Wheel Tribology · Real-Time</small>
     </div>
     <div id="lap-tabs">
       <button class="lap-tab active" data-lap="live">LIVE TELEMETRY</button>
@@ -4052,6 +4066,7 @@
       <button class="lap-tab" data-lap="heat">HEAT TREATMENT</button>
       <button class="lap-tab" data-lap="rw" style="border-color:#D32F2F;color:#D32F2F;">RAIL-WHEEL LAB (15 CHARTS)</button>
       <button class="lap-tab" data-lap="brake" style="border-color:#B71C1C;color:#B71C1C;font-weight:900;">BRAKING LAB (15 CHARTS)</button>
+      <button class="lap-tab" data-lap="vibration" style="border-color:#00796B;color:#00796B;font-weight:900;">VIBRATION &amp; BEARINGS</button>
     </div>
     <button id="lap-close">✕</button>
   </div>
@@ -4323,6 +4338,218 @@
         <div class="lap-cc" id="rw-cc-14"><div class="lap-cc-hdr"><span>⑮  Shakedown Map — Current Operating Point</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-14','rwc14')">⤢ EXPAND</button></div></div><canvas id="rwc14"></canvas></div>
       </div>
     </div>
+
+    <!-- ═══ VIBRATION & BEARINGS LAB ═══ -->
+    <div id="lap-vibration" class="lap-page">
+
+      <!-- KPI strip -->
+      <div class="vib-kpi-bar" id="vib-kpi-strip">
+        <div class="vib-kpi" id="vkpi-az"><div class="vib-kpi-lbl">VERT. ACCEL az</div><div class="vib-kpi-val" id="vk-az">-- m/s²</div></div>
+        <div class="vib-kpi" id="vkpi-ay"><div class="vib-kpi-lbl">LAT. SWAY ay</div><div class="vib-kpi-val" id="vk-ay">-- m/s²</div></div>
+        <div class="vib-kpi" id="vkpi-jerk"><div class="vib-kpi-lbl">LURCH JERK</div><div class="vib-kpi-val" id="vk-jerk">-- m/s³</div></div>
+        <div class="vib-kpi" id="vkpi-yaw"><div class="vib-kpi-lbl">YAW RATE</div><div class="vib-kpi-val" id="vk-yaw">-- °/s</div></div>
+        <div class="vib-kpi" id="vkpi-roll"><div class="vib-kpi-lbl">BODY ROLL</div><div class="vib-kpi-val" id="vk-roll">-- mrad</div></div>
+        <div class="vib-kpi" id="vkpi-pitch"><div class="vib-kpi-lbl">BODY PITCH</div><div class="vib-kpi-val" id="vk-pitch">-- mrad</div></div>
+        <div class="vib-kpi" id="vkpi-btemp"><div class="vib-kpi-lbl">BEARING TEMP</div><div class="vib-kpi-val" id="vk-btemp">-- °C</div></div>
+        <div class="vib-kpi"><div class="vib-kpi-lbl">BRAKE DISC TEMP</div><div class="vib-kpi-val" id="vk-disctemp">-- °C</div></div>
+        <div class="vib-kpi" style="display:flex;align-items:center;padding:4px 12px;">
+          <button class="vib-reset-btn" id="btn-reset-temps">RESET TEMPS</button>
+        </div>
+      </div>
+
+      <!-- LIVE VIBRATION CHARTS (6) -->
+      <div class="vib-section-hdr" style="background:linear-gradient(90deg,#004D40,#00796B);">
+        <span class="vib-sec-num" style="color:#00796B;">LIVE</span>
+        VIBRATION TYPES — REAL-TIME MULTI-AXIS MONITORING
+        <span style="font-size:8px;opacity:.8;margin-left:auto;">ISO 2631-1 · EN 12299 · UIC 513</span>
+      </div>
+      <div class="lap-chart-grid">
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#00796B;">L1</span>Vertical Bounce az (m/s²)</div><div class="live-dot"></div></div><canvas id="vlc-az"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1565C0;">L2</span>Lateral Sway / Hunting ay (m/s²)</div><div class="live-dot"></div></div><canvas id="vlc-ay"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#F57F17;">L3</span>Longitudinal Lurch / Jerk (m/s³)</div><div class="live-dot"></div></div><canvas id="vlc-jerk"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#6A1B9A;">L4</span>Bogie Yaw Rate — Hunting (°/s)</div><div class="live-dot"></div></div><canvas id="vlc-yaw"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">L5</span>Car Body Roll (mrad)</div><div class="live-dot"></div></div><canvas id="vlc-roll"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#4E342E;">L6</span>Car Body Pitch — TE/BE (mrad)</div><div class="live-dot"></div></div><canvas id="vlc-pitch"></canvas></div>
+      </div>
+
+      <!-- ANALYSIS CHARTS vs SPEED (4) -->
+      <div class="vib-section-hdr" style="background:linear-gradient(90deg,#1B5E20,#2E7D32);">
+        <span class="vib-sec-num" style="color:#1B5E20;">ANALYSIS</span>
+        VIBRATION vs SPEED — VB BASELINE (BLUE) vs MAHSR TARGET (GREEN) vs CURRENT (RED)
+      </div>
+      <div class="lap-chart-grid">
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A1</span>Vertical az RMS vs Speed (m/s²)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-0','vac-az')">⤢</button></div><canvas id="vac-az"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A2</span>Lateral ay RMS vs Speed (m/s²)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-1','vac-ay')">⤢</button></div><canvas id="vac-ay"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A3</span>Suspension FRF — Transmissibility (dB)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-2','vac-frf')">⤢</button></div><canvas id="vac-frf"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A4</span>Jerk / Lurch Intensity vs Speed (m/s³)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-3','vac-jerk')">⤢</button></div><canvas id="vac-jerk"></canvas></div>
+      </div>
+
+      <!-- DAMPER SECTION -->
+      <div class="lap-sect">
+        <div class="lap-sect-hdr">Bogie Suspension System — Damper Engineering (VB vs MAHSR)</div>
+        <div class="lap-mat-grid">
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#1565C0;">PRIMARY SUSPENSION DAMPERS</div>
+            <div class="prop-row2"><span class="prop-k">Function</span><span class="prop-v">Isolate wheelset from bogie frame</span></div>
+            <div class="prop-row2"><span class="prop-k">Type</span><span class="prop-v">Hydraulic telescopic dashpot</span></div>
+            <div class="prop-row2"><span class="prop-k">Axes controlled</span><span class="prop-v">Vertical + lateral (axle box)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Vert. damping c₁</span><span class="prop-v ok">15–25 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Lat. damping c₁_L</span><span class="prop-v ok">5–10 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — Vert. c₁</span><span class="prop-v warn">25–40 kNs/m (stiffer)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — Lat. c₁_L</span><span class="prop-v warn">10–18 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">Damping ratio ζ₁</span><span class="prop-v">0.15–0.25 (primary)</span></div>
+            <div class="prop-row2"><span class="prop-k">Resonance isolation</span><span class="prop-v ok">Attenuates 5–50 Hz input</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#C62828;">SECONDARY SUSPENSION DAMPERS</div>
+            <div class="prop-row2"><span class="prop-k">Function</span><span class="prop-v">Isolate car body from bogie</span></div>
+            <div class="prop-row2"><span class="prop-k">Sprung element</span><span class="prop-v">Air springs (bellows) + steel coil (VB)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Secondary ks</span><span class="prop-v ok">0.2–0.4 kN/mm (air spring)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Vert. damping c₂</span><span class="prop-v ok">20–40 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Body bounce f_n</span><span class="prop-v ok">0.8–1.1 Hz</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — ks</span><span class="prop-v warn">0.25–0.50 kN/mm (active-tuned)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — c₂ (semi-active)</span><span class="prop-v warn">30–80 kNs/m (variable)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR body f_n</span><span class="prop-v warn">0.9–1.3 Hz</span></div>
+            <div class="prop-row2"><span class="prop-k">Damping ratio ζ₂</span><span class="prop-v">VB: 0.22–0.28 / MAHSR: 0.28–0.38</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#6A1B9A;">YAW DAMPERS — HUNTING SUPPRESSION</div>
+            <div class="prop-row2"><span class="prop-k">Function</span><span class="prop-v">Suppress bogie yaw oscillation (hunting)</span></div>
+            <div class="prop-row2"><span class="prop-k">Type</span><span class="prop-v">Hydraulic linkage (diagonal, body↔bogie)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Yaw stiffness ky</span><span class="prop-v ok">4–8 MNm/rad</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Yaw damper c_yaw</span><span class="prop-v ok">500–1500 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — Hunting Vc target</span><span class="prop-v ok">&gt; 250 km/h (1.56× service)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — Yaw ky</span><span class="prop-v warn">10–15 MNm/rad (much stiffer)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — c_yaw</span><span class="prop-v warn">2000–5000 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — Hunting Vc target</span><span class="prop-v warn">&gt; 400 km/h (1.25× service)</span></div>
+            <div class="prop-row2"><span class="prop-k">Hunting onset limit</span><span class="prop-v hi">λ &gt; 0.25 causes instability below Vc</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#00796B;">ANTI-ROLL BAR &amp; LATERAL DAMPERS</div>
+            <div class="prop-row2"><span class="prop-k">Anti-roll bar function</span><span class="prop-v">Resists car body roll in curves</span></div>
+            <div class="prop-row2"><span class="prop-k">VB — ARB stiffness</span><span class="prop-v ok">150–300 kNm/rad</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR — ARB stiffness</span><span class="prop-v warn">300–600 kNm/rad</span></div>
+            <div class="prop-row2"><span class="prop-k">Roll limit (EN 12299)</span><span class="prop-v">Car body &lt; 6° in R=3000m curve</span></div>
+            <div class="prop-row2"><span class="prop-k">Lateral damper type</span><span class="prop-v">Horizontal hydraulic (bogie frame)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB lateral c_lat</span><span class="prop-v ok">30–60 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR lateral c_lat</span><span class="prop-v warn">60–120 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">Active tilting body</span><span class="prop-v">MAHSR: ±5° active tilt (Shinkansen) vs VB: passive</span></div>
+            <div class="prop-row2"><span class="prop-k">Lateral acc limit (UIC 513)</span><span class="prop-v hi">ay_carbody &lt; 1.0 m/s² (design)</span></div>
+          </div>
+        </div>
+
+        <!-- Vibration type reference table -->
+        <div style="margin-top:14px;">
+          <table class="lap-table">
+            <thead>
+              <tr>
+                <th>Vibration Type</th>
+                <th>Axis</th>
+                <th>Frequency</th>
+                <th>Primary Cause</th>
+                <th>VB Typical</th>
+                <th>MAHSR Limit</th>
+                <th>EN 12299 Pass</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><b>Vertical Bounce</b></td><td>az (Z)</td><td>0.5–1.5 Hz</td><td>Track vert. irregularity → secondary spring resonance</td><td>≈ 0.08–0.15 m/s²</td><td>≤ 0.20 m/s²</td><td class="ok">≤ 0.315 m/s² (weighted 95%)</td></tr>
+              <tr><td><b>Lateral Sway</b></td><td>ay (Y)</td><td>0.5–1.2 Hz</td><td>Alignment irregularity + hunting coupling</td><td>≈ 0.05–0.12 m/s²</td><td>≤ 0.15 m/s²</td><td class="ok">≤ 0.315 m/s² (weighted 95%)</td></tr>
+              <tr><td><b>Longitudinal Lurch</b></td><td>ax (X)</td><td>0–2 Hz</td><td>Coupler slack, TE step changes, grade transitions</td><td>≈ 0.3–0.8 m/s³</td><td>≤ 0.4 m/s³</td><td class="ok">Jerk ≤ 1.5 m/s³ (TSI)</td></tr>
+              <tr><td><b>Yaw / Hunting</b></td><td>ψ (yaw)</td><td>f = v/λ_k</td><td>Klingel wavelength resonance with conicity</td><td>≈ 1–5 °/s</td><td>≤ 3 °/s</td><td class="warn">No yaw criterion in EN 12299</td></tr>
+              <tr><td><b>Body Roll</b></td><td>φ (roll)</td><td>Coupled to ay</td><td>Lateral force × CG height / roll stiffness</td><td>≈ 5–20 mrad</td><td>≤ 12 mrad</td><td class="ok">Roll angle ≤ 6° at R=3000m</td></tr>
+              <tr><td><b>Body Pitch</b></td><td>θ (pitch)</td><td>Quasi-static</td><td>TE/BE weight transfer, grade changes</td><td>≈ 3–15 mrad</td><td>≤ 8 mrad</td><td class="ok">Linked to Wz comfort index</td></tr>
+              <tr><td><b>Bogie Bounce</b></td><td>az bogie</td><td>5–15 Hz</td><td>Wheel/rail roughness → primary spring</td><td>≈ 0.5–2.0 m/s²</td><td>≤ 1.5 m/s²</td><td class="ok">Isolated by primary damper</td></tr>
+              <tr><td><b>Corrugation</b></td><td>az high-f</td><td>50–200 Hz</td><td>Stick-slip wear — short pitch rail corrugation</td><td>≤ 5 m/s² (RMS)</td><td>≤ 3 m/s²</td><td class="warn">Grinding maintenance required</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BEARING TEMPERATURE SECTION -->
+      <div class="vib-section-hdr" style="background:linear-gradient(90deg,#B71C1C,#C62828);">
+        <span class="vib-sec-num" style="color:#B71C1C;">BEARING</span>
+        AXLE BOX BEARING TEMPERATURE — EN 12082 HOTBOX DETECTION
+        <span style="font-size:8px;opacity:.8;margin-left:auto;">UIC 515-3 · SKF CTSD · TACHO-based</span>
+      </div>
+      <!-- Bearing KPI -->
+      <div class="vib-kpi-bar">
+        <div class="vib-kpi" id="bkpi-avg"><div class="vib-kpi-lbl">AVG BEARING TEMP</div><div class="vib-kpi-val" id="bk-avg">-- °C</div></div>
+        <div class="vib-kpi" id="bkpi-max"><div class="vib-kpi-lbl">MAX (HOTTEST AXL)</div><div class="vib-kpi-val" id="bk-max">-- °C</div></div>
+        <div class="vib-kpi" id="bkpi-rise"><div class="vib-kpi-lbl">TEMP RISE ΔT</div><div class="vib-kpi-val" id="bk-rise">-- K</div></div>
+        <div class="vib-kpi"><div class="vib-kpi-lbl">STATUS</div><div class="vib-kpi-val" id="bk-status"><span class="bear-status bear-ok">NORMAL</span></div></div>
+        <div class="vib-kpi"><div class="vib-kpi-lbl">EN 12082 ALARM</div><div class="vib-kpi-val" style="font-size:10px;color:#C62828;">50K rise / 80°C abs</div></div>
+        <div class="vib-kpi"><div class="vib-kpi-lbl">DANGER LIMIT</div><div class="vib-kpi-val" style="font-size:10px;color:#B71C1C;">80K rise / 110°C abs</div></div>
+        <div class="vib-kpi"><div class="vib-kpi-lbl">BEARING TYPE</div><div class="vib-kpi-val" style="font-size:9px;color:#455;">CRB / TRB sealed</div></div>
+        <div class="vib-kpi" style="display:flex;align-items:center;padding:4px 12px;">
+          <button class="vib-reset-btn" id="btn-reset-bearing">RESET BEARING</button>
+        </div>
+      </div>
+      <div class="lap-chart-grid">
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">B1</span>Bearing Temp — Live (°C)</div><div class="live-dot"></div></div><canvas id="blc-bearing"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">B2</span>Bearing Temp vs Speed — VB vs MAHSR</div><button class="rw-expand-btn" onclick="expandRWChart('bear-ac-0','bac-bearing')">⤢</button></div><canvas id="bac-bearing"></canvas></div>
+      </div>
+
+      <!-- Bearing spec info -->
+      <div class="lap-sect">
+        <div class="lap-sect-hdr">Rolling Element Bearing Specifications — EN 12082 &amp; UIC 515-3</div>
+        <div class="lap-mat-grid">
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#1565C0;">VB EXPRESS — AXLE BOX BEARING</div>
+            <div class="prop-row2"><span class="prop-k">Bearing type</span><span class="prop-v">Cylindrical Roller Bearing (CRB) — SKF/NBC</span></div>
+            <div class="prop-row2"><span class="prop-k">Bore × OD × Width</span><span class="prop-v">130 × 230 × 64 mm (typ. NU2226)</span></div>
+            <div class="prop-row2"><span class="prop-k">Axle load per bearing</span><span class="prop-v">35–55 kN (service, half-axle)</span></div>
+            <div class="prop-row2"><span class="prop-k">Max speed rating</span><span class="prop-v ok">3000 rpm → ~240 km/h (wheel Ø860)</span></div>
+            <div class="prop-row2"><span class="prop-k">Grease type</span><span class="prop-v">NLGI 2 lithium complex (SKF LGAX 2)</span></div>
+            <div class="prop-row2"><span class="prop-k">Grease relubrication</span><span class="prop-v ok">Sealed for life (200,000 km service)</span></div>
+            <div class="prop-row2"><span class="prop-k">Normal temp range</span><span class="prop-v ok">30–70°C (ambient + 20–40K rise)</span></div>
+            <div class="prop-row2"><span class="prop-k">Alarm temp (EN 12082)</span><span class="prop-v warn">80°C abs / +50K rise</span></div>
+            <div class="prop-row2"><span class="prop-k">RDSO danger limit</span><span class="prop-v hi">110°C abs / +80K rise</span></div>
+            <div class="prop-row2"><span class="prop-k">Emergency stop trigger</span><span class="prop-v hi">130°C abs or +10°C/min rate</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#FF9933;">MAHSR — HIGH-SPEED AXLE BOX BEARING</div>
+            <div class="prop-row2"><span class="prop-k">Bearing type</span><span class="prop-v">Double-row Tapered Roller Bearing (TRB) — NSK/JTEKT</span></div>
+            <div class="prop-row2"><span class="prop-k">Bore × OD × Width</span><span class="prop-v">130 × 200 × 90 mm (compact heavy-duty)</span></div>
+            <div class="prop-row2"><span class="prop-k">Axle load per bearing</span><span class="prop-v">40–60 kN (heavier MAHSR axle)</span></div>
+            <div class="prop-row2"><span class="prop-k">Max speed rating</span><span class="prop-v warn">5000 rpm → ~500 km/h (design margin)</span></div>
+            <div class="prop-row2"><span class="prop-k">Grease type</span><span class="prop-v">NLGI 2–3 HSR poly-urea (NSK Moly-K LG2)</span></div>
+            <div class="prop-row2"><span class="prop-k">Grease relubrication</span><span class="prop-v ok">Sealed life / 400,000 km between overhaul</span></div>
+            <div class="prop-row2"><span class="prop-k">Normal temp range</span><span class="prop-v ok">30–65°C (+20–35K rise at 320 km/h)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR alarm (stricter)</span><span class="prop-v warn">70°C abs / +40K rise</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR danger</span><span class="prop-v hi">90°C abs / +60K rise</span></div>
+            <div class="prop-row2"><span class="prop-k">Hotbox detection system</span><span class="prop-v ok">Trackside IR sensors every 25 km + onboard TIMS</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#4E342E;">BEARING FAILURE MODES &amp; CAUSES</div>
+            <div class="prop-row2"><span class="prop-k">Fatigue spalling</span><span class="prop-v">Subsurface cracks → surface pitting after 300–500 Mcycles</span></div>
+            <div class="prop-row2"><span class="prop-k">Abrasive wear</span><span class="prop-v">Contamination ingress, seal failure, grit particles</span></div>
+            <div class="prop-row2"><span class="prop-k">Fretting corrosion</span><span class="prop-v">Micro-slip at bore/axle fit — improper press fit</span></div>
+            <div class="prop-row2"><span class="prop-k">Grease degradation</span><span class="prop-v">Oxidation, water ingress, thermal breakdown &gt;120°C</span></div>
+            <div class="prop-row2"><span class="prop-k">Electrical erosion</span><span class="prop-v">Stray traction currents → pitting (EDM damage)</span></div>
+            <div class="prop-row2"><span class="prop-k">False brinelling</span><span class="prop-v">Standstill vibration during transport/storage</span></div>
+            <div class="prop-row2"><span class="prop-k">Thermal seizure (hot box)</span><span class="prop-v hi">Grease breakdown → adhesive wear → catastrophic</span></div>
+            <div class="prop-row2"><span class="prop-k">Detection method</span><span class="prop-v ok">IR hotbox detectors + vibration signature + SPM analysis</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title" style="color:#1B5E20;">BRAKE DISC TEMP — PHYSICS &amp; COOLING</div>
+            <div class="prop-row2"><span class="prop-k">Disc material</span><span class="prop-v">Cast iron (VB) / SiC-reinforced (MAHSR)</span></div>
+            <div class="prop-row2"><span class="prop-k">Thermal capacity</span><span class="prop-v">m_disc × Cp = 40 kg × 490 J/kgK = 19.6 kJ/K per disc</span></div>
+            <div class="prop-row2"><span class="prop-k">Heat generation</span><span class="prop-v">P = F_disc × v (kW per disc during braking)</span></div>
+            <div class="prop-row2"><span class="prop-k">Cooling mechanism</span><span class="prop-v">Forced convection: h = (15 + 1.5×v_ms) W/m²K</span></div>
+            <div class="prop-row2"><span class="prop-k">Cooling area per disc</span><span class="prop-v">0.04 m² effective (ventilated disc)</span></div>
+            <div class="prop-row2"><span class="prop-k">At rest (v=0) cooling</span><span class="prop-v warn">h_nat = 15 W/m²K → slow (natural conv. only)</span></div>
+            <div class="prop-row2"><span class="prop-k">At 160 km/h cooling</span><span class="prop-v ok">h_forced ≈ 82 W/m²K → faster</span></div>
+            <div class="prop-row2"><span class="prop-k">UIC 541-3 fade limit</span><span class="prop-v warn">350°C continuous (µ_pad degrades above)</span></div>
+            <div class="prop-row2"><span class="prop-k">Design max temp</span><span class="prop-v hi">500°C (structural limit — disc distortion)</span></div>
+            <div class="prop-row2"><span class="prop-k">Why slow to cool at rest</span><span class="prop-v">Natural convection only (h≈15 W/m²K). Use RESET TEMPS to start fresh calculations.</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- END VIBRATION & BEARINGS LAB -->
+
   </div>
 </div>
 `;
@@ -4396,7 +4623,7 @@
             labels: [],
             datasets: [
               { label: 'Live', data: [], borderColor: def.color, borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
-              { label: 'VB Baseline', data: [], borderColor: '#000080', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, tension: 0.3, fill: false },
+              { label: 'HSRS Baseline', data: [], borderColor: '#000080', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, tension: 0.3, fill: false },
               { label: 'MAHSR Target', data: [], borderColor: '#138808', borderWidth: 1.5, borderDash: [2, 2], pointRadius: 0, tension: 0.3, fill: false }
             ]
           },
@@ -5402,7 +5629,505 @@
         }
       };
 
+      // ── Tab switch hook for Vibration tab (uses window globals from second IIFE) ──
+      const _vibTabOrig = lapSwitchTab;
+      lapSwitchTab = function(id) {
+        _vibTabOrig(id);
+        if (id === 'vibration' && window._buildVibAnal) {
+          setTimeout(window._buildVibAnal, 60);
+        }
+      };
+
     })(); // end IIFE
+
+    // ══════════════════════════════════════════════════════════════════════
+    // VIBRATION & BEARING DYNAMICS LAB — Physics Models + Live Charts
+    // Sources: ISO 2631-1, EN 12299, UIC 513, EN 12082, UIC 515-3,
+    //   Wickens "Dynamics of Railway Vehicles" (2003),
+    //   Iwnicki "Handbook of Railway Vehicle Dynamics" (2006),
+    //   RDSO / SKF / NSK bearing datasheets
+    // ══════════════════════════════════════════════════════════════════════
+    (function () {
+      'use strict';
+
+      // ── State ────────────────────────────────────────────────────────────
+      S.bearingTemp = 30;    // axle box bearing temp (°C), persistent
+      let prevAccel = 0;     // for jerk computation (m/s² previous tick)
+      let prevAccelTime = 0;
+      const VH_LEN = 200;
+
+      // Circular live history buffers
+      const VH = { t: [], az: [], ay: [], jerk: [], yaw: [], roll: [], pitch: [], bearTemp: [], discTemp: [] };
+
+      const vibLiveCharts = {}, vibAnalCharts = {};
+
+      // ── Vibration physics helpers ─────────────────────────────────────────
+      // Vertical bounce RMS acceleration at car body (ISO 2631-1 frequency range 0.5–80 Hz)
+      // 1-DOF secondary suspension model, input = ISO 8608 track roughness PSD
+      function computeAzRms(v_ms, tq, w_n_sec, zeta_sec) {
+        if (v_ms < 0.5) return 0;
+        const A_r = [0.5e-6, 2e-6, 5e-6, 15e-6][(tq || S.tq) - 1];
+        const df = 0.3;
+        let az_sq = 0;
+        for (let f = 0.3; f <= 30; f += df) {
+          const om = 2 * Math.PI * f;
+          const r = om / w_n_sec;
+          const TF_sq = 1.0 / (Math.pow(1 - r * r, 2) + Math.pow(2 * zeta_sec * r, 2));
+          const n_sp = f / v_ms;                       // spatial freq (cycles/m)
+          const psd_disp = A_r / Math.max(n_sp * n_sp, 1e-5); // m² · m (displacement PSD)
+          const psd_disp_t = psd_disp / v_ms;           // convert to temporal PSD (m²/Hz)
+          az_sq += TF_sq * om * om * om * om * psd_disp_t * df;
+        }
+        // Scale factor calibrated: at 160km/h TQ2 ζ=0.25 → az≈0.10 m/s²
+        return Math.sqrt(az_sq) * 0.00045;
+      }
+
+      // Lateral sway RMS — similar model but includes hunting coupling
+      function computeAyRms(v_ms, tq, w_n_lat, zeta_lat, Vc_ms) {
+        if (v_ms < 0.5) return 0;
+        // Base lateral from track alignment irregularity (similar PSD shape)
+        const az = computeAzRms(v_ms, tq, w_n_lat, zeta_lat);
+        // Hunting contribution: grows sharply as v → Vc
+        const hunt_ratio = Math.min(1.0, v_ms / Math.max(1, Vc_ms));
+        const hunt_amp = hunt_ratio < 0.8 ? 0 : Math.pow((hunt_ratio - 0.8) / 0.2, 2) * 0.08;
+        return az * 0.65 + hunt_amp; // lateral somewhat less than vertical + hunting
+      }
+
+      // Jerk (longitudinal) — from coupler slack + TE/BE step response
+      // Primary source: coupler gap × spring constant / mass = impulse
+      // Additional: TE step at notch changes
+      function computeJerk(dyn, v_ms, dt) {
+        if (dt <= 0) return 0;
+        const da = dyn.a - prevAccel;
+        const base_jerk = Math.abs(da / Math.max(dt, 0.001));
+        // Gear mesh excitation at ~15 Hz (normalized by speed)
+        const gear_jerk = v_ms > 1 ? 0.015 * Math.sin(v_ms * 0.8 * 2 * Math.PI * 0.1) * S.teNotch : 0;
+        // Coupler slack contribution (random, modulated by speed and track quality)
+        const coupler_jerk = 0.005 * (S.tq) * Math.random() * (v_ms > 0 ? 1 : 0);
+        return Math.min(5, base_jerk + Math.abs(gear_jerk) + coupler_jerk);
+      }
+
+      // Bogie yaw rate (°/s) from hunting model
+      function computeYawRate(v_ms, Vc_ms, conic) {
+        if (v_ms < 1) return 0;
+        const R_wh = (S.wheel / 2) / 1000;
+        const e_g = 0.7175;
+        const Lk = 2 * Math.PI * Math.sqrt((R_wh * e_g) / Math.max(conic, 0.01));
+        const hunt_freq = v_ms / Lk; // Hz (Klingel frequency)
+        const hunt_ratio = Math.min(1.0, v_ms / Math.max(1, Vc_ms));
+        // Amplitude: small below 0.8×Vc, grows above it
+        const amp_deg = hunt_ratio < 0.7 ? 0.2 + hunt_ratio * 0.5 :
+                        Math.min(8, 0.6 + Math.pow((hunt_ratio - 0.7) / 0.3, 2) * 7.4);
+        return amp_deg * hunt_freq * 2 * Math.PI * (180 / Math.PI); // peak yaw rate in °/s (limit display)
+      }
+
+      // Car body roll (mrad) — from lateral acceleration × CG height / roll stiffness
+      function computeRoll(ay_ms2, v_ms) {
+        // h_cg ≈ 1.5 m, roll stiffness from ARB + secondary: k_roll ≈ 500 kNm/rad
+        const h_cg = 1.5, k_roll = 500e3; // Nm/rad
+        const M_coach = (S.mass * 1000 + 75 * 100); // kg per coach
+        const phi_rad = (M_coach * ay_ms2 * h_cg) / k_roll;
+        return phi_rad * 1000; // mrad
+      }
+
+      // Car body pitch (mrad) — from TE/BE weight transfer
+      function computePitch(a_ms2) {
+        // Wheelbase ≈ 18 m, secondary stiffness vert: k_s_vert ≈ 400 kN/m
+        // θ = M × a × h_cg / (k_s_vert × L_bogie_spacing) ... but use simulation value
+        return Math.abs(a_ms2) * 0.008 * 1000; // already in the ThreeJS code, convert to mrad
+      }
+
+      // Bearing temperature steady-state for given speed and condition (µ factor)
+      // Calibrated: at 160 km/h normal → ΔT ≈ 20°C, at 320 km/h → ΔT ≈ 35°C
+      function bearingTempSS(v_ms, C) {
+        if (!C || v_ms < 0.1) return 30;
+        const MU_BEAR = 0.0001;    // overall rolling friction coeff (seal + lubricant drag)
+        const n_bearings = S.coaches * 4 * 2; // 2 bearings per axle
+        const F_per = C.W_N / Math.max(n_bearings, 1);
+        const P_heat = MU_BEAR * F_per * v_ms; // W per bearing
+        const R_eff = 0.085 / (1 + 0.001 * v_ms); // K/W effective thermal resistance
+        return 30 + P_heat * R_eff;
+      }
+
+      // ── Chart helpers ─────────────────────────────────────────────────────
+      function mkVibLive(id, datasets, yMin, yMax) {
+        const el = document.getElementById(id);
+        if (!el || vibLiveCharts[id]) return vibLiveCharts[id];
+        return (vibLiveCharts[id] = new Chart(el.getContext('2d'), {
+          type: 'line',
+          data: { labels: [], datasets },
+          options: {
+            animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { font: { family: 'JetBrains Mono', size: 8 }, boxWidth: 8 } } },
+            scales: {
+              x: { display: false },
+              y: {
+                grid: { color: 'rgba(0,0,0,.04)' },
+                ticks: { font: { family: 'JetBrains Mono', size: 8 }, maxTicksLimit: 5 },
+                min: yMin, max: yMax
+              }
+            }
+          }
+        }));
+      }
+
+      function mkVibAnal(id, data, opts) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        if (vibAnalCharts[id]) { vibAnalCharts[id].data = data; vibAnalCharts[id].update('none'); return vibAnalCharts[id]; }
+        return (vibAnalCharts[id] = new Chart(el.getContext('2d'), {
+          type: 'line', data,
+          options: {
+            animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { font: { family: 'JetBrains Mono', size: 8 }, boxWidth: 10 } } },
+            scales: {
+              x: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { family: 'JetBrains Mono', size: 8 }, maxTicksLimit: 10 } },
+              y: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { family: 'JetBrains Mono', size: 8 }, maxTicksLimit: 6 }, ...(opts && opts.y ? opts.y : {}) }
+            }
+          }
+        }));
+      }
+
+      // ── Init 6 live vibration charts ──────────────────────────────────────
+      function initVibLiveCharts() {
+        mkVibLive('vlc-az', [
+          { label: 'az RMS (m/s²)', data: [], borderColor: '#00796B', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(0,121,107,.12)', tension: 0.3 },
+          { label: 'VB limit 0.20', data: [], borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false },
+          { label: 'MAHSR limit 0.15', data: [], borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 0, 0.5);
+
+        mkVibLive('vlc-ay', [
+          { label: 'ay RMS (m/s²)', data: [], borderColor: '#1565C0', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(21,101,192,.12)', tension: 0.3 },
+          { label: 'VB limit 0.15', data: [], borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false },
+          { label: 'MAHSR limit 0.10', data: [], borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 0, 0.3);
+
+        mkVibLive('vlc-jerk', [
+          { label: 'Jerk (m/s³)', data: [], borderColor: '#F57F17', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(245,127,23,.12)', tension: 0.3 },
+          { label: 'TSI comfort 0.5', data: [], borderColor: '#C62828', borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false },
+          { label: 'TSI max 1.5', data: [], borderColor: '#B71C1C', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 0, 2);
+
+        mkVibLive('vlc-yaw', [
+          { label: 'Yaw Rate (°/s)', data: [], borderColor: '#6A1B9A', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(106,27,154,.12)', tension: 0.3 },
+          { label: 'VB limit 5°/s', data: [], borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false },
+          { label: 'MAHSR limit 3°/s', data: [], borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 0, 12);
+
+        mkVibLive('vlc-roll', [
+          { label: 'Roll (mrad)', data: [], borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(198,40,40,.12)', tension: 0.3 },
+          { label: 'VB limit 20 mrad', data: [], borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false },
+          { label: 'MAHSR limit 12 mrad', data: [], borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 0, 40);
+
+        mkVibLive('vlc-pitch', [
+          { label: 'Pitch (mrad)', data: [], borderColor: '#4E342E', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(78,52,46,.12)', tension: 0.3 },
+          { label: 'VB limit 15 mrad', data: [], borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 3], pointRadius: 0, fill: false },
+          { label: 'MAHSR limit 8 mrad', data: [], borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 0, 30);
+
+        // Bearing live chart (separate)
+        mkVibLive('blc-bearing', [
+          { label: 'Bearing Temp (°C)', data: [], borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, fill: 'origin', backgroundColor: 'rgba(198,40,40,.08)', tension: 0.3 },
+          { label: 'Brake Disc Temp (°C)', data: [], borderColor: '#FF6F00', borderWidth: 1.5, pointRadius: 0, borderDash: [4, 2], fill: false, tension: 0.3 },
+          { label: 'Alarm +50K (80°C)', data: [], borderColor: '#F57F17', borderWidth: 1, borderDash: [5, 3], pointRadius: 0, fill: false },
+          { label: 'Danger +80K (110°C)', data: [], borderColor: '#B71C1C', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+        ], 20, 150);
+      }
+
+      // ── Build 4 analysis + 1 bearing analysis chart ───────────────────────
+      function buildVibAnalysis() {
+        if (!lastConsts) return;
+        const C = lastConsts;
+
+        const vbP = Object.assign({}, VB_BASELINE);
+        const mhP = Object.assign({}, MAHSR_TARGET);
+        const curP = Object.assign({}, S);
+
+        const v_arr = Array.from({ length: 33 }, (_, i) => i * 10); // 0–320 km/h
+        const vLabels = v_arr.map(v => v + 'km/h');
+
+        // Secondary suspension params for each config
+        const sec_vb  = { w_n: 2 * Math.PI * 1.0, zeta: 0.25 };
+        const sec_mh  = { w_n: 2 * Math.PI * 1.1, zeta: 0.32 };
+        const sec_cur = { w_n: 2 * Math.PI * (0.9 + S.ks * 0.1), zeta: 0.25 };
+
+        const Cvb  = computeConstantsFor(vbP);
+        const Cmh  = computeConstantsFor(mhP);
+
+        // A1: Vertical az vs Speed
+        const azVb  = v_arr.map(v => +computeAzRms(v / 3.6, vbP.tq,  sec_vb.w_n,  sec_vb.zeta).toFixed(3));
+        const azMh  = v_arr.map(v => +computeAzRms(v / 3.6, mhP.tq,  sec_mh.w_n,  sec_mh.zeta).toFixed(3));
+        const azCur = v_arr.map(v => +computeAzRms(v / 3.6, S.tq,    sec_cur.w_n, sec_cur.zeta).toFixed(3));
+        mkVibAnal('vac-az', {
+          labels: vLabels,
+          datasets: [
+            { label: 'HSRS Baseline', data: azVb,  borderColor: '#1565C0', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Current Config', data: azCur, borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'MAHSR Target',   data: azMh,  borderColor: '#1B5E20', borderWidth: 2, borderDash: [6, 3], pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'EN12299 VB limit 0.20 m/s²', data: v_arr.map(() => 0.20), borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+            { label: 'MAHSR design 0.15 m/s²',      data: v_arr.map(() => 0.15), borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 6], pointRadius: 0, fill: false }
+          ]
+        }, { y: { min: 0, title: { display: true, text: 'az RMS (m/s²)', font: { family: 'JetBrains Mono', size: 9 } } } });
+
+        // A2: Lateral ay vs Speed
+        const Vc_vb  = Cvb.Vc_ms;
+        const Vc_mh  = Cmh.Vc_ms;
+        const Vc_cur = lastConsts.Vc_ms;
+        const lat_vb  = { w_n: 2 * Math.PI * 0.75, zeta: 0.20 };
+        const lat_mh  = { w_n: 2 * Math.PI * 0.80, zeta: 0.26 };
+        const lat_cur = { w_n: 2 * Math.PI * 0.75, zeta: 0.20 };
+        const ayVb  = v_arr.map(v => +computeAyRms(v/3.6, vbP.tq, lat_vb.w_n, lat_vb.zeta, Vc_vb).toFixed(3));
+        const ayMh  = v_arr.map(v => +computeAyRms(v/3.6, mhP.tq, lat_mh.w_n, lat_mh.zeta, Vc_mh).toFixed(3));
+        const ayCur = v_arr.map(v => +computeAyRms(v/3.6, S.tq,   lat_cur.w_n,lat_cur.zeta, Vc_cur).toFixed(3));
+        mkVibAnal('vac-ay', {
+          labels: vLabels,
+          datasets: [
+            { label: 'HSRS Baseline',   data: ayVb,  borderColor: '#1565C0', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Current Config', data: ayCur, borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'MAHSR Target',   data: ayMh,  borderColor: '#1B5E20', borderWidth: 2, borderDash: [6, 3], pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'UIC 513 limit 0.15 m/s²',  data: v_arr.map(() => 0.15), borderColor: '#1565C0', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+            { label: 'MAHSR design 0.10 m/s²',   data: v_arr.map(() => 0.10), borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 6], pointRadius: 0, fill: false }
+          ]
+        }, { y: { min: 0, title: { display: true, text: 'ay RMS (m/s²)', font: { family: 'JetBrains Mono', size: 9 } } } });
+
+        // A3: Suspension FRF (transmissibility dB) vs frequency
+        const fArr = Array.from({ length: 50 }, (_, i) => 0.1 + i * 0.6); // 0.1–30 Hz
+        function frfDB(f, w_n, zeta) {
+          const om = 2 * Math.PI * f, r = om / w_n;
+          const TF = Math.sqrt(1.0 / (Math.pow(1 - r * r, 2) + Math.pow(2 * zeta * r, 2)));
+          return 20 * Math.log10(Math.max(TF, 1e-6));
+        }
+        const fLabels = fArr.map(f => f.toFixed(1) + 'Hz');
+        mkVibAnal('vac-frf', {
+          labels: fLabels,
+          datasets: [
+            { label: 'VB ζ=0.25',    data: fArr.map(f => +frfDB(f, sec_vb.w_n, sec_vb.zeta).toFixed(2)), borderColor: '#1565C0', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Current',      data: fArr.map(f => +frfDB(f, sec_cur.w_n, sec_cur.zeta).toFixed(2)), borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'MAHSR ζ=0.32', data: fArr.map(f => +frfDB(f, sec_mh.w_n, sec_mh.zeta).toFixed(2)), borderColor: '#1B5E20', borderWidth: 2, borderDash: [6, 3], pointRadius: 0, tension: 0.3, fill: false },
+            { label: '0 dB (unity)',  data: fArr.map(() => 0), borderColor: '#888', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+            { label: '−3 dB',        data: fArr.map(() => -3), borderColor: '#F57F17', borderWidth: 1, borderDash: [2, 6], pointRadius: 0, fill: false }
+          ]
+        }, { y: { title: { display: true, text: 'Transmissibility (dB)', font: { family: 'JetBrains Mono', size: 9 } } } });
+
+        // A4: Jerk vs Speed (empirical)
+        // Jerk from coupler + gear mesh increases with speed; reduced by smooth TE control
+        function jerkAtSpeed(v_kmh, tq, teCtrl) {
+          const coupler = 0.05 * tq;    // track roughness-induced coupler jerk
+          const gear    = 0.008 * v_kmh; // gear mesh jerk grows with speed
+          const te_step = teCtrl;        // TE controller smoothness (lower = smoother)
+          return Math.min(3, coupler + gear * 0.01 + te_step * 0.2);
+        }
+        mkVibAnal('vac-jerk', {
+          labels: vLabels,
+          datasets: [
+            { label: 'VB (TQ2, pneumatic TE)', data: v_arr.map(v => +jerkAtSpeed(v, 2, 0.5).toFixed(3)), borderColor: '#1565C0', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Current Config',         data: v_arr.map(v => +jerkAtSpeed(v, S.tq, 0.4).toFixed(3)), borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'MAHSR (TQ1, VVVF smooth)', data: v_arr.map(v => +jerkAtSpeed(v, 1, 0.25).toFixed(3)), borderColor: '#1B5E20', borderWidth: 2, borderDash: [6, 3], pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'TSI comfort limit 0.5 m/s³', data: v_arr.map(() => 0.5), borderColor: '#F57F17', borderWidth: 1, borderDash: [5, 3], pointRadius: 0, fill: false },
+            { label: 'TSI maximum 1.5 m/s³',        data: v_arr.map(() => 1.5), borderColor: '#B71C1C', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false }
+          ]
+        }, { y: { min: 0, suggestedMax: 2, title: { display: true, text: 'Jerk (m/s³)', font: { family: 'JetBrains Mono', size: 9 } } } });
+
+        // B2: Bearing Temp vs Speed (analysis)
+        const Cvb2 = computeConstantsFor(vbP);
+        const Cmh2 = computeConstantsFor(mhP);
+        const Ccur = lastConsts;
+        const bearVb  = v_arr.map(v => +bearingTempSS(v / 3.6, Cvb2).toFixed(1));
+        const bearMh  = v_arr.map(v => {
+          // MAHSR heavier axle → slightly more heating but better cooling (higher v)
+          const T = bearingTempSS(v / 3.6, Cmh2);
+          return +(T * 1.05).toFixed(1); // ~5% higher due to axle load
+        });
+        const bearCur = v_arr.map(v => +bearingTempSS(v / 3.6, Ccur).toFixed(1));
+        mkVibAnal('bac-bearing', {
+          labels: vLabels,
+          datasets: [
+            { label: 'HSRS Baseline',    data: bearVb,  borderColor: '#1565C0', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Current Config', data: bearCur, borderColor: '#C62828', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'MAHSR Target',   data: bearMh,  borderColor: '#1B5E20', borderWidth: 2, borderDash: [6, 3], pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'VB Alarm 80°C',  data: v_arr.map(() => 80), borderColor: '#1565C0', borderWidth: 1, borderDash: [5, 3], pointRadius: 0, fill: false },
+            { label: 'MAHSR Alarm 70°C', data: v_arr.map(() => 70), borderColor: '#1B5E20', borderWidth: 1, borderDash: [3, 5], pointRadius: 0, fill: false },
+            { label: 'Danger 110°C',   data: v_arr.map(() => 110), borderColor: '#B71C1C', borderWidth: 1.5, borderDash: [4, 4], pointRadius: 0, fill: false }
+          ]
+        }, { y: { min: 25, suggestedMax: 120, title: { display: true, text: 'Bearing Temp (°C)', font: { family: 'JetBrains Mono', size: 9 } } } });
+
+        requestAnimationFrame(() => {
+          Object.values(vibAnalCharts).forEach(c => c && c.resize());
+          Object.values(vibLiveCharts).forEach(c => c && c.resize());
+        });
+      }
+
+      // ── Live update (called from lapLoop RAF) ─────────────────────────────
+      let vibTick = 0;
+      function updateVibLive(dyn, now) {
+        if (!lastConsts) return;
+        const C = lastConsts;
+        const v_ms = S.v_ms;
+
+        // Update bearing temperature (1st-order thermal model)
+        const T_ss_bear = bearingTempSS(v_ms, C);
+        const tau_bear = 200; // seconds thermal time constant (~3 min)
+        const dt_sec = (now - (vibTick || now)) / 1000;
+        S.bearingTemp = S.bearingTemp + (T_ss_bear - S.bearingTemp) * (1 - Math.exp(-Math.max(0, dt_sec) / tau_bear));
+        S.bearingTemp = Math.max(30, S.bearingTemp);
+
+        // Compute vibration quantities
+        const w_n_s = 2 * Math.PI * 1.0, zeta_s = 0.25;
+        const w_n_l = 2 * Math.PI * 0.75, zeta_l = 0.20;
+        const Vc_ms = C.Vc_ms;
+        const az = computeAzRms(v_ms, S.tq, w_n_s, zeta_s);
+        const ay = computeAyRms(v_ms, S.tq, w_n_l, zeta_l, Vc_ms);
+        const dt_jerk = dt_sec > 0 ? dt_sec : 0.05;
+        const jk = computeJerk(dyn, v_ms, dt_jerk);
+        const yr = computeYawRate(v_ms, Vc_ms, S.conic);
+        const roll = computeRoll(ay, v_ms);
+        const pitch = computePitch(dyn.a);
+
+        prevAccel = dyn.a;
+
+        // Update KPI strip
+        const $ = id => document.getElementById(id);
+        const fmt = (v, d) => v.toFixed(d);
+
+        if ($('vk-az'))    $('vk-az').textContent    = fmt(az, 3) + ' m/s²';
+        if ($('vk-ay'))    $('vk-ay').textContent    = fmt(ay, 3) + ' m/s²';
+        if ($('vk-jerk'))  $('vk-jerk').textContent  = fmt(jk, 2) + ' m/s³';
+        if ($('vk-yaw'))   $('vk-yaw').textContent   = fmt(yr, 1) + ' °/s';
+        if ($('vk-roll'))  $('vk-roll').textContent  = fmt(roll, 1) + ' mrad';
+        if ($('vk-pitch')) $('vk-pitch').textContent = fmt(pitch, 1) + ' mrad';
+        if ($('vk-btemp')) $('vk-btemp').textContent = fmt(S.bearingTemp, 1) + ' °C';
+        if ($('vk-disctemp')) $('vk-disctemp').textContent = fmt(S.brakeTemp, 1) + ' °C';
+
+        // Colour code bearing KPI
+        const bkpiEl = $('vkpi-btemp');
+        if (bkpiEl) {
+          const dT = S.bearingTemp - 30;
+          bkpiEl.className = 'vib-kpi ' + (dT > 80 ? 'crit' : dT > 50 ? 'warn' : 'ok');
+        }
+
+        // Bearing status panel
+        const rise = S.bearingTemp - 30;
+        if ($('bk-avg'))   $('bk-avg').textContent  = fmt(S.bearingTemp, 1) + ' °C';
+        if ($('bk-max'))   $('bk-max').textContent  = fmt(S.bearingTemp * 1.05, 1) + ' °C'; // hottest axle ~5% higher
+        if ($('bk-rise'))  $('bk-rise').textContent = fmt(rise, 1) + ' K';
+        if ($('bk-status')) {
+          const stat = rise > 80 ? ['DANGER', 'bear-crit'] : rise > 50 ? ['ALARM', 'bear-warn'] : ['NORMAL', 'bear-ok'];
+          $('bk-status').innerHTML = '<span class="bear-status ' + stat[1] + '">' + stat[0] + '</span>';
+        }
+
+        // Throttle chart push to 2 Hz
+        if (now - vibTick < 500) return;
+        vibTick = now;
+
+        const vibPage = document.getElementById('lap-vibration');
+        if (!vibPage || !vibPage.classList.contains('active')) return;
+
+        const tLabel = dyn.v_kmh.toFixed(0) + 'km/h';
+        VH.t.push(tLabel);
+        VH.az.push(+az.toFixed(4));
+        VH.ay.push(+ay.toFixed(4));
+        VH.jerk.push(+jk.toFixed(3));
+        VH.yaw.push(+yr.toFixed(2));
+        VH.roll.push(+roll.toFixed(2));
+        VH.pitch.push(+pitch.toFixed(2));
+        VH.bearTemp.push(+S.bearingTemp.toFixed(1));
+        VH.discTemp.push(+S.brakeTemp.toFixed(1));
+
+        if (VH.t.length > VH_LEN) {
+          ['t','az','ay','jerk','yaw','roll','pitch','bearTemp','discTemp'].forEach(k => VH[k].shift());
+        }
+
+        function push(ch, ...series) {
+          if (!ch) return;
+          ch.data.labels = [...VH.t];
+          series.forEach((d, i) => { if (ch.data.datasets[i]) ch.data.datasets[i].data = [...d]; });
+          ch.update('none');
+        }
+
+        push(vibLiveCharts['vlc-az'],
+          VH.az,
+          VH.az.map(() => 0.20),
+          VH.az.map(() => 0.15));
+        push(vibLiveCharts['vlc-ay'],
+          VH.ay,
+          VH.ay.map(() => 0.15),
+          VH.ay.map(() => 0.10));
+        push(vibLiveCharts['vlc-jerk'],
+          VH.jerk,
+          VH.jerk.map(() => 0.5),
+          VH.jerk.map(() => 1.5));
+        push(vibLiveCharts['vlc-yaw'],
+          VH.yaw,
+          VH.yaw.map(() => 5),
+          VH.yaw.map(() => 3));
+        push(vibLiveCharts['vlc-roll'],
+          VH.roll,
+          VH.roll.map(() => 20),
+          VH.roll.map(() => 12));
+        push(vibLiveCharts['vlc-pitch'],
+          VH.pitch,
+          VH.pitch.map(() => 15),
+          VH.pitch.map(() => 8));
+
+        // Bearing live chart (always update even when not on vibration tab — for KPI accuracy)
+        push(vibLiveCharts['blc-bearing'],
+          VH.bearTemp,
+          VH.discTemp,
+          VH.bearTemp.map(() => 80),
+          VH.bearTemp.map(() => 110));
+      }
+
+      // ── Reset buttons ─────────────────────────────────────────────────────
+      function wireResetBtns() {
+        const btnR = document.getElementById('btn-reset-temps');
+        if (btnR) btnR.addEventListener('click', () => {
+          S.brakeTemp = 30;
+          S.bearingTemp = 30;
+          ['t','az','ay','jerk','yaw','roll','pitch','bearTemp','discTemp'].forEach(k => { VH[k] = []; });
+          ['vlc-az','vlc-ay','vlc-jerk','vlc-yaw','vlc-roll','vlc-pitch','blc-bearing'].forEach(id => {
+            if (vibLiveCharts[id]) { vibLiveCharts[id].data.labels = []; vibLiveCharts[id].data.datasets.forEach(d => d.data = []); vibLiveCharts[id].update('none'); }
+          });
+        });
+        const btnB = document.getElementById('btn-reset-bearing');
+        if (btnB) btnB.addEventListener('click', () => {
+          S.bearingTemp = 30;
+          VH.bearTemp = [];
+          if (vibLiveCharts['blc-bearing']) {
+            const ch = vibLiveCharts['blc-bearing'];
+            ch.data.datasets[0].data = [];
+            ch.data.labels = [];
+            ch.update('none');
+          }
+        });
+      }
+
+      // ── Expose & init ─────────────────────────────────────────────────────
+      window._updateVibLive = updateVibLive;
+      window._buildVibAnal = function() {
+        buildVibAnalysis();
+        // Register in rwCharts so expandRWChart can resize them
+        if (!window.rwCharts) window.rwCharts = {};
+        Object.assign(window.rwCharts, vibAnalCharts);
+        Object.values(vibAnalCharts).forEach(c => c && c.resize());
+        Object.values(vibLiveCharts).forEach(c => c && c.resize());
+      };
+
+      // Patch the lapLoop hook to call vibration updates
+      const _prevVibHook = window._lapUpdateHook;
+      window._lapUpdateHook = function(dyn, now) {
+        if (_prevVibHook) _prevVibHook(dyn, now);
+        updateVibLive(dyn, now);
+      };
+
+      // Wire reset buttons after DOM is ready
+      setTimeout(wireResetBtns, 200);
+
+      // Init live charts immediately so they're ready when tab opens
+      initVibLiveCharts();
+
+    })(); // end Vibration & Bearing IIFE
+
 
     // Call the lap panel updater inside the simulation loop
     // (Patching simulationLoop is complex — use a wrapper approach)

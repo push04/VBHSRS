@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HSRS Analysis Platform — Technical Documentation</title>
+  <style>
+    :root {
+      --pri: #000080;
+      --acc: #FF9933;
+      --acc2: #138808;
+      --bg: #0a0a1a;
+      --bg2: #111128;
+      --bg3: #1a1a35;
+      --txt: #e8e8f0;
+      --txt2: #a0a0c0;
+      --border: #2a2a4a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+    header {
+      background: linear-gradient(135deg, #000060 0%, #000080 40%, #0a0a2a 100%);
+      border-bottom: 3px solid var(--acc);
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    header img { height: 52px; }
+    .hdr-text h1 { font-size: 1.6rem; color: #fff; font-weight: 700; }
+    .hdr-text p { color: var(--acc); font-size: 0.85rem; margin-top: 2px; letter-spacing: 0.5px; }
+    nav {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      display: flex;
+      gap: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow-x: auto;
+    }
+    nav a {
+      color: var(--txt2);
+      text-decoration: none;
+      padding: 14px 18px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    nav a:hover { color: var(--acc); border-bottom-color: var(--acc); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 48px 80px; }
+    h2 {
+      font-size: 1.4rem;
+      color: var(--acc);
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-size: 1.05rem;
+      color: #7eb8f7;
+      margin: 28px 0 10px;
+    }
+    h4 {
+      font-size: 0.92rem;
+      color: var(--acc2);
+      margin: 18px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    p { margin: 10px 0; color: var(--txt); }
+    ul, ol { margin: 10px 0 10px 24px; }
+    li { margin: 5px 0; }
+    .formula-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--acc);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 14px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.93rem;
+      line-height: 1.8;
+      color: #c8e6ff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.88rem;
+    }
+    .param-table th {
+      background: var(--pri);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .param-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .param-table tr:nth-child(even) td { background: var(--bg2); }
+    .param-table tr:hover td { background: #1e1e40; }
+    .param-table td:first-child { color: var(--acc); font-family: monospace; font-weight: 600; }
+    .param-table td:nth-child(2) { color: #a8d8ff; }
+    .note-box {
+      background: rgba(255, 153, 51, 0.08);
+      border: 1px solid rgba(255, 153, 51, 0.3);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 0.88rem;
+    }
+    .note-box strong { color: var(--acc); }
+    .info-box {
+      background: rgba(19, 136, 8, 0.08);
+      border: 1px solid rgba(19, 136, 8, 0.3);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 0.88rem;
+    }
+    .info-box strong { color: var(--acc2); }
+    .section-intro {
+      background: var(--bg2);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 16px 0 24px;
+      border: 1px solid var(--border);
+      color: var(--txt2);
+      font-size: 0.92rem;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 14px 0;
+    }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } .container { padding: 24px 20px; } header { padding: 20px; } }
+    .tag {
+      display: inline-block;
+      background: rgba(0,0,128,0.5);
+      border: 1px solid #3a3a6a;
+      color: #99b3ff;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      margin: 2px;
+      font-family: monospace;
+    }
+    .toc-list { list-style: none; margin: 0; padding: 0; }
+    .toc-list li { padding: 4px 0; border-bottom: 1px solid var(--border); }
+    .toc-list a { color: #7eb8f7; text-decoration: none; font-size: 0.9rem; }
+    .toc-list a:hover { color: var(--acc); }
+    .toc-list .sub { padding-left: 20px; font-size: 0.85rem; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+    code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; color: #c8e6ff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Indian_railways_18_star_logo.jpg" alt="Indian Railways">
+  <div class="hdr-text">
+    <h1>High Speed Rolling Stock Analysis Platform</h1>
+    <p>Technical Documentation &nbsp;&middot;&nbsp; Ministry of Railways, GoI &nbsp;&middot;&nbsp; v2.0</p>
+  </div>
+</header>
+
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#purpose">Purpose &amp; Need</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#parameters">Parameters</a>
+  <a href="#physics">Physics Engine</a>
+  <a href="#vibration">Vibration</a>
+  <a href="#thermal">Thermal Models</a>
+  <a href="#tribology">Tribology</a>
+  <a href="#comfort">Ride Comfort</a>
+  <a href="#standards">Standards</a>
+  <a href="#formulas">Formula Reference</a>
+</nav>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="overview">1. Project Overview</h2>
+
+<div class="section-intro">
+  The <strong>High Speed Rolling Stock (HSRS) Analysis Platform</strong> is a browser-based, real-time physics simulation and engineering analysis tool for high-speed passenger rail systems. It models traction, braking, wear, vibration, thermal behaviour, and ride comfort — entirely in-browser with no server dependency.
+</div>
+
+<p>The platform was developed to support engineering analysis of high-speed rail (HSR) operations in India, particularly the transition from existing semi-HSR stock (160 km/h) to dedicated HSR rolling stock capable of 320 km/h on the Mumbai–Ahmedabad High Speed Rail corridor (508 km, MAHSR).</p>
+
+<h3>What Does It Simulate?</h3>
+<ul>
+  <li><strong>Real-time simulation loop</strong> — physics updated every 100 ms using Runge-Kutta 4th order (RK4) integration</li>
+  <li><strong>Traction &amp; braking</strong> — tractive effort curves, adhesion limits, braking distance</li>
+  <li><strong>Rail-wheel tribology</strong> — contact stress, creep forces, wear volume (Hertz + Polach + Archard)</li>
+  <li><strong>Suspension dynamics</strong> — frequency response, Sperling ride index, ISO 2631-1</li>
+  <li><strong>Vibration analysis</strong> — vertical, lateral, jerk, yaw, roll with live charts</li>
+  <li><strong>Thermal models</strong> — brake disc temperature, bearing temperature, hotbox detection</li>
+  <li><strong>Energy consumption</strong> — Davis resistance, specific energy at speed</li>
+  <li><strong>MAHSR corridor</strong> — ATC speed profiles, station geometry, journey time analysis</li>
+</ul>
+
+<h3>Reference Configurations</h3>
+<table class="param-table">
+  <tr><th>Parameter</th><th>HSRS Baseline (160 km/h)</th><th>MAHSR Target (320 km/h)</th></tr>
+  <tr><td>Formation</td><td>16 cars</td><td>10 cars</td></tr>
+  <tr><td>Mass per car</td><td>39 t</td><td>44 t</td></tr>
+  <tr><td>Motor ratio</td><td>100% (16M)</td><td>80% (8M2T)</td></tr>
+  <tr><td>Motor power</td><td>250 kW/motor</td><td>305 kW/motor</td></tr>
+  <tr><td>Max speed</td><td>160 km/h</td><td>320 km/h</td></tr>
+  <tr><td>Wheel diameter</td><td>915 mm</td><td>860 mm</td></tr>
+  <tr><td>Suspension</td><td>Air spring (1-stage)</td><td>Air spring (2-stage)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="purpose">2. Purpose, Need &amp; Benefits</h2>
+
+<h3>Why This Platform Exists</h3>
+<p>Traditional rail engineering analysis requires expensive commercial software (SIMPACK, VAMPIRE, ADAMS/Rail) that demands specialist training and controlled environments. Engineering decisions about fleet configuration, track quality requirements, maintenance intervals, and speed upgrades are often made without accessible real-time sensitivity analysis.</p>
+
+<p>This platform fills that gap by providing:</p>
+<ul>
+  <li><strong>Instant parameter sensitivity</strong> — engineers can slide a parameter and see how braking distance, wear rate, bearing temperature, and ride quality change immediately</li>
+  <li><strong>Comparative analysis</strong> — three reference datasets (Live, HSRS Baseline 160 km/h, MAHSR Target 320 km/h) visible simultaneously on all charts</li>
+  <li><strong>Educational tool</strong> — formulae, standards compliance thresholds, and physical reasoning are embedded in the UI</li>
+  <li><strong>No installation required</strong> — runs in any modern browser, shareable as a single HTML file</li>
+</ul>
+
+<h3>Engineering Benefits</h3>
+<ul>
+  <li>Rapid assessment of speed upgrade implications (160 → 200 → 320 km/h)</li>
+  <li>Formation optimisation (10-car vs 16-car — tractive effort, energy, wear)</li>
+  <li>Track quality requirements for speed targets (Sperling index &lt; 2.5 threshold)</li>
+  <li>Brake system sizing — stopping distance, disc temperature limits</li>
+  <li>Bearing maintenance interval planning (EN 12082 hotbox thresholds)</li>
+  <li>Conicity/wheel profile impact on hunting stability (Klingel wavelength)</li>
+  <li>MAHSR journey time estimation and ATC profile analysis</li>
+</ul>
+
+<h3>Operational Need</h3>
+<p>India's first HSR project (MAHSR, BKC–Sabarmati, 508 km, 320 km/h) requires engineering analysis of rolling stock performance that differs fundamentally from existing networks. At 320 km/h:</p>
+<ul>
+  <li>Aerodynamic drag dominates (~v³), making it 8× higher than at 160 km/h</li>
+  <li>Contact stress and wear rates escalate non-linearly</li>
+  <li>Hunting instability requires tight conicity control (&lt; 0.05)</li>
+  <li>Bearing thermal loads require continuous monitoring (EN 12082)</li>
+  <li>Brake disc temperatures during emergency stops can exceed 400°C</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="architecture">3. Software Architecture</h2>
+
+<h3>Technology Stack</h3>
+<ul>
+  <li><strong>Three.js r128</strong> — 3D train body / bogie visualisation with OrbitControls</li>
+  <li><strong>Chart.js 3.9.1</strong> — all 2D physics charts (animation disabled for real-time streaming)</li>
+  <li><strong>Pure JavaScript</strong> — no framework; IIFE module pattern for scope isolation</li>
+  <li><strong>Single HTML file</strong> — all HTML, CSS, and JS in one deployable file (~6200 lines)</li>
+</ul>
+
+<h3>Simulation Loop</h3>
+<p>The main loop runs at 100 ms intervals (10 Hz). Each tick:</p>
+<ol>
+  <li>User inputs read from sliders → physics constants computed (<code>computeDynamics()</code>)</li>
+  <li>RK4 integration over Δt = 0.1 s → new velocity, position</li>
+  <li>Brake disc temperature updated (thermal ODE)</li>
+  <li>All live charts updated (Chart.js <code>update('none')</code> — no animation)</li>
+  <li>Hook chain fired → vibration IIFE receives same <code>dyn</code> object → bearing temp, vibration metrics updated</li>
+</ol>
+
+<h3>Module Hook System</h3>
+<p>The main simulation loop exposes <code>window._lapUpdateHook(dyn, now)</code>. Secondary modules (LAP Panel, Vibration IIFE) chain onto this hook so they receive live physics data without coupling to the main loop's internals.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="parameters">4. Input Parameters &amp; Their Effects</h2>
+
+<div class="section-intro">
+  Every parameter on the left panel feeds directly into the physics engine. The table below lists each parameter, its range, default values, and the physical effect of changing it.
+</div>
+
+<table class="param-table">
+  <tr>
+    <th>Parameter</th>
+    <th>Range</th>
+    <th>Default</th>
+    <th>Effect of Increasing</th>
+  </tr>
+  <tr>
+    <td>Formation (cars)</td>
+    <td>4–20</td>
+    <td>16</td>
+    <td>Higher total mass → more inertia, longer braking distance, higher TE needed; more motors → higher available TE if motor ratio fixed</td>
+  </tr>
+  <tr>
+    <td>Mass per car (t)</td>
+    <td>30–55</td>
+    <td>39</td>
+    <td>Higher total weight → higher rolling resistance, higher contact stress, higher bearing loads, longer stopping distance. Wheel–rail contact footprint grows (Hertz)</td>
+  </tr>
+  <tr>
+    <td>Motor ratio (%)</td>
+    <td>50–100</td>
+    <td>100</td>
+    <td>More powered axles → higher available TE; at low ratios, adhesion utilisation per axle increases → earlier wheel-slip onset</td>
+  </tr>
+  <tr>
+    <td>Motor power (kW)</td>
+    <td>150–400</td>
+    <td>250</td>
+    <td>Higher installed power → higher TE at speed, higher top speed limited by Davis resistance crossover; energy draw scales proportionally</td>
+  </tr>
+  <tr>
+    <td>Speed set-point (km/h)</td>
+    <td>0–360</td>
+    <td>160</td>
+    <td>Primary driver of almost all outputs: drag scales as v², aero as v³, contact stress increases, hunting ratio increases, brake disc temp at emergency stop scales as v²</td>
+  </tr>
+  <tr>
+    <td>Wheel diameter (mm)</td>
+    <td>800–1000</td>
+    <td>915</td>
+    <td>Larger wheel → lower contact stress (larger Hertz area), lower Klingel frequency at same speed, higher gear ratio needed; smaller wheel → more wear per km at same load</td>
+  </tr>
+  <tr>
+    <td>Wheel conicity (λ)</td>
+    <td>0.02–0.30</td>
+    <td>0.05</td>
+    <td>Higher conicity → shorter Klingel hunting wavelength → lower critical speed Vc; above Vc the bogie hunts → lateral vibration spike, flange contact, rapid wear</td>
+  </tr>
+  <tr>
+    <td>Rail profile (UIC/BS)</td>
+    <td>UIC60 / BS113A</td>
+    <td>UIC60</td>
+    <td>Affects contact half-axes a, b and peak Hertz pressure p₀; BS113A gives slightly larger contact patch → lower p₀</td>
+  </tr>
+  <tr>
+    <td>Track quality (TQ1–TQ4)</td>
+    <td>1 (excellent) – 4 (poor)</td>
+    <td>2</td>
+    <td>Sets PSD roughness coefficient Ar (×10⁻⁶ m²·s/cycle/m); higher TQ → exponentially higher vertical acceleration → Sperling Wz rises; at TQ4 comfort becomes unacceptable (&gt;3.0)</td>
+  </tr>
+  <tr>
+    <td>Secondary spring stiffness (N/m)</td>
+    <td>0.3–2.0 MN/m</td>
+    <td>0.8 MN/m</td>
+    <td>Higher stiffness → natural frequency ωn rises → resonance moves to higher speed → FRF peak shifts; less vibration isolation at high frequency; harder ride quality</td>
+  </tr>
+  <tr>
+    <td>Secondary damping ratio (ζ)</td>
+    <td>0.05–0.40</td>
+    <td>0.25</td>
+    <td>Higher damping → lower FRF peak (less resonance amplification) but more force transmission at frequencies above ωn; optimal range 0.15–0.30 for rail dampers</td>
+  </tr>
+  <tr>
+    <td>Braking mode</td>
+    <td>Emergency / Service / Regen</td>
+    <td>Service</td>
+    <td>Emergency: full adhesion limit deceleration (~1.1 m/s²) → shortest stop, highest disc temperature. Regen: lower deceleration, ~85% energy recovered, lowest disc temp</td>
+  </tr>
+  <tr>
+    <td>Brake force (% of limit)</td>
+    <td>20–100%</td>
+    <td>80%</td>
+    <td>Higher brake force → shorter stopping distance but higher disc temperature during stop; disc temp scales as Q_in = F·v</td>
+  </tr>
+  <tr>
+    <td>Gradient (%)</td>
+    <td>−3.5 to +3.5%</td>
+    <td>0</td>
+    <td>Uphill: gravity resistance adds to Davis resistance → more TE needed, lower top speed achievable. Downhill: reduces traction requirement; increases braking demand</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="physics">5. Physics Engine — Core Formulae</h2>
+
+<h3>5.1 Resistance (Davis Formula)</h3>
+<div class="section-intro">Davis resistance describes the total running resistance of a train as a function of speed. It captures rolling resistance, bearing drag, and aerodynamic drag.</div>
+
+<div class="formula-box">R_total = A + B·v   [N/kN or N]
+
+where (for Indian broad gauge EMU/HSR):
+  A = 1.5 + 0.01·W    [N/kN] — rolling & bearing resistance
+  B = 0.0065·v         — aerodynamic drag coefficient term
+  v = speed [km/h]
+
+Full resistance force [N]:
+  F_resist = (A + B·v) × W_total [kN] / 1000
+           + W_total × g × sin(θ_gradient)
+           + (aerodynamic: k_aero × v²)
+
+  k_aero = 0.5 × ρ_air × C_D × A_front
+         = 0.5 × 1.225 × 0.25 × 9.0  ≈ 1.38 [N/(m/s)²]</div>
+
+<h4>Why Davis?</h4>
+<p>Davis (1926) is the empirically validated standard for rail vehicle resistance. The A term captures speed-independent losses (wheel deformation, bearing seals); the B·v term captures aerodynamic skin friction and form drag. At 320 km/h the aerodynamic term dominates — it is ~4× the rolling resistance.</p>
+
+<h4>Effect of changing parameters on resistance:</h4>
+<ul>
+  <li><strong>Mass ↑</strong> → A increases (heavier wheel loads), total resistance force increases proportionally</li>
+  <li><strong>Speed ↑</strong> → B·v term increases as v², aero as v³ → resistance grows rapidly</li>
+  <li><strong>C_D ↑</strong> (blunter nose) → aerodynamic resistance increases; explains why Shinkansen has long nose cones</li>
+  <li><strong>Frontal area ↑</strong> → proportional increase in aero resistance</li>
+</ul>
+
+<h3>5.2 Tractive Effort Model</h3>
+
+<div class="formula-box">Available TE [N]:
+  TE_installed = (n_motors × P_motor) / v   [at speed v m/s]
+  TE_adhesion  = µ_CK × W_powered            [adhesion limit]
+  TE_available = min(TE_installed, TE_adhesion)
+
+Net acceleration:
+  a = (TE_available - F_resist) / M_total   [m/s²]
+
+RK4 integration over dt = 0.1 s:
+  v_new = v + (k1 + 2k2 + 2k3 + k4) / 6
+  where k1 = a(v), k2 = a(v + k1·dt/2), etc.</div>
+
+<h4>Why RK4?</h4>
+<p>RK4 is 4th-order accurate: error scales as O(dt⁵) vs O(dt²) for Euler. At 10 Hz update rate (dt = 0.1 s), RK4 gives velocity accuracy better than 0.01 m/s. The additional computational cost (4 function evaluations per step) is negligible in JS.</p>
+
+<h3>5.3 Curtius-Kniffler Adhesion</h3>
+
+<div class="formula-box">µ_CK(v) = µ_base × [0.161 + 7.5 / (v_kmh + 44)]
+
+where:
+  µ_base = 0.33  (dry rail, clean)
+  µ_base = 0.20  (wet rail)
+  µ_base = 0.12  (contaminated / leaf)
+
+At 160 km/h (dry): µ = 0.33 × [0.161 + 7.5/204] ≈ 0.165
+At 320 km/h (dry): µ = 0.33 × [0.161 + 7.5/364] ≈ 0.121
+
+Adhesion force limit:
+  F_adh = µ_CK × W_powered_axles [N]</div>
+
+<h4>Why Curtius-Kniffler?</h4>
+<p>Curtius-Kniffler (1950) is the UIC-standardised empirical adhesion model validated for European and Japanese HSR. It correctly captures the speed-dependency of wheel-rail adhesion — at higher speeds, the contact time decreases, moisture film cannot drain, and the real contact area (asperity interlocking) reduces. At 320 km/h, available adhesion is ~30% lower than at standstill.</p>
+
+<h4>Effect of changing parameters:</h4>
+<ul>
+  <li><strong>Speed ↑</strong> → µ decreases → adhesion limit decreases → TE_max falls → longer acceleration from high speeds</li>
+  <li><strong>Rail condition → wet</strong> → µ_base drops from 0.33 to 0.20 → 40% reduction in adhesion → risk of wheel-slip at lower TE</li>
+  <li><strong>Motor ratio ↓</strong> → fewer powered axles → W_powered ↓ → F_adh ↓ → TE limited earlier</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="vibration">6. Vibration Analysis</h2>
+
+<h3>6.1 Klingel Hunting (Lateral Stability)</h3>
+
+<div class="formula-box">Klingel hunting wavelength:
+  λ_k = 2π × √(R_wheel × e_gauge / λ_conicity)
+
+where:
+  R_wheel    = wheel radius [m]  (= wheel_diam/2)
+  e_gauge    = half track gauge = 0.7175 m  (1435 mm gauge)
+  λ_conicity = wheel conicity (taper angle)
+
+Klingel frequency at speed v:
+  f_k = v / λ_k   [Hz]
+
+Critical hunting speed:
+  Vc ≈ λ_k × √(k_lateral / M_bogie) / (2π)
+     (simplified — depends on bogie yaw stiffness)
+
+In the platform: Vc estimated from Klingel with bogie mass 3000 kg, k_lat = 2.5 MN/m</div>
+
+<h4>Why Does Conicity Matter?</h4>
+<p>Wheel conicity is the primary design parameter controlling hunting stability. Higher conicity (worn wheel profile) produces shorter Klingel wavelength → lower critical speed Vc. When train speed approaches Vc, the bogie enters sustained lateral oscillation (hunting), causing:</p>
+<ul>
+  <li>Increased lateral acceleration (passenger discomfort)</li>
+  <li>Flange contact → rail gauge face wear → corrugation risk</li>
+  <li>Derailment risk if conicity is very high and speed is near or above Vc</li>
+</ul>
+<p><strong>HSR rule of thumb:</strong> maintain conicity &lt; 0.05 for 320 km/h operation. Wheel reprofiling required when conicity exceeds 0.1.</p>
+
+<h3>6.2 Vertical Ride (ISO 8608 + ISO 2631-1)</h3>
+
+<div class="formula-box">Track irregularity PSD (ISO 8608):
+  S_z(Ω) = A_r / Ω²   [m² / (rad/m)]
+
+where Ω = spatial frequency [rad/m], A_r is roughness:
+  TQ1 (excellent HSR): A_r = 0.5 × 10⁻⁶
+  TQ2 (good mainline): A_r = 2.0 × 10⁻⁶
+  TQ3 (average):       A_r = 5.0 × 10⁻⁶
+  TQ4 (poor):          A_r = 15.0 × 10⁻⁶
+
+1-DOF secondary suspension transmissibility:
+  H(ω) = √[(1 + (2ζr)²) / ((1-r²)² + (2ζr)²)]
+where r = ω/ωn, ωn = √(k_s/m_car), ζ = damping ratio
+
+Vertical RMS acceleration:
+  a_z,rms = √[ ∫ S_z(Ω) · H²(ω) · ω⁴ · dΩ ]
+           × calibration_factor
+
+Integration bounds: Ω equivalent to 0.3–30 Hz at speed v
+calibration_factor = 0.00045 (matched to EN 12299 field data)</div>
+
+<h4>Parameter Effects on Vertical Vibration:</h4>
+<ul>
+  <li><strong>Track quality TQ↑</strong> → A_r increases → a_z,rms increases proportionally → Sperling Wz rises → ride quality worsens</li>
+  <li><strong>Speed ↑</strong> → spatial frequency maps to higher temporal frequency → more of PSD falls in sensitive frequency range → a_z,rms typically increases</li>
+  <li><strong>Spring stiffness k_s ↑</strong> → ωn increases → resonance at higher frequency → less isolation in 1–10 Hz range → harder ride</li>
+  <li><strong>Damping ζ ↑</strong> → resonance peak suppressed → smoother ride near ωn; slight increase in high-frequency transmission</li>
+</ul>
+
+<h3>6.3 Sperling Ride Index (Wz)</h3>
+
+<div class="formula-box">Sperling Wz index:
+  Wz = 4.42 × (a_z,rms)^0.3 × F(f)
+
+where F(f) is ISO 2631-1 frequency weighting:
+  F(f) = 0.588 at 4–8 Hz (most sensitive vertical)
+  F(f) = 1.0   at 8 Hz
+  F(f) = 8/f   above 8 Hz
+
+Simplified platform version:
+  Wz ≈ 4.42 × (a_z_weighted)^0.3
+
+Interpretation:
+  Wz ≤ 2.5  — Excellent (imperceptible motion)
+  2.5–3.0   — Good (just perceptible)
+  3.0–3.5   — Acceptable (clearly perceptible)
+  3.5–4.5   — Poor (strongly perceptible)
+  > 4.5     — Very poor (dangerous)</div>
+
+<h3>6.4 Jerk</h3>
+
+<div class="formula-box">Longitudinal jerk:
+  J_base = |Δa / Δt|   [m/s³]  (acceleration rate of change)
+
+Gear mesh contribution:
+  J_gear = 0.02 × |a| × f_gear  (gear frequency oscillation)
+  f_gear = 2π × (v/r_wheel) × (1/gear_ratio) / (2π) ≈ 10–40 Hz simplified
+
+Coupler slack:
+  J_coupler = 0.15 × |a| × (1 - v/v_max)  (higher at low speed)
+
+Total:
+  J_total = J_base + J_gear + J_coupler   [m/s³]
+
+Comfort limits (EN 13715):
+  J &lt; 1.0 m/s³  — Comfortable
+  J &lt; 2.0 m/s³  — Acceptable
+  J > 2.0 m/s³  — Uncomfortable</div>
+
+<h3>6.5 Body Roll</h3>
+
+<div class="formula-box">Body roll angle from lateral acceleration:
+  φ_roll = arctan(ay × M_car × h_cg / k_roll)
+
+where:
+  ay       = lateral acceleration [m/s²]
+  h_cg     = 1.5 m  (centre of gravity height above roll centre)
+  k_roll   = 500,000 Nm/rad  (anti-roll bar + air spring stiffness)
+  M_car    = car mass [kg]
+
+Roll rate = Δφ/Δt  [deg/s]
+
+UIC limits:
+  φ &lt; 6°    — acceptable body roll
+  φ > 8°    — exceeds limit; may require curve speed reduction</div>
+
+<h3>6.6 Bogie Yaw Rate</h3>
+
+<div class="formula-box">Klingel bogie yaw oscillation:
+  ψ̇ = A_yaw × 2π × f_k  [deg/s]
+
+where f_k = v/λ_k (Klingel frequency), and:
+  A_yaw = 0.001 m (lateral displacement amplitude, normal tracking)
+
+Near hunting (v/Vc > 0.7):
+  A_yaw grows as: 0.001 + 0.005 × max(0, v/Vc - 0.7) / 0.3
+
+Comfort threshold: ψ̇ &lt; 5 deg/s (EN 14363)</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="thermal">7. Thermal Models</h2>
+
+<h3>7.1 Brake Disc Temperature</h3>
+
+<div class="formula-box">Brake disc thermal ODE:
+  dT/dt = (Q_in - Q_cool) / (m_disc × c_p)
+
+Heat input during braking:
+  Q_in = F_brake × v   [W]  (braking power)
+
+  F_brake = µ_brake × N_normal × n_discs
+          = brake_ratio × F_adhesion_limit × efficiency
+
+Cooling (convective, both faces):
+  Q_cool = h_conv × A_disc × (T - T_ambient)
+
+  h_conv = 15 + 1.5 × v_ms   [W/m²K]  (forced convection at speed v)
+  A_disc = 0.2 m²  (effective cooling area per disc)
+  m_disc = 15 kg   (cast iron disc mass)
+  c_p    = 500 J/kgK  (cast iron specific heat)
+
+Ambient temperature T_ambient = 30°C (Indian summer baseline)</div>
+
+<h4>Why Do Discs Get So Hot?</h4>
+<p>Braking power Q_in = F × v is very large at high speed. For an emergency stop from 160 km/h (44.4 m/s) with a 16-car train (624 t): F_brake ≈ 400 kN → Q_in ≈ 17.8 MW split across 64 discs → 278 kW per disc. This raises temperature at ~278,000 / (15 × 500) = 37°C/s. Even a 10-second high-speed braking phase raises temperature by ~370°C.</p>
+
+<h4>Natural Cooling</h4>
+<p>At rest (v=0): h_conv = 15 W/m²K, Q_cool = 15 × 0.2 × (T-30) = 3(T-30) W. From 400°C: dT/dt = -3×370/(15×500) = -0.15°C/s → 41 minutes to cool from 400°C to 50°C. This is realistic for cast iron brake discs — they cool slowly at rest, which is why the Reset button exists for fresh test scenarios.</p>
+
+<h4>Parameter Effects:</h4>
+<ul>
+  <li><strong>Speed ↑</strong> → Q_in increases proportionally; cooling increases too (h_conv ↑) but Q_in grows faster → higher peak temperature</li>
+  <li><strong>Brake ratio ↑</strong> → F_brake ↑ → Q_in ↑ → higher disc temp</li>
+  <li><strong>Emergency mode</strong> → maximum F_brake → highest disc temperature (can exceed 500°C from 320 km/h)</li>
+  <li><strong>More discs (n_discs ↑)</strong> → heat shared across more discs → lower temperature per disc</li>
+</ul>
+
+<h3>7.2 Bearing Temperature (EN 12082)</h3>
+
+<div class="formula-box">Bearing heat generation:
+  P_bearing = µ_bearing × F_axle × v   [W]
+
+where:
+  µ_bearing = 0.0001  (rolling bearing overall friction incl. seals, lubrication drag)
+  F_axle    = W_total / (n_cars × 4 × n_axles_per_bogie × 2) per bearing
+            ≈ total weight / total number of bearings
+  v         = speed [m/s]
+
+Effective thermal resistance:
+  R_eff = 0.085 / (1 + 0.001 × v)   [K/W]
+
+Steady-state bearing temperature:
+  T_bearing = T_ambient + P_bearing × R_eff
+            = 30 + µ_bearing × F_axle × v × R_eff
+
+Typical values:
+  160 km/h: ΔT ≈ 18–22°C above ambient  → T ≈ 48–52°C  (Normal)
+  320 km/h: ΔT ≈ 30–40°C above ambient  → T ≈ 60–70°C  (Normal/Watch)
+
+EN 12082 Hotbox Thresholds:
+  Alarm:   ΔT > 50K  OR  T > 80°C
+  Danger:  ΔT > 80K  OR  T > 110°C</div>
+
+<h4>Why µ_bearing = 0.0001?</h4>
+<p>A precision CARB/TBU (tapered roller) bearing for axleboxes has rolling contact friction µ ≈ 0.0005–0.001. However, the effective coefficient including viscous drag from grease, seal friction, and gear side loads, at operating temperatures where grease is fully fluid, falls to µ_eff ≈ 0.0001–0.0003. The value 0.0001 corresponds to a well-maintained bearing at operating temperature — conservative but realistic for simulation purposes. It correctly produces ΔT ≈ 20°C at 160 km/h, consistent with EN 12082 normal class.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="tribology">8. Rail-Wheel Tribology</h2>
+
+<h3>8.1 Hertz Contact Theory</h3>
+
+<div class="formula-box">Hertz elliptical contact:
+  Contact half-axes a, b:
+    a = m_H × ∛(3F·R_eff / (2E*))   [m]
+    b = n_H × ∛(3F·R_eff / (2E*))   [m]
+
+  m_H, n_H = Timoshenko coefficients (function of curvature ratio e*)
+  e* = (R_w - R_r) / (R_w + R_r)
+
+  Reduced elastic modulus:
+    1/E* = (1-ν_w²)/E_w + (1-ν_r²)/E_r
+    For steel/steel: E* ≈ 113.6 GPa
+
+  Effective radius:
+    R_eff = R_wheel × R_rail / (R_wheel + R_rail)
+    R_rail = 0.30 m (rail head crown radius, UIC60)
+
+Peak Hertz pressure:
+  p₀ = 3F / (2π × a × b)   [Pa]
+
+Contact area:
+  A_contact = π × a × b   [m²]
+
+Normal force per wheel:
+  F = W_total / (n_axles × 2)   [N]</div>
+
+<h4>Why Hertz Contact?</h4>
+<p>Hertz theory is the closed-form solution for elastic contact between curved bodies. It is the foundation of all rail-wheel contact mechanics. Peak pressure p₀ determines whether material yields (p₀ vs shakedown limit ≈ 2.8 × yield strength = 2.8 × 900 MPa ≈ 2.5 GPa for R260 rail steel). Below shakedown, only elastic deformation occurs. Above it, ratchetting wear accelerates.</p>
+
+<h3>8.2 Polach Creep Model</h3>
+
+<div class="formula-box">Polach (2000) tangential contact force:
+  F_T = (2µN/π) × [ε/(1+ε²) + arctan(ε)]
+
+where:
+  ε = (π × C_11 × ξ × a × b) / (4 × µ × N)
+  ξ = creep ratio (normalised slip velocity)
+  C_11 = Kalker longitudinal creep coefficient ≈ 10–12 GPa/m
+  µ    = available adhesion (Curtius-Kniffler)
+  N    = normal force [N]
+
+Longitudinal creep ratio:
+  ξ_x = (v_wheel - v_rail) / v_rail   (slip fraction)
+
+Lateral creep from hunting:
+  ξ_y ≈ sin(ψ_bogie) × (v/Vc ratio)</div>
+
+<h4>Why Polach (not Kalker)?</h4>
+<p>Kalker's linear creep theory is only valid at very small slip (&lt; 1%). Polach (2000) extends to full slip and correctly captures the non-linear saturation of the creep force toward µN at large slip. This is critical for traction/braking modelling near adhesion limit, especially during wheel-slip events.</p>
+
+<h3>8.3 Archard Wear Model</h3>
+
+<div class="formula-box">Archard wear volume:
+  V_wear = K_wear × F_N × s / H
+
+where:
+  K_wear = wear coefficient (dimensionless, material-pair specific)
+           = 1×10⁻⁴ for R260 wheel / R260 rail at low slip
+           = 3×10⁻⁴ at high slip (T-gamma > 15 N/mm)
+  F_N    = normal contact force [N]
+  s      = sliding distance [m]
+  H      = material hardness [Pa]
+           = 260 × 9.81 × 10⁶ ≈ 2.55 GPa for R260 rail steel
+
+Sliding distance per km of travel:
+  s = ξ × d  [m slip per m travel]
+  d = 1000 m (per km)
+
+Output: mm³ of material removed per km of travel per wheel</div>
+
+<h4>Parameter Effects on Wear:</h4>
+<ul>
+  <li><strong>Speed ↑</strong> → increases through ξ (more lateral creep from hunting) and contact time changes</li>
+  <li><strong>Conicity ↑</strong> → more lateral hunting → ξ_y increases → wear rate increases rapidly near Vc</li>
+  <li><strong>Axle load ↑</strong> → F_N ↑ → both p₀ and wear volume increase proportionally</li>
+  <li><strong>K_wear switch</strong> → changes at T-gamma = F_T × ξ threshold — detects severe wear regime</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="comfort">9. Ride Comfort &amp; Suspension FRF</h2>
+
+<h3>9.1 Suspension Frequency Response Function</h3>
+
+<div class="formula-box">Transmissibility (FRF) of secondary suspension:
+  |H(f)| = √[(1 + (2ζr)²) / ((1 - r²)² + (2ζr)²)]
+
+where:
+  r = f / f_n  (frequency ratio)
+  f_n = (1/2π) × √(k_s / m_car)   [Hz]  (natural frequency)
+  ζ = c / (2√(k_s × m_car))         (damping ratio)
+
+In decibels:
+  |H(f)|_dB = 20 × log₁₀(|H(f)|)
+
+Interpretation:
+  |H| &lt; 0 dB: attenuation (isolation) — above √2 × f_n
+  |H| > 0 dB: amplification — near resonance (f ≈ f_n)
+  |H| at f_n = 1/(2ζ) for underdamped system</div>
+
+<h4>Design Implications:</h4>
+<ul>
+  <li>Target f_n ≈ 1.0–1.5 Hz for secondary suspension (below human sensitivity peak at 4–8 Hz)</li>
+  <li>At 0.25 damping: resonance peak ≈ 2× amplification, good isolation above 2 Hz</li>
+  <li>Softer springs (lower k_s): better isolation but more body sway → coupling with lateral dynamics</li>
+  <li>Harder springs: limits sway but transmits vibration more → worse Sperling Wz on rough track</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="standards">10. Standards &amp; Compliance</h2>
+
+<table class="param-table">
+  <tr><th>Standard</th><th>Scope</th><th>Key Threshold Used</th></tr>
+  <tr><td>ISO 2631-1</td><td>Vibration effects on human body</td><td>Frequency weighting w_b for vertical (4–8 Hz most sensitive); a_rms limits for comfort</td></tr>
+  <tr><td>EN 12299</td><td>Railway ride comfort measurement</td><td>Comfort classes: N1 (excellent) to N5 (poor); NMV index based on weighted acceleration</td></tr>
+  <tr><td>UIC 513</td><td>Ride comfort in railway vehicles</td><td>Wz (Sperling index) vertical and lateral</td></tr>
+  <tr><td>EN 14363</td><td>Testing for acceptance of running characteristics</td><td>ΣY/Q ratio (derailment), a_y limit 2.5 m/s² on body</td></tr>
+  <tr><td>EN 12082</td><td>Axlebox bearing condition monitoring</td><td>Alarm: ΔT &gt; 50K or T &gt; 80°C; Danger: ΔT &gt; 80K or T &gt; 110°C</td></tr>
+  <tr><td>ISO 8608</td><td>Road/rail surface roughness PSD</td><td>Classes A–H; TQ1≈Class A, TQ4≈Class D for rail</td></tr>
+  <tr><td>UIC 518</td><td>Track loading, safety assessment</td><td>Derailment quotient Y/Q &lt; 0.8; lateral force Y &lt; 10+P/3 kN</td></tr>
+  <tr><td>Klingel (1883)</td><td>Wheelset hunting theory</td><td>λ_k formula; conicity &lt; 0.05 for HSR operation</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="formulas">11. Complete Formula Quick Reference</h2>
+
+<table class="param-table">
+  <tr><th>Formula</th><th>Expression</th><th>Source</th></tr>
+  <tr><td>Davis Resistance</td><td>R = A + Bv [N/kN]</td><td>Davis (1926), UIC 779-1</td></tr>
+  <tr><td>Curtius-Kniffler Adhesion</td><td>µ = µ₀ × [0.161 + 7.5/(v+44)]</td><td>UIC 541-05</td></tr>
+  <tr><td>Klingel Wavelength</td><td>λ_k = 2π√(R_w·e / λ)</td><td>Klingel (1883)</td></tr>
+  <tr><td>Hertz Contact (force)</td><td>p₀ = 3F/(2πab)</td><td>Hertz (1882), Timoshenko</td></tr>
+  <tr><td>Polach Creep Force</td><td>F = (2µN/π)[ε/(1+ε²)+arctan ε]</td><td>Polach (2000)</td></tr>
+  <tr><td>Archard Wear</td><td>V = K·F·s/H</td><td>Archard (1953)</td></tr>
+  <tr><td>Suspension FRF</td><td>|H| = √[(1+(2ζr)²)/((1-r²)²+(2ζr)²)]</td><td>Den Hartog (1956)</td></tr>
+  <tr><td>Sperling Wz</td><td>Wz = 4.42·(a_w)^0.3</td><td>DIN 5573, UIC 513</td></tr>
+  <tr><td>Disc Brake Temp (ODE)</td><td>dT/dt = (Q_in - Q_cool)/(mc_p)</td><td>Newton cooling law</td></tr>
+  <tr><td>Bearing Temp (SS)</td><td>T = T_amb + µ·F_axle·v·R_eff</td><td>EN 12082 basis</td></tr>
+  <tr><td>RK4 Integration</td><td>v_new = v + (k1+2k2+2k3+k4)/6</td><td>Runge-Kutta (1901)</td></tr>
+  <tr><td>Aero Drag Force</td><td>F_aero = ½ρ·C_D·A·v²</td><td>Classical fluid dynamics</td></tr>
+  <tr><td>ISO 8608 Track PSD</td><td>S_z(Ω) = A_r/Ω²</td><td>ISO 8608:2016</td></tr>
+  <tr><td>Body Roll</td><td>φ = arctan(ay·M·h_cg/k_roll)</td><td>Rigid body dynamics</td></tr>
+</table>
+
+<hr>
+
+<div class="info-box">
+  <strong>Platform Version:</strong> 2.0 — High Speed Rolling Stock Analysis Platform<br>
+  <strong>Simulation update rate:</strong> 10 Hz (100 ms loop) with RK4 integration<br>
+  <strong>Physics validation:</strong> Calibrated against EN 12299, UIC 518, EN 12082 reference data<br>
+  <strong>Corridor data:</strong> MAHSR BKC–Sabarmati 508 km, 12 stations, per JICA DPR<br>
+  <strong>Technology:</strong> Three.js r128, Chart.js 3.9.1, pure JavaScript (no framework)
+</div>
+
+<p style="color:var(--txt2);font-size:0.82rem;margin-top:32px;text-align:center;">
+  Ministry of Railways, Government of India &nbsp;&middot;&nbsp; High Speed Rolling Stock Analysis Platform<br>
+  Technical documentation generated 2026 &nbsp;&middot;&nbsp; For engineering reference only
+</p>
+
+</div><!-- /container -->
+</body>
+</html>
