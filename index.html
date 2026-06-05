@@ -463,7 +463,7 @@
     #canvas-wrap {
       position: relative;
       overflow: hidden;
-      background: #EEF3FA;
+      background: #8FA8BC;
     }
 
     #cv-overlay {
@@ -1692,6 +1692,7 @@
       tunnel: false, tX: 64,
       bridge: false, span: 30,
       v_ms: 0, x_m: 0, teNotch: 0, beNotch: 0, brakeTemp: 30,
+      regen: 100,
       cfd: true, wire: false
     };
 
@@ -3072,8 +3073,8 @@
     // --------------------------------------------------------------------------------------
     const canvasWrap = document.getElementById('canvas-wrap');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xEAF0F8);
-    scene.fog = new THREE.FogExp2(0xD8E6F2, 0.002);
+    scene.background = new THREE.Color(0x8FA8BC);
+    scene.fog = new THREE.FogExp2(0x8FA8BC, 0.003);
 
     const camera = new THREE.PerspectiveCamera(45, canvasWrap.clientWidth / canvasWrap.clientHeight, 0.1, 2000);
     camera.position.set(20, 15, 30);
@@ -3617,7 +3618,7 @@
       }
     }
     groundGeo.computeVertexNormals();
-    const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ color: 0xCDD9E8, roughness: 0.9 }));
+    const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ color: 0x7A9AAE, roughness: 0.9 }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.1;
     ground.receiveShadow = true;
