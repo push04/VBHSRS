@@ -228,6 +228,73 @@
       font-size: 0.88em;
       color: var(--ir-blue);
     }
+
+    /* Author card */
+    .author-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      background: var(--bg-surf);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--ir-blue);
+      border-radius: 6px;
+      padding: 24px 28px;
+      margin: 16px 0;
+    }
+    .author-avatar { flex-shrink: 0; }
+    .author-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ir-blue);
+      line-height: 1.1;
+    }
+    .author-role {
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--txt);
+      margin-top: 4px;
+    }
+    .author-inst {
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.88rem;
+      color: var(--txt2);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .author-inst-sub {
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.80rem;
+      color: var(--txt3);
+      margin-top: 1px;
+      font-style: italic;
+    }
+    .author-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .author-badge {
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(0,63,165,0.07);
+      border: 1px solid rgba(0,63,165,0.22);
+      color: var(--ir-blue);
+      padding: 3px 10px;
+      border-radius: 3px;
+      letter-spacing: 0.03em;
+    }
+    .author-badge-hi {
+      background: rgba(0,135,90,0.08);
+      border-color: rgba(0,135,90,0.30);
+      color: var(--ir-green);
+    }
+    @media (max-width: 600px) {
+      .author-card { flex-direction: column; gap: 14px; }
+    }
   </style>
 </head>
 <body>
@@ -253,6 +320,7 @@
   <a href="#comfort">Ride Comfort</a>
   <a href="#standards">Standards</a>
   <a href="#formulas">Formula Reference</a>
+  <a href="#author">Author</a>
 </nav>
 
 <div class="container">
@@ -876,6 +944,40 @@ Interpretation:
   <strong>Physics validation:</strong> Calibrated against EN 12299, UIC 518, EN 12082 reference data<br>
   <strong>Corridor data:</strong> MAHSR BKC–Sabarmati 508 km, 12 stations, per JICA DPR<br>
   <strong>Technology:</strong> Three.js r128, Chart.js 3.9.1, pure JavaScript (no framework)
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="author" style="margin-top:44px;">About the Author</h2>
+
+<div class="author-card">
+  <div class="author-avatar">
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="32" fill="#003FA5" opacity="0.10"/>
+      <circle cx="32" cy="26" r="11" fill="#003FA5" opacity="0.85"/>
+      <ellipse cx="32" cy="52" rx="18" ry="12" fill="#003FA5" opacity="0.70"/>
+    </svg>
+  </div>
+  <div class="author-info">
+    <div class="author-name">Shri Pushpal Sanyal</div>
+    <div class="author-role">Railway Mechanical Engineering Student</div>
+    <div class="author-inst">Gati Shakti Vishwavidyalaya, Vadodara</div>
+    <div class="author-inst-sub">Under the Ministry of Railways, Government of India</div>
+    <div class="author-badges">
+      <span class="author-badge">Ex-Trainee · IRIMEE Jamalpur</span>
+      <span class="author-badge">Ex-Trainee · Banaras Locomotive Works (BLW), Varanasi</span>
+      <span class="author-badge author-badge-hi">Research Project Intern · IRIMEE Jamalpur</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-intro" style="margin-top:16px;">
+  This platform was developed as a research project during the internship at the Indian Railways Institute of Mechanical and Electrical Engineering (IRIMEE), Jamalpur. It integrates physics models drawn from international standards (UIC, EN, ISO) and Indian Railways operational data to provide an accessible, real-time simulation tool for rolling stock engineering education and analysis.
+</div>
+
+<div style="margin-top:24px;text-align:center;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;background:var(--ir-blue);color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;padding:10px 24px;border-radius:4px;text-decoration:none;">
+    ← Launch Analysis Platform
+  </a>
 </div>
 
 <p style="color:var(--txt3);font-size:0.82rem;margin-top:32px;text-align:center;">
