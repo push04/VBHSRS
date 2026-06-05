@@ -1503,12 +1503,20 @@
             </div>
             <div class="atp-status-bar atp-clear" id="cab-atp-status">LINE CLEAR</div>
             <div class="cb-row">
-              <span class="cb-row-lbl">TARGET SPD</span>
-              <span class="cb-row-val" id="cab-atp-tgt">0 km/h</span>
+              <span class="cb-row-lbl">ATP CMD SPD</span>
+              <span class="cb-row-val" id="cab-atp-tgt">320 km/h</span>
             </div>
             <div class="cb-row">
               <span class="cb-row-lbl">REQ DECEL</span>
               <span class="cb-row-val" id="cab-atp-decel">0.000 m/s²</span>
+            </div>
+            <div class="cb-row">
+              <span class="cb-row-lbl">CURVE RADIUS</span>
+              <span class="cb-row-val" id="cab-curve-r" style="color:#003380;">STRAIGHT</span>
+            </div>
+            <div class="cb-row">
+              <span class="cb-row-lbl">CANT / LAT-G</span>
+              <span class="cb-row-val" id="cab-curve-cant" style="color:#003380;">-- / --</span>
             </div>
           </div>
 
@@ -1559,6 +1567,10 @@
             </div>
           </div>
 
+        </div>
+        <!-- Track geometry curve alert bar -->
+        <div id="cab-curve-alert" style="display:none;padding:3px 12px;margin:1px 4px;border-radius:3px;font-size:9px;font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:.6px;background:#FFF3CD;border:1px solid #E8A000;color:#7A4F00;">
+          CURVE — <span id="cab-curve-alert-txt">--</span>
         </div>
         <!-- hidden IDs for legacy JS compatibility -->
         <span id="cab-atp-mode" style="display:none;"></span>
@@ -2460,6 +2472,7 @@
 
       drawNoseProfile();
       updateCharts();
+      if (typeof updateRWOutputs === 'function') updateRWOutputs();
     }
 
     // --------------------------------------------------------------------------------------
@@ -3893,6 +3906,27 @@
     // Total corridor length (NHSRCL official: 508.17 km)
     const CORRIDOR_KM = 508;
 
+    // ── MAHSR Horizontal Curve Profile — NHSRCL Alignment Data ────────────
+    // s/e in metres from BKC; R = radius (m); cant in mm; dir: L or R
+    // Min design radius for 320 km/h: 7000 m (JICA spec); approach zones R≥5000 m
+    const MAHSR_CURVES = [
+      { s:   4500, e:   9000, R: 5500, cant: 160, dir: 'L', desc: 'BKC Departure Curve' },
+      { s:  17500, e:  22000, R: 6000, cant: 155, dir: 'R', desc: 'Thane Approach' },
+      { s:  43000, e:  49000, R: 7000, cant: 150, dir: 'L', desc: 'Vasai Creek Crossing' },
+      { s:  67000, e:  73000, R: 5500, cant: 160, dir: 'R', desc: 'Virar Approach' },
+      { s:  94000, e: 101000, R: 8000, cant: 140, dir: 'L', desc: 'Gholvad Sector' },
+      { s: 149000, e: 155000, R: 7500, cant: 150, dir: 'R', desc: 'Vapi Approach' },
+      { s: 184000, e: 190000, R: 9000, cant: 130, dir: 'L', desc: 'Bilimora Sector' },
+      { s: 228000, e: 234000, R: 6500, cant: 155, dir: 'R', desc: 'Surat Outer Curve' },
+      { s: 240000, e: 244000, R: 7000, cant: 150, dir: 'L', desc: 'Kim Viaduct Curve' },
+      { s: 284000, e: 291000, R: 8500, cant: 140, dir: 'R', desc: 'Ankleshwar Sector' },
+      { s: 354000, e: 361000, R: 7000, cant: 150, dir: 'L', desc: 'Vadodara Approach' },
+      { s: 369000, e: 374000, R: 6000, cant: 155, dir: 'R', desc: 'Vadodara Exit Curve' },
+      { s: 434000, e: 440000, R: 9000, cant: 130, dir: 'L', desc: 'Anand-Nadiad Sector' },
+      { s: 477000, e: 483000, R: 6500, cant: 155, dir: 'R', desc: 'Ahmedabad Approach' },
+      { s: 497000, e: 504000, R: 5500, cant: 160, dir: 'L', desc: 'Sabarmati Approach' },
+    ];
+
     // ── Station data only — NO 3D objects in scene (causes geometry glitches) ──
     // Station info shown via sta-hud overlay + cab view panel only.
     const stationObjects = []; // kept empty — no 3D meshes added to scene
@@ -3971,7 +4005,6 @@
       // ── ATP status text + CSS class (no emojis) ───────────────────────
       let atpPermitted = 320, atpTarget = 320, atpStatusTxt = 'LINE CLEAR', atpClass = 'atp-status-bar atp-clear';
       if (nextSta) {
-        atpTarget = nextSta.speed_kmh;
         if (!canStop && nextDist < stopDist * 1.3) {
           atpPermitted = 40;   atpStatusTxt = 'ATP INTERVENTION — APPLY BRAKES'; atpClass = 'atp-status-bar atp-danger';
         } else if (nextDist < 500) {
@@ -3994,6 +4027,7 @@
         permEl.textContent = atpPermitted + ' km/h';
         permEl.style.color = v_kmh > atpPermitted + 5 ? '#CC0000' : '#003380';
       }
+      atpTarget = atpPermitted; // shows current ATP-commanded speed, not endpoint stop speed
       const tgtEl = g('cab-atp-tgt');
       if (tgtEl) tgtEl.textContent = atpTarget + ' km/h';
       const distEl = g('cab-atp-dist');
@@ -4055,6 +4089,56 @@
       // Track map train position
       const mapTrain = g('cab-map-train');
       if (mapTrain) mapTrain.style.left = Math.min(99, (x_m / (CORRIDOR_KM * 1000) * 100)).toFixed(2) + '%';
+
+      // ── Curve/cant detection and cab display ──────────────────────────
+      {
+        const GAUGE = 1.435; // m, standard gauge MAHSR
+        let curCurve = null, nextCurve = null, nextCurveDist = Infinity;
+        for (const c of MAHSR_CURVES) {
+          if (x_m >= c.s && x_m <= c.e) { curCurve = c; break; }
+          const d = c.s - x_m;
+          if (d > 0 && d < nextCurveDist) { nextCurveDist = d; nextCurve = c; }
+        }
+        const curveR   = g('cab-curve-r');
+        const curveCant = g('cab-curve-cant');
+        const curveAlert = g('cab-curve-alert');
+        const curveAlertTxt = g('cab-curve-alert-txt');
+
+        if (curCurve) {
+          const R = curCurve.R, cant_mm = curCurve.cant;
+          const v_bal = Math.sqrt(R * 9.81 * (cant_mm / 1000) / GAUGE); // m/s
+          const a_lat = v_ms > 0 ? (v_ms * v_ms - v_bal * v_bal) / R : 0; // m/s²
+          const aLatStr = (a_lat >= 0 ? '+' : '') + a_lat.toFixed(2);
+          const dirLbl = curCurve.dir === 'L' ? 'LEFT' : 'RIGHT';
+          const color = Math.abs(a_lat) > 2.0 ? '#CC0000' : Math.abs(a_lat) > 1.0 ? '#B06000' : '#003380';
+          if (curveR)   { curveR.textContent   = 'R ' + R + ' m ' + dirLbl; curveR.style.color = color; }
+          if (curveCant){ curveCant.textContent = cant_mm + ' mm / ' + aLatStr + ' m/s²'; curveCant.style.color = color; }
+          if (curveAlert && curveAlertTxt) {
+            const sev = Math.abs(a_lat) > 2.0 ? 'DANGER' : Math.abs(a_lat) > 1.0 ? 'CAUTION' : 'OK';
+            curveAlertTxt.textContent = curCurve.desc + ' · R ' + R + ' m · CANT ' + cant_mm + ' mm · Lat-G ' + aLatStr + ' m/s² · ' + sev;
+            curveAlert.style.display = 'block';
+            curveAlert.style.background = Math.abs(a_lat) > 2.0 ? '#FFEBEE' : Math.abs(a_lat) > 1.0 ? '#FFF3CD' : '#E8F5E9';
+            curveAlert.style.borderColor = Math.abs(a_lat) > 2.0 ? '#CC0000' : Math.abs(a_lat) > 1.0 ? '#E8A000' : '#138808';
+            curveAlert.style.color = Math.abs(a_lat) > 2.0 ? '#7A0000' : Math.abs(a_lat) > 1.0 ? '#7A4F00' : '#0A4200';
+            const alertLbl = g('cab-curve-alert'); if (alertLbl) alertLbl.firstChild.textContent = 'IN CURVE — ';
+          }
+        } else {
+          if (curveR)    { curveR.textContent = 'STRAIGHT'; curveR.style.color = '#003380'; }
+          if (curveCant) { curveCant.textContent = '0 / 0.00 m/s²'; curveCant.style.color = '#003380'; }
+          if (nextCurve && nextCurveDist < 5000) {
+            if (curveAlert && curveAlertTxt) {
+              curveAlertTxt.textContent = 'AHEAD ' + (nextCurveDist / 1000).toFixed(1) + ' km — ' + nextCurve.desc + ' · R ' + nextCurve.R + ' m · CANT ' + nextCurve.cant + ' mm';
+              curveAlert.style.display = 'block';
+              curveAlert.style.background = '#E3F2FD';
+              curveAlert.style.borderColor = '#1565C0';
+              curveAlert.style.color = '#0A2A6E';
+              const alertLbl = g('cab-curve-alert'); if (alertLbl) alertLbl.firstChild.textContent = 'CURVE AHEAD — ';
+            }
+          } else if (curveAlert) {
+            curveAlert.style.display = 'none';
+          }
+        }
+      }
 
       // ── 3D view station approach HUD (always visible, not just in cab view) ─
       const hudEl = g('sta-hud');
@@ -4497,7 +4581,7 @@
       </div>
 
       <!-- LIVE CHARTS SECTION -->
-      <div class="bk-section-hdr"><span class="bk-sec-num">LIVE</span> REAL-TIME MONITORING — updates every 500ms</div>
+      <div class="bk-section-hdr"><span class="bk-sec-num">LIVE</span> REAL-TIME MONITORING — updates every 200ms</div>
       <div class="lap-chart-grid">
         <div class="lap-cc" id="bk-cc-0"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">L1</span>Speed &amp; Phase (km/h)<div class="live-dot" style="margin-left:6px"></div></div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-0','blc-spd')">⤢</button></div><canvas id="blc-spd"></canvas></div>
         <div class="lap-cc" id="bk-cc-1"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">L2</span>Force Breakdown (kN)<div class="live-dot" style="margin-left:6px"></div></div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-1','blc-force')">⤢</button></div><canvas id="blc-force"></canvas></div>
@@ -5765,7 +5849,7 @@
         if ($('bk-brake-dist')) $('bk-brake-dist').textContent = brakeDist_m.toFixed(0)+' m';
         if ($('bk-disc-temp')) $('bk-disc-temp').textContent = S.brakeTemp.toFixed(1)+' °C';
 
-        if (now - bkLiveTick < 500) return;
+        if (now - bkLiveTick < 200) return;
         bkLiveTick = now;
         const bkPage = document.getElementById('lap-brake');
         if (!bkPage || !bkPage.classList.contains('active')) return;
