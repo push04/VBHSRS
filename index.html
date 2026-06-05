@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Barlow:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Barlow:wght@300;400;500;600&display=swap');
 
     :root {
       /* Indian Railways blue — matches IR corporate identity */
@@ -58,8 +58,8 @@
       --txt: #0A1628;
       --txt2: #3A5270;
       --dim: #6B849E;
-      --mono: 'IBM Plex Mono', monospace;
-      --body: 'Barlow', sans-serif;
+      --mono: 'IBM Plex Mono', 'JetBrains Mono', 'Consolas', Arial, sans-serif;
+      --body: 'Barlow', Arial, sans-serif;
       --radius-sm:3px; --radius-md:5px; --radius-lg:8px;
     }
 
@@ -75,7 +75,7 @@
       height: 100%;
       overflow: hidden;
       background: var(--bg-base);
-      font-family: 'Barlow', sans-serif;
+      font-family: 'Barlow', Arial, sans-serif;
       font-size: 13px;
       line-height: 1.5;
       color: var(--text-primary);
@@ -1356,7 +1356,7 @@
             <div>Contact semi-axis b: <b id="rw-b">-- mm</b></div>
             <div>Hertz max stress p₀: <b id="rw-p0">-- MPa</b></div>
             <div>Ellipse ratio k: <b id="rw-k">--</b></div>
-            <div>T-γ wear energy: <b id="rw-tg">-- N·m/s</b></div>
+            <div>T-&gamma; wear energy: <b id="rw-tg">-- N&middot;m/s</b></div>
             <div>Wear rate (wheel): <b id="rw-wear">-- mm³/km</b></div>
             <div>Klingel λ (mm): <b id="rw-lk">-- mm</b></div>
             <div>Hunting Vc: <b id="rw-vc">-- km/h</b></div>
@@ -1616,7 +1616,7 @@
             <div class="t-val" id="oVc">-- km/h</div>
           </div>
           <div class="t-cell">
-            <div class="t-lbl">T-γ Wear Energy</div>
+            <div class="t-lbl">T-&gamma; Wear Energy</div>
             <div class="t-val" id="oTgamma">-- N·m/s</div>
           </div>
           <div class="t-cell">
@@ -1710,7 +1710,7 @@
       bridge: false, span: 30,
       v_ms: 0, x_m: 0, teNotch: 0, beNotch: 0, brakeTemp: 30,
       regen: 100,
-      cfd: true, wire: false
+      cfd: true, wire: false, eddyW: 0
     };
 
     const UI = {
@@ -1883,23 +1883,6 @@
       }
     }
 
-    // Override computeConstantsFor to use S.r_wheel_t and S.r_rail_t
-    const _origCompConst = computeConstantsFor;
-    function computeConstantsFor(params) {
-      const result = _origCompConst(params);
-      // Recompute contact patch using current crown radii from S
-      const rWt = (params === S ? S.r_wheel_t : 500) / 1000;
-      const rRt = (params === S ? S.r_rail_t : 300) / 1000;
-      const Rw = (params.wheel / 2) / 1000;
-      const E_star = 210e9 / (2 * 0.91);
-      const invRx = 1 / Rw, invRy = 1 / rWt + 1 / rRt;
-      const kr = invRy / invRx;
-      const mc2 = 1 + 0.6 * Math.log(kr), nc2 = 1 - 0.2 * Math.log(kr);
-      const cc2 = Math.pow(3 * result.F_wheel_N / (4 * E_star * (invRx + invRy) * 0.5), 1 / 3);
-      result.a_contact = mc2 * cc2; result.b_contact = nc2 * cc2;
-      result.p0_Hertz_Pa = 1.5 * result.F_wheel_N / (Math.PI * result.a_contact * result.b_contact);
-      return result;
-    }
     UI.bind('sKp', 'kp', 'vKp', v => v.toFixed(1) + ' kN/mm');
     UI.bind('sKs', 'ks', 'vKs', v => v.toFixed(2) + ' kN/mm');
     UI.bind('sGrade', 'grade', 'vGrade', v => v + ' &permil;');
@@ -2156,7 +2139,7 @@
       tunnel: false, tX: 64, bridge: false, span: 30
     };
 
-    function calcCd(nose_ratio, skirt) {
+    function calcCd(nose_ratio) {
       // RTRI-calibrated nose Cd: base 0.10 at L/D=5, scales with fineness
       const Cd_nose = 0.12 - 0.004 * Math.min(nose_ratio, 9.0);
       return Math.max(0.04, Cd_nose);
@@ -2180,8 +2163,8 @@
       const E = 210e9;
       const v_poisson = 0.3;
       const R_wheel = (S.wheel / 2) / 1000;
-      const R_wheel_T = 0.500; // 500mm transverse crown
-      const R_rail_T = 0.300; // 300mm rail crown
+      const R_wheel_T = (S.r_wheel_t || 500) / 1000;
+      const R_rail_T = (S.r_rail_t || 300) / 1000;
 
       const F_wheel_N = (axleMass_kg * G) / 2;
 
@@ -2232,7 +2215,8 @@
       const B_davis = 0.09 * (totalMass_kg / 1000) * 3.6;
       const E = 210e9, v_p = 0.3;
       const R_wheel = (params.wheel / 2) / 1000;
-      const R_wheel_T = 0.500, R_rail_T = 0.300;
+      const R_wheel_T = (params.r_wheel_t || 500) / 1000;
+      const R_rail_T = (params.r_rail_t || 300) / 1000;
       const F_wheel_N = (axleMass_kg * G) / 2;
       const inv_Rx = 1 / R_wheel;
       const inv_Ry = 1 / R_wheel_T + 1 / R_rail_T;
@@ -2257,12 +2241,12 @@
       const G = 9.81;
       const v_kmh = v * 3.6;
       const trainLength = params.coaches * 25;
-      const wettedPerimeter = 11.0;
+      const wettedPerimeter = 2.1 * Math.sqrt(Math.PI * params.af); // scales with cross-section area
       const A_wet = wettedPerimeter * trainLength;
       const kinematicViscosity = 1.5e-5;
       const Re_L = Math.max(v * trainLength / kinematicViscosity, 10);
       const Cf = 0.455 / Math.pow(Math.log10(Re_L), 2.58);
-      const Cd_nose = calcCd(params.nose, params.skirt);
+      const Cd_nose = calcCd(params.nose);
       const Cd_tail = Cd_nose * 0.5;
       const n_bogies = params.coaches * 2;
       const A_bogie = 0.5;
@@ -2309,14 +2293,14 @@
 
       // Aerodynamics Break down
       const trainLength = S.coaches * 25;
-      const wettedPerimeter = 11.0;
+      const wettedPerimeter = 2.1 * Math.sqrt(Math.PI * S.af); // perimeter scales with cross-section
       const A_wet = wettedPerimeter * trainLength;
       const kinematicViscosity = 1.5e-5;
       const Re_L = Math.max(v * trainLength / kinematicViscosity, 10);
       const Cf = 0.455 / Math.pow(Math.log10(Re_L), 2.58);
 
-      const Cd_nose = 0.10;
-      const Cd_tail = 0.05;
+      const Cd_nose = calcCd(S.nose);
+      const Cd_tail = Cd_nose * 0.5;
 
       const n_bogies = S.coaches * 2;
       const A_bogie = 0.5;
@@ -2434,12 +2418,13 @@
       const creepForce = (2 * mu * C.F_wheel_N / Math.PI) * (eps / (1 + eps * eps) + Math.atan(eps));
       const Tgamma = creepForce * creepage;
 
-      const hardness = 320 * 9.8e6;
-      const K_wear = 1.5e-4;
+      const Hcomb = 2 * (S.hardness || 320) * (S.railHard || 370) / ((S.hardness || 320) + (S.railHard || 370));
+      const hardness = Hcomb * 9.8e6;
+      const K_wear = (S.kwear || 1.5) * 1e-4;
       const wear_vol = v > 1 ? (K_wear * Tgamma / hardness) * (1000 / v) * 1e9 : 0;
 
       return {
-        v_kmh, R_total, F_adh, TE, BE, F_net, a,
+        v_kmh, R_total, F_adh, TE, BE, F_net, a, mu,
         E_thermal_rate, dP_kpa, Wz, p0_dynamic, creepage, creepForce, Tgamma, wear_vol
       };
     }
@@ -2547,7 +2532,7 @@
       if (now - lastSyncTime > 100) {
         localStorage.setItem('vb_telemetry', JSON.stringify({
           t: now, v: dyn.v_kmh, a: dyn.a, te: dyn.TE, be: dyn.BE,
-          p0: dyn.p0_dynamic, creep: dyn.F_creep, wear: dyn.wear_vol,
+          p0: dyn.p0_dynamic, creep: dyn.creepForce, wear: dyn.wear_vol,
           wz: dyn.Wz, temp: S.brakeTemp, tgamma: dyn.Tgamma,
           vc: lastConsts.Vc_ms * 3.6, mu: dyn.mu, adh: dyn.F_adh
         }));
@@ -2638,63 +2623,119 @@
     const liveTrackerPlugin = {
       id: 'liveTracker',
       afterDraw: (chart) => {
-        if (!S || S.v_ms === undefined || !lastDyn) return;
+        if (!S || S.v_ms === undefined || !lastDyn || !lastConsts) return;
         const ctx = chart.ctx;
         const xAxis = chart.scales.x;
         const yAxis = chart.scales.y;
 
+        const cid = chart.canvas.id;
         let xVal = S.v_ms * 3.6;
         let isPercentage = false;
 
         // c3 = conicity axis, c7 = frequency axis, c8 = time axis — skip tracker
-        if (chart.canvas.id === 'c3' || chart.canvas.id === 'c7' || chart.canvas.id === 'c8') {
-          return;
-        } else if (chart.canvas.id === 'c2') {
-          xVal = lastDyn.creepage * 100; // Slip %
-          isPercentage = true;
-        }
+        if (cid === 'c3' || cid === 'c7' || cid === 'c8') return;
+        if (cid === 'c2') { xVal = lastDyn.creepage * 100; isPercentage = true; }
 
         let xPixel = -1;
         if (isPercentage) {
-          // Find interpolation for percentage
-          const maxP = 10;
-          xPixel = xAxis.left + (xAxis.right - xAxis.left) * (xVal / maxP);
+          xPixel = xAxis.left + (xAxis.right - xAxis.left) * (xVal / 10);
         } else {
-          // Numerical speed interpolation
-          const maxV = 400;
-          xPixel = xAxis.left + (xAxis.right - xAxis.left) * (xVal / maxV);
+          xPixel = xAxis.left + (xAxis.right - xAxis.left) * (xVal / 400);
         }
 
-        if (xPixel >= xAxis.left && xPixel <= xAxis.right) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(xPixel, yAxis.top);
-          ctx.lineTo(xPixel, yAxis.bottom);
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = 'rgba(211, 47, 47, 0.8)'; // Red tracker line
-          ctx.setLineDash([4, 4]);
-          ctx.stroke();
+        if (xPixel < xAxis.left || xPixel > xAxis.right) return;
 
-          ctx.beginPath();
-          ctx.arc(xPixel, yAxis.top + 6, 4, 0, 2 * Math.PI);
-          ctx.fillStyle = '#D32F2F';
-          ctx.fill();
+        ctx.save();
+        // Vertical cursor line
+        ctx.beginPath();
+        ctx.moveTo(xPixel, yAxis.top);
+        ctx.lineTo(xPixel, yAxis.bottom);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(211,47,47,0.7)';
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-          // Label
-          ctx.font = 'bold 10px JetBrains Mono';
-          ctx.textAlign = 'center';
-          ctx.fillText('LIVE', xPixel, yAxis.top - 2);
-          ctx.restore();
+        // Top pip
+        ctx.beginPath();
+        ctx.arc(xPixel, yAxis.top + 6, 4, 0, 2 * Math.PI);
+        ctx.fillStyle = '#D32F2F';
+        ctx.fill();
+
+        ctx.font = "bold 10px 'JetBrains Mono', Arial, sans-serif";
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#D32F2F';
+        ctx.fillText('▶ LIVE', xPixel, yAxis.top - 2);
+
+        // --- Live value dot ---
+        let liveY = null, liveLabel = '';
+        const dyn = lastDyn;
+        switch (cid) {
+          case 'c0':
+            liveY = dyn.TE / 1000;
+            liveLabel = liveY.toFixed(1) + ' kN';
+            break;
+          case 'c1':
+            liveY = dyn.a;
+            liveLabel = liveY.toFixed(3) + ' m/s²';
+            break;
+          case 'c2':
+            liveY = dyn.creepForce / 1000;
+            liveLabel = liveY.toFixed(2) + ' kN';
+            break;
+          case 'c4':
+            if (dyn.Wz > 0) { liveY = dyn.Wz; liveLabel = liveY.toFixed(2); }
+            break;
+          case 'c5':
+            liveY = dyn.R_total / 1000 * 100 / 3.6;
+            liveLabel = liveY.toFixed(1) + ' kWh';
+            break;
+          case 'c6': {
+            const v_ms2 = dyn.v_kmh / 3.6;
+            const BE_max2 = lastConsts.W_N * dyn.mu * 0.9;
+            const a_d2 = (BE_max2 + dyn.R_total) / (lastConsts.totalMass_kg * lastConsts.lambda);
+            liveY = v_ms2 * v_ms2 / (2 * Math.max(0.1, a_d2));
+            liveLabel = liveY.toFixed(0) + ' m';
+            break;
+          }
+          case 'c9':
+            liveY = dyn.wear_vol;
+            liveLabel = liveY.toFixed(4);
+            break;
         }
+
+        if (liveY !== null && isFinite(liveY)) {
+          const yPixel = yAxis.getPixelForValue(liveY);
+          if (yPixel >= yAxis.top && yPixel <= yAxis.bottom) {
+            // Orange live dot with white border
+            ctx.beginPath();
+            ctx.arc(xPixel, yPixel, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FF6F00';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.fill();
+            ctx.stroke();
+
+            // Value label — flip side if near right edge
+            const onLeft = xPixel > (xAxis.left + xAxis.right) / 2;
+            ctx.font = "bold 9px 'JetBrains Mono', Arial, sans-serif";
+            ctx.textAlign = onLeft ? 'right' : 'left';
+            ctx.fillStyle = '#E65100';
+            ctx.fillText(liveLabel, onLeft ? xPixel - 10 : xPixel + 10, yPixel - 4);
+          }
+        }
+
+        ctx.restore();
       }
     };
 
+    const CHART_FONT = "'JetBrains Mono', 'IBM Plex Mono', Arial, sans-serif";
     const chartOpts = {
       responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
-      plugins: { legend: { labels: { font: { family: 'JetBrains Mono', size: 10 } } } },
+      plugins: { legend: { labels: { font: { family: CHART_FONT, size: 10 } } } },
       scales: {
-        x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'JetBrains Mono' } } },
-        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'JetBrains Mono' } } }
+        x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: CHART_FONT }, maxTicksLimit: 11 } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: CHART_FONT } } }
       }
     };
 
@@ -2702,7 +2743,12 @@
       const ctx = document.getElementById(id).getContext('2d');
       if (charts[id]) charts[id].destroy();
       const opts = JSON.parse(JSON.stringify(chartOpts));
-      Object.assign(opts.scales, options.scales || {});
+      // Deep-merge at the per-axis level so per-chart title/min/max don't erase global grid/ticks
+      const extraScales = options.scales || {};
+      Object.keys(extraScales).forEach(axisKey => {
+        if (!opts.scales[axisKey]) opts.scales[axisKey] = {};
+        Object.assign(opts.scales[axisKey], extraScales[axisKey]);
+      });
       Object.assign(opts.plugins, options.plugins || {});
       charts[id] = new Chart(ctx, { type, data, options: opts, plugins: [liveTrackerPlugin] });
     }
@@ -2772,7 +2818,6 @@
     }
 
     function updateCharts() {
-      return;
       if (!lastConsts) return;
 
       const vbP = Object.assign({}, VB_BASELINE);
@@ -3082,8 +3127,8 @@
       }
       ctx.closePath(); ctx.fill(); ctx.stroke();
 
-      ctx.fillStyle = '#138808'; ctx.font = 'bold 10px JetBrains Mono';
-      ctx.fillText('Cd_nose = ' + calcCd(S.nose, S.skirt).toFixed(3) + ' + Skin Fr.', 10, 15);
+      ctx.fillStyle = '#138808'; ctx.font = "bold 10px 'JetBrains Mono', Arial, sans-serif";
+      ctx.fillText('Cd_nose = ' + calcCd(S.nose).toFixed(3) + ' + Skin Fr.', 10, 15);
     }
 
     // --------------------------------------------------------------------------------------
@@ -3984,7 +4029,8 @@
       // Accumulated regen energy
       if (S.teNotch === 0 && S.beNotch > 0 && v_ms > 1 && lastConsts) {
         const regenPercent = typeof S.regen !== 'undefined' ? S.regen : 100;
-        const Pregen = Math.min(lastConsts.P_max_W * (regenPercent / 100), lastConsts.F_wheel_N * v_ms);
+        const mu_regen = dyn.mu || S.mu_base * (0.161 + 7.5 / (v_ms * 3.6 + 44));
+        const Pregen = Math.min(lastConsts.P_max_W * (regenPercent / 100), lastConsts.W_N * mu_regen * 0.5 * v_ms);
         regenEnergyKwh += Pregen * 0.016 / 3.6e6; // ~16ms dt approx
       }
 
@@ -4000,7 +4046,7 @@
       let canStop = true, reqDecel = 0, stopDist = 0;
       if (nextSta && nextDist > 0 && lastConsts) {
         const mu = S.mu_base * (0.161 + 7.5 / (v_kmh + 44));
-        const a_avail = mu * 0.90 * 9.81 * lastConsts.lambda;
+        const a_avail = (mu * 0.90 * 9.81) / lastConsts.lambda;
         stopDist = (v_ms * v_ms) / (2 * Math.max(a_avail, 0.01));
         canStop  = nextDist >= stopDist;
         reqDecel = v_ms > 0 ? (v_ms * v_ms) / (2 * Math.max(nextDist, 1)) : 0;
@@ -4465,7 +4511,7 @@
       <div class="lap-sect">
         <div class="lap-sect-hdr">Wear Mechanisms &amp; Archard Law</div>
         <table class="lap-table">
-          <thead><tr><th>Mechanism</th><th>T-γ (W/mm²)</th><th>Rate</th><th>Surface Features</th><th>Root Cause</th></tr></thead>
+          <thead><tr><th>Mechanism</th><th>T-&gamma; (W/mm&sup2;)</th><th>Rate</th><th>Surface Features</th><th>Root Cause</th></tr></thead>
           <tbody>
             <tr><td><b>Mild / Oxidative</b></td><td>&lt; 15</td><td>0.1–1 µg/m</td><td>Smooth, oxide film</td><td>Normal rolling</td></tr>
             <tr><td><b>Severe Adhesive</b></td><td>15–75</td><td>1–10 µg/m</td><td>Pitting, ploughing</td><td>High creepage</td></tr>
@@ -4515,7 +4561,7 @@
           <div class="lap-card">
             <div class="lap-card-title">PHASE TRANSFORMATIONS (TTT)</div>
             <div class="phase-bar2">
-              <div class="phase-seg2" style="width:25%;background:#F57F17;">Austenite γ</div>
+              <div class="phase-seg2" style="width:25%;background:#F57F17;">Austenite &gamma;</div>
               <div class="phase-seg2" style="width:35%;background:#558B2F;">Pearlite</div>
               <div class="phase-seg2" style="width:20%;background:#1565C0;">Bainite</div>
               <div class="phase-seg2" style="width:20%;background:#4A148C;">Martensite</div>
@@ -4771,7 +4817,7 @@
       <div class="vib-kpi-bar">
         <div class="vib-kpi" id="bkpi-avg"><div class="vib-kpi-lbl">AVG BEARING TEMP</div><div class="vib-kpi-val" id="bk-avg">-- °C</div></div>
         <div class="vib-kpi" id="bkpi-max"><div class="vib-kpi-lbl">MAX (HOTTEST AXL)</div><div class="vib-kpi-val" id="bk-max">-- °C</div></div>
-        <div class="vib-kpi" id="bkpi-rise"><div class="vib-kpi-lbl">TEMP RISE ΔT</div><div class="vib-kpi-val" id="bk-rise">-- K</div></div>
+        <div class="vib-kpi" id="bkpi-rise"><div class="vib-kpi-lbl">TEMP RISE &Delta;T</div><div class="vib-kpi-val" id="bk-rise">-- K</div></div>
         <div class="vib-kpi"><div class="vib-kpi-lbl">STATUS</div><div class="vib-kpi-val" id="bk-status"><span class="bear-status bear-ok">NORMAL</span></div></div>
         <div class="vib-kpi"><div class="vib-kpi-lbl">EN 12082 ALARM</div><div class="vib-kpi-val" style="font-size:10px;color:#C62828;">50K rise / 80°C abs</div></div>
         <div class="vib-kpi"><div class="vib-kpi-lbl">DANGER LIMIT</div><div class="vib-kpi-val" style="font-size:10px;color:#B71C1C;">80K rise / 110°C abs</div></div>
@@ -5820,6 +5866,7 @@
 
       // ── live chart push (called from updateLivePanel) ───────────────
       let bkLiveTick = 0;
+      let bkEnergyLastTime = 0;
       function updateBkLive(dyn, now) {
         const C = lastConsts;
         if (!C) return;
@@ -5831,12 +5878,15 @@
         const Ft = Math.min(C.W_N * S.mu_base * (0.161 + 7.5 / (dyn.v_kmh + 44)) * 0.95, Fr + Fd + Fe + Fm);
         const P_ohe = bk_P_ohe(v, C);
 
-        // Accumulate regen energy from when braking started
+        // Accumulate regen energy from when braking started using actual elapsed time
         if (S.beNotch > 0 && v > 0.5) {
-          if (bkBrakeDist0 === null) { bkBrakeDist0 = S.x_m; bkRegenKwh = 0; }
-          bkRegenKwh += P_ohe * 0.5 / 3.6e6; // 0.5s tick
+          if (bkBrakeDist0 === null) { bkBrakeDist0 = S.x_m; bkRegenKwh = 0; bkEnergyLastTime = now; }
+          const dt_s = Math.min((now - bkEnergyLastTime) / 1000, 0.1);
+          bkEnergyLastTime = now;
+          bkRegenKwh += P_ohe * dt_s / 3.6e6;
         } else {
           bkBrakeDist0 = null;
+          bkEnergyLastTime = 0;
         }
         const brakeDist_m = bkBrakeDist0 !== null ? S.x_m - bkBrakeDist0 : 0;
 
@@ -6199,8 +6249,9 @@
         const fArr = Array.from({ length: 50 }, (_, i) => 0.1 + i * 0.6); // 0.1–30 Hz
         function frfDB(f, w_n, zeta) {
           const om = 2 * Math.PI * f, r = om / w_n;
-          const TF = Math.sqrt(1.0 / (Math.pow(1 - r * r, 2) + Math.pow(2 * zeta * r, 2)));
-          return 20 * Math.log10(Math.max(TF, 1e-6));
+          const num = Math.sqrt(1 + Math.pow(2 * zeta * r, 2));
+          const den = Math.sqrt(Math.pow(1 - r * r, 2) + Math.pow(2 * zeta * r, 2));
+          return 20 * Math.log10(Math.max(num / den, 1e-6));
         }
         const fLabels = fArr.map(f => f.toFixed(1) + 'Hz');
         mkVibAnal('vac-frf', {
