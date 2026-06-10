@@ -318,6 +318,7 @@
   <a href="#architecture">Architecture</a>
   <a href="#parameters">Parameters</a>
   <a href="#physics">Physics Engine</a>
+  <a href="#braking">Braking Distance</a>
   <a href="#vibration">Vibration</a>
   <a href="#thermal">Thermal Models</a>
   <a href="#tribology">Tribology</a>
@@ -594,6 +595,90 @@ Adhesion force limit:
   <li><strong>Rail condition → wet</strong> → µ_base drops from 0.33 to 0.20 → 40% reduction in adhesion → risk of wheel-slip at lower TE</li>
   <li><strong>Motor ratio ↓</strong> → fewer powered axles → W_powered ↓ → F_adh ↓ → TE limited earlier</li>
 </ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="braking">5.4 Emergency Braking Distance</h2>
+
+<div class="section-intro">One of the most common questions when running simulations here is: "why does the braking distance come out the same regardless of whether I run 16 cars, 8 cars, or increase the tare mass?" The short answer is that this is physically correct — not a display glitch. The longer answer requires walking through how the stopping distance is actually calculated.</div>
+
+<h3>The Formula</h3>
+
+<div class="formula-box">Emergency stopping distance from speed v:
+
+  d = v² / (2 × a_emergency)
+
+where the available deceleration a_emergency is:
+
+  a = (F_brake + R_total) / (M_total × λ)
+
+  F_brake = W_total × µ_CK × 0.9   [adhesion-limited max brake force, N]
+  W_total = M_total × g             [train weight, N]
+  λ       = rotational inertia factor (1.09–1.10 for this train type)
+
+Substituting F_brake:
+
+  a = (M_total × g × µ_CK × 0.9 + R_total) / (M_total × λ)
+    ≈ g × µ_CK × 0.9 / λ    (since R_total ≪ F_brake at any speed above ~30 km/h)
+
+M_total cancels from numerator and denominator.</div>
+
+<h4>Why the same result for 16-car, 8-car, and heavier tare?</h4>
+<p>Look at the algebra above — mass disappears from the deceleration equation entirely. A 16-car train weighs twice as much as an 8-car train, but its maximum brake force also doubles (because braking force is adhesion-limited: F_brake = weight × µ). The same kinetic energy that doubles with mass is being absorbed by a braking force that also doubled. Net result: same deceleration, same stopping distance.</p>
+
+<p>This is the same physics that explains why a bicycle and a bus stop in roughly the same distance on dry roads when both are tyre-limited — mass cancels in Newton's second law when the applied force scales with mass. For a train using disc brakes at maximum adhesion, adding passengers or changing the consist length does not change the stopping distance at all. What changes is how much heat the brake discs absorb (more mass → more kinetic energy → higher disc temperature) and how much brake pipe work is needed — but not the distance.</p>
+
+<h4>What speed gives ~45 m?</h4>
+<p>If you applied emergency brakes and saw roughly 45 m on the braking distance counter, the train was travelling at about 48 km/h at the moment you hit the emergency trigger. At that speed, µ_CK ≈ 0.241, giving a ≈ 1.94 m/s², and d = (48/3.6)² / (2 × 1.94) ≈ 45.7 m. That number is correct for the adhesion model in use — it just means you were at a low speed when you triggered the stop.</p>
+
+<h3>How the model compares against real-world references</h3>
+
+<p>The platform uses µ_CK × 0.9 as the effective brake coefficient — meaning it assumes the braking system delivers 90% of the theoretical adhesion maximum. In practice, emergency brake systems on high-speed trains reach roughly 50–65% of the theoretical adhesion limit because of:</p>
+<ul>
+  <li>Brake pipe pressure propagation: a pressure drop travels at ~250 m/s through the brake pipe. On a 400 m train, there is a 1–2 second delay from the leading cab to the last axle. During that time, the front brakes are fully applied but the rear ones are not yet.</li>
+  <li>WSP (Wheel Slide Protection) cycling: WSP releases and reapplies brakes many times per second near the adhesion limit. Average brake force is less than peak.</li>
+  <li>Thermal derating: brake pads lose friction coefficient as they heat up mid-stop. An emergency stop from 320 km/h raises disc temperature by 200–300°C before the train is even at half-speed.</li>
+  <li>Non-uniform axle loading: not all axles carry identical load, especially with dynamic weight transfer during braking. Rear bogies carry less normal force due to pitch, so their brake force contribution is lower.</li>
+</ul>
+
+<p>The consequence is that the platform's predicted stopping distances are shorter than what a real train achieves. Here is how the model sits against recognised benchmarks:</p>
+
+<table style="border-collapse:collapse;width:100%;margin:12px 0;font-size:12px;">
+  <thead>
+    <tr style="background:#E8EEF6;">
+      <th style="padding:7px 10px;text-align:left;border:1px solid #C8D4E8;">Speed</th>
+      <th style="padding:7px 10px;text-align:left;border:1px solid #C8D4E8;">This model</th>
+      <th style="padding:7px 10px;text-align:left;border:1px solid #C8D4E8;">UIC 544-1 maximum</th>
+      <th style="padding:7px 10px;text-align:left;border:1px solid #C8D4E8;">Real reference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">160 km/h</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~622 m</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~1 100 m</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~1 100 m (RDSO EMU spec)</td>
+    </tr>
+    <tr style="background:#F8FAFC;">
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">200 km/h</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~1 003 m</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~1 715 m</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~1 700 m (TGV, ICE operational data)</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">320 km/h</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~2 710 m</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~4 390 m</td>
+      <td style="padding:6px 10px;border:1px solid #C8D4E8;">~4 000 m (Shinkansen E5, JR-East published)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The model is consistently about 1.75× optimistic. The UIC 544-1 column is what the platform's Chart 6 shows as the orange dashed "limit" line — it corresponds to a constant 0.9 m/s² deceleration, which is the minimum UIC requires for international express trains. The platform's model achieves 1.46–1.93 m/s² depending on speed, which is above the UIC minimum by the same factor.</p>
+
+<p>For a preliminary engineering study or comparison between configurations this is acceptable — the relative differences between curves are correct even if the absolute numbers are optimistic. For sign-off calculations or actual brake system sizing, you would use the real deceleration figures from brake hardware testing, not this adhesion-theoretical maximum.</p>
+
+<h4>Why the three chart curves (Baseline, Current Config, MAHSR) almost overlap on Chart 6</h4>
+<p>All three preset configurations use µ_base = 1.0 and have nearly identical λ values (1.09–1.10). Since braking distance depends only on those two parameters and the initial speed, the curves sit on top of each other. They would diverge if you changed µ_base between configs (e.g., wet rail for one, dry for another) or if the rotational inertia factor λ differed significantly. In the current setup there is no meaningful difference in braking performance between the three presets — which is itself an interesting result: the Shinkansen E5 target and the 16-car VB baseline stop in essentially the same distance at the same speed when both are adhesion-limited.</p>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <h2 id="vibration">6. Vibration Analysis</h2>

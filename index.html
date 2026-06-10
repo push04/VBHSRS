@@ -2740,7 +2740,9 @@
     };
 
     function createChart(id, type, data, options = {}) {
-      const ctx = document.getElementById(id).getContext('2d');
+      const el = document.getElementById(id);
+      if (!el) return; // canvas not present in current layout — skip silently
+      const ctx = el.getContext('2d');
       if (charts[id]) charts[id].destroy();
       const opts = JSON.parse(JSON.stringify(chartOpts));
       // Deep-merge at the per-axis level so per-chart title/min/max don't erase global grid/ticks
@@ -4401,6 +4403,7 @@
     </div>
     <div id="lap-tabs">
       <button class="lap-tab active" data-lap="live">LIVE TELEMETRY</button>
+      <button class="lap-tab" data-lap="physics" style="border-color:#003FA5;color:#003FA5;font-weight:700;">PHYSICS ANALYSIS (10 CHARTS)</button>
       <button class="lap-tab" data-lap="contact">CONTACT MECHANICS</button>
       <button class="lap-tab" data-lap="material">RAIL-WHEEL MATERIALS</button>
       <button class="lap-tab" data-lap="wear">WEAR AND FATIGUE</button>
@@ -4439,6 +4442,22 @@
         <div class="lap-cc"><div class="lap-cc-hdr"><span>Brake Disc Temp (°C)</span><div class="live-dot"></div></div><canvas id="lc-temp"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>Hunting Crit. Vc (km/h)</span><div class="live-dot"></div></div><canvas id="lc-vc"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>Adhesion Coefficient µ</span><div class="live-dot"></div></div><canvas id="lc-mu"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Physics Parametric Analysis — VB Baseline vs Current Config vs MAHSR Target -->
+    <div id="lap-physics" class="lap-page">
+      <div class="lap-chart-grid" style="grid-template-columns:repeat(auto-fill,minmax(360px,1fr));">
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>① TE &amp; Resistance vs Speed (kN)</span><div class="live-dot"></div></div><canvas id="c0"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>② Accel / Brake vs Speed (m/s²)</span><div class="live-dot"></div></div><canvas id="c1"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>③ Creep Force vs Creepage</span><div class="live-dot"></div></div><canvas id="c2"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>④ Hunting Stability — Vc vs Conicity</span></div><canvas id="c3"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑤ Sperling Wz vs Speed</span><div class="live-dot"></div></div><canvas id="c4"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑥ Energy Consumption (kWh/100 km)</span><div class="live-dot"></div></div><canvas id="c5"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑦ Emergency Stopping Distance (m)</span><div class="live-dot"></div></div><canvas id="c6"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑧ Suspension FRF — Secondary Transmissibility</span></div><canvas id="c7"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑨ Brake Disc Temp Rise vs Time (°C)</span></div><canvas id="c8"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑩ Archard Wear Rate vs Speed (mm³/km)</span><div class="live-dot"></div></div><canvas id="c9"></canvas></div>
       </div>
     </div>
 
@@ -4903,6 +4922,10 @@
         document.querySelector(`.lap-tab[data-lap="${id}"]`).classList.add('active');
         document.getElementById('lap-' + id).classList.add('active');
         if (id === 'live') requestAnimationFrame(() => Object.values(lapCharts).forEach(c => c && c.resize()));
+        if (id === 'physics') {
+          updateCharts();
+          setTimeout(() => Object.values(charts).forEach(c => c && c.resize()), 50);
+        }
         if (id === 'rw' && window.buildRWCharts) {
           setTimeout(() => { window.buildRWCharts(); }, 50);
         }
