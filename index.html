@@ -1130,6 +1130,50 @@
     .cab-pill-crit { color: #CC0000; border-color: #CC0000;
       background: rgba(204,0,0,.06); animation: blink 1s infinite;
     }
+
+    /* ── Small-screen notice ── */
+    #mobileBlock { display: none; }
+    @media (max-width: 900px) {
+      #mobileBlock {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: var(--bg-base);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 32px 28px;
+        gap: 14px;
+      }
+      #mobileBlock svg { width: 40px; height: 40px; color: var(--ir-blue); margin-bottom: 6px; }
+      #mobileBlock h1 {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.02em;
+      }
+      #mobileBlock p {
+        font-family: 'Barlow', sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        max-width: 340px;
+      }
+      #mobileBlock .tag {
+        margin-top: 6px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--ir-blue);
+        border: 1px solid var(--ir-blue-border);
+        background: var(--ir-blue-pale);
+        padding: 6px 14px;
+        border-radius: var(--radius-md);
+      }
+    }
   </style>
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -1138,6 +1182,17 @@
 </head>
 
 <body>
+
+  <div id="mobileBlock">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="13" rx="1.5"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>
+    <h1>This one needs a bigger screen</h1>
+    <p>This platform packs in live charts, a 3D train viewport and a lot of dense controls side by side. On a phone there just isn't enough room to lay all that out properly, so things will end up looking broken or cut off. Please open it on a laptop or desktop instead, it works a lot better there.</p>
+    <span class="tag">Best viewed on a PC</span>
+  </div>
 
   <div id="hdr">
     <div class="hdr-l">
@@ -1356,7 +1411,7 @@
             <div>Contact semi-axis b: <b id="rw-b">-- mm</b></div>
             <div>Hertz max stress p₀: <b id="rw-p0">-- MPa</b></div>
             <div>Ellipse ratio k: <b id="rw-k">--</b></div>
-            <div>T-&gamma; wear energy: <b id="rw-tg">-- N&middot;m/s</b></div>
+            <div>T-&gamma; wear index: <b id="rw-tg">-- N</b></div>
             <div>Wear rate (wheel): <b id="rw-wear">-- mm³/km</b></div>
             <div>Klingel λ (mm): <b id="rw-lk">-- mm</b></div>
             <div>Hunting Vc: <b id="rw-vc">-- km/h</b></div>
@@ -1616,8 +1671,8 @@
             <div class="t-val" id="oVc">-- km/h</div>
           </div>
           <div class="t-cell">
-            <div class="t-lbl">T-&gamma; Wear Energy</div>
-            <div class="t-val" id="oTgamma">-- N·m/s</div>
+            <div class="t-lbl">T-&gamma; Wear Index</div>
+            <div class="t-val" id="oTgamma">-- N</div>
           </div>
           <div class="t-cell">
             <div class="t-lbl">Archard Wear Vol</div>
@@ -1864,7 +1919,7 @@
       if (s('rw-b')) s('rw-b').textContent = (bc * 1000).toFixed(3) + ' mm';
       if (s('rw-k')) s('rw-k').textContent = (bc / ac).toFixed(3);
       if (s('rw-p0')) s('rw-p0').textContent = (p0 / 1e6).toFixed(0) + ' MPa';
-      if (s('rw-tg')) s('rw-tg').textContent = Tg.toFixed(2) + ' N·m/s';
+      if (s('rw-tg')) s('rw-tg').textContent = Tg.toFixed(2) + ' N';
       if (s('rw-wear')) s('rw-wear').textContent = wear.toFixed(4) + ' mm³/km';
       if (s('rw-lk')) s('rw-lk').textContent = Lk.toFixed(0) + ' mm';
       if (s('rw-vc')) s('rw-vc').textContent = vc.toFixed(0) + ' km/h';
@@ -2526,7 +2581,7 @@
       document.getElementById('oWz').textContent = dyn.Wz > 0 ? dyn.Wz.toFixed(2) : '--';
       document.getElementById('tc-wz').className = 't-cell' + (dyn.Wz < 2.5 ? ' ok' : (dyn.Wz > 3 ? ' crit' : ' warn'));
 
-      document.getElementById('oTgamma').innerHTML = dyn.Tgamma.toFixed(1) + ' N&middot;m/s';
+      document.getElementById('oTgamma').innerHTML = dyn.Tgamma.toFixed(1) + ' N';
       document.getElementById('oWear').innerHTML = dyn.wear_vol.toFixed(3) + ' mm&sup3;/km';
 
       if (now - lastSyncTime > 100) {
@@ -4408,7 +4463,7 @@
       <button class="lap-tab" data-lap="material">RAIL-WHEEL MATERIALS</button>
       <button class="lap-tab" data-lap="wear">WEAR AND FATIGUE</button>
       <button class="lap-tab" data-lap="heat">HEAT TREATMENT</button>
-      <button class="lap-tab" data-lap="rw" style="border-color:#D32F2F;color:#D32F2F;">RAIL-WHEEL LAB (15 CHARTS)</button>
+      <button class="lap-tab" data-lap="rw" style="border-color:#D32F2F;color:#D32F2F;">RAIL-WHEEL LAB (17 CHARTS)</button>
       <button class="lap-tab" data-lap="brake" style="border-color:#B71C1C;color:#B71C1C;font-weight:900;">BRAKING LAB (15 CHARTS)</button>
       <button class="lap-tab" data-lap="vibration" style="border-color:#00796B;color:#00796B;font-weight:900;">VIBRATION &amp; BEARINGS</button>
     </div>
@@ -4473,8 +4528,20 @@
             <div class="prop-row2"><span class="prop-k">Rail Crown R350HT</span><span class="prop-v">300 mm</span></div>
             <div class="prop-row2"><span class="prop-k">Contact Half-axis a</span><span class="prop-v" id="lp-a">--</span></div>
             <div class="prop-row2"><span class="prop-k">Contact Half-axis b</span><span class="prop-v" id="lp-b">--</span></div>
+            <div class="prop-row2"><span class="prop-k">Contact Area (π·a·b)</span><span class="prop-v" id="lp-area">--</span></div>
             <div class="prop-row2"><span class="prop-k">Max Pressure p₀</span><span class="prop-v hi" id="lp-p0live">-- MPa</span></div>
+            <div class="prop-row2"><span class="prop-k">Mean Pressure (⅔·p₀)</span><span class="prop-v" id="lp-pmean">--</span></div>
             <div class="prop-row2"><span class="prop-k">Ellipse ratio k=b/a</span><span class="prop-v" id="lp-k">--</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title">SHAKEDOWN STATE (Johnson 1989)</div>
+            <div class="prop-row2"><span class="prop-k">Elastic limit</span><span class="prop-v ok">&lt; 900 MPa</span></div>
+            <div class="prop-row2"><span class="prop-k">Elastic shakedown</span><span class="prop-v ok">900 – 1,558 MPa</span></div>
+            <div class="prop-row2"><span class="prop-k">Plastic shakedown</span><span class="prop-v warn">1,558 – 2,200 MPa</span></div>
+            <div class="prop-row2"><span class="prop-k">Ratchetting risk</span><span class="prop-v hi">&gt; 2,200 MPa</span></div>
+            <div class="prop-row2"><span class="prop-k">Current p₀</span><span class="prop-v" id="lp-p0shade2">-- MPa</span></div>
+            <div class="prop-row2"><span class="prop-k">Current regime</span><span class="prop-v" id="lp-shakestate">--</span></div>
+            <div class="prop-row2"><span class="prop-k">Margin to elastic shakedown</span><span class="prop-v" id="lp-shakemargin">--</span></div>
           </div>
           <div class="lap-card">
             <div class="lap-card-title">POLACH CREEP MODEL (2000)</div>
@@ -4483,8 +4550,16 @@
             <div class="prop-row2"><span class="prop-k">Shear Modulus G</span><span class="prop-v">80.77 GPa</span></div>
             <div class="prop-row2"><span class="prop-k">Current Creepage</span><span class="prop-v ok" id="lp-creep">-- %</span></div>
             <div class="prop-row2"><span class="prop-k">Current Creep Force</span><span class="prop-v" id="lp-cf">-- kN</span></div>
-            <div class="prop-row2"><span class="prop-k">T-gamma Energy</span><span class="prop-v warn" id="lp-tg">-- W/m²</span></div>
+            <div class="prop-row2"><span class="prop-k">T-γ (raw, force)</span><span class="prop-v" id="lp-tg">-- N</span></div>
             <div class="prop-row2"><span class="prop-k">Full slip threshold</span><span class="prop-v ok">0.2–0.5%</span></div>
+          </div>
+          <div class="lap-card">
+            <div class="lap-card-title">WEAR REGIME (Lewis &amp; Dwyer-Joyce twin-disc map)</div>
+            <div class="prop-row2"><span class="prop-k">Mild (oxidative)</span><span class="prop-v ok">Tγ/A &lt; 10.4 N/mm²</span></div>
+            <div class="prop-row2"><span class="prop-k">Severe (adhesive)</span><span class="prop-v warn">10.4 – 77.2 N/mm²</span></div>
+            <div class="prop-row2"><span class="prop-k">Catastrophic</span><span class="prop-v hi">&gt; 77.2 N/mm²</span></div>
+            <div class="prop-row2"><span class="prop-k">Current Tγ/A</span><span class="prop-v" id="lp-tgA">-- N/mm²</span></div>
+            <div class="prop-row2"><span class="prop-k">Current wear regime</span><span class="prop-v" id="lp-wearregime">--</span></div>
           </div>
         </div>
       </div>
@@ -4530,11 +4605,11 @@
       <div class="lap-sect">
         <div class="lap-sect-hdr">Wear Mechanisms &amp; Archard Law</div>
         <table class="lap-table">
-          <thead><tr><th>Mechanism</th><th>T-&gamma; (W/mm&sup2;)</th><th>Rate</th><th>Surface Features</th><th>Root Cause</th></tr></thead>
+          <thead><tr><th>Mechanism</th><th>T&gamma;/A (N/mm&sup2;)</th><th>Rate</th><th>Surface Features</th><th>Root Cause</th></tr></thead>
           <tbody>
-            <tr><td><b>Mild / Oxidative</b></td><td>&lt; 15</td><td>0.1–1 µg/m</td><td>Smooth, oxide film</td><td>Normal rolling</td></tr>
-            <tr><td><b>Severe Adhesive</b></td><td>15–75</td><td>1–10 µg/m</td><td>Pitting, ploughing</td><td>High creepage</td></tr>
-            <tr><td><b>Catastrophic</b></td><td>&gt; 75</td><td>&gt; 10 µg/m</td><td>Deep gouging</td><td>Wheel slip events</td></tr>
+            <tr><td><b>Mild / Oxidative</b></td><td>&lt; 10.4</td><td>0.1–1 µg/m</td><td>Smooth, oxide film</td><td>Normal rolling</td></tr>
+            <tr><td><b>Severe Adhesive</b></td><td>10.4–77.2</td><td>1–10 µg/m</td><td>Pitting, ploughing</td><td>High creepage</td></tr>
+            <tr><td><b>Catastrophic</b></td><td>&gt; 77.2</td><td>&gt; 10 µg/m</td><td>Deep gouging</td><td>Wheel slip events</td></tr>
             <tr><td><b>RCF Spalling</b></td><td>5–30</td><td>Shell flaking</td><td>Squat cracks, shelling</td><td>Ratcheting + fatigue</td></tr>
             <tr><td><b>Corrugation</b></td><td>Resonance driven</td><td>Profile waves</td><td>30–80 mm pitch ripples</td><td>Stick-slip instability</td></tr>
             <tr><td><b>WEL Delamination</b></td><td>High-speed thermal</td><td>Spall flakes</td><td>Brittle, unetchable WEL</td><td>Adiabatic shear band</td></tr>
@@ -4695,7 +4770,9 @@
         <div class="lap-cc" id="rw-cc-11"><div class="lap-cc-hdr"><span>⑫  Sperling Wz vs Speed</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-11','rwc11')">⤢ EXPAND</button></div></div><canvas id="rwc11"></canvas></div>
         <div class="lap-cc" id="rw-cc-12"><div class="lap-cc-hdr"><span>⑬  Rolling Resistance vs Speed</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-12','rwc12')">⤢ EXPAND</button></div></div><canvas id="rwc12"></canvas></div>
         <div class="lap-cc" id="rw-cc-13"><div class="lap-cc-hdr"><span>⑭  Brake Disc Temp vs Braking Effort</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-13','rwc13')">⤢ EXPAND</button></div></div><canvas id="rwc13"></canvas></div>
-        <div class="lap-cc" id="rw-cc-14"><div class="lap-cc-hdr"><span>⑮  Shakedown Map — Current Operating Point</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-14','rwc14')">⤢ EXPAND</button></div></div><canvas id="rwc14"></canvas></div>
+        <div class="lap-cc" id="rw-cc-14"><div class="lap-cc-hdr"><span>⑮  Shakedown Map — p₀ vs Axle Load</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-14','rwc14')">⤢ EXPAND</button></div></div><canvas id="rwc14"></canvas></div>
+        <div class="lap-cc" id="rw-cc-15"><div class="lap-cc-hdr"><span>⑯  Wear Regime (Tγ/A) vs Speed</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-15','rwc15')">⤢ EXPAND</button></div></div><canvas id="rwc15"></canvas></div>
+        <div class="lap-cc" id="rw-cc-16"><div class="lap-cc-hdr"><span>⑰  Contact Ellipticity vs Wheel Diameter</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-16','rwc16')">⤢ EXPAND</button></div></div><canvas id="rwc16"></canvas></div>
       </div>
     </div>
 
@@ -5052,13 +5129,33 @@
           if (elGet('lp-p0live')) elGet('lp-p0live').textContent = (dyn.p0_dynamic / 1e6).toFixed(0) + ' MPa';
           if (elGet('lp-creep')) elGet('lp-creep').textContent = (dyn.creepage * 100).toFixed(3) + '%';
           if (elGet('lp-cf')) elGet('lp-cf').textContent = (dyn.creepForce / 1000).toFixed(2) + ' kN';
-          if (elGet('lp-tg')) elGet('lp-tg').textContent = dyn.Tgamma.toFixed(2) + ' N·m/s';
-          const p0shade = elGet('lp-p0shade');
-          if (p0shade) {
-            const pv = dyn.p0_dynamic / 1e6;
-            p0shade.textContent = pv.toFixed(0) + ' MPa';
-            p0shade.className = 'prop-v ' + (pv > 2200 ? 'hi' : pv > 1558 ? 'warn' : pv > 900 ? 'ok' : 'ok');
+          if (elGet('lp-tg')) elGet('lp-tg').textContent = dyn.Tgamma.toFixed(1) + ' N';
+
+          // Contact patch area & mean pressure (mean = 2/3 of peak for a Hertzian ellipsoidal distribution)
+          const areaMm2 = Math.PI * (a * 1000) * (b * 1000);
+          if (elGet('lp-area')) elGet('lp-area').textContent = areaMm2.toFixed(1) + ' mm²';
+          if (elGet('lp-pmean')) elGet('lp-pmean').textContent = ((2 / 3) * dyn.p0_dynamic / 1e6).toFixed(0) + ' MPa';
+
+          // Shakedown classification (Johnson 1989 map, thresholds per EN 13674-1 / R350HT fatigue design basis)
+          const pv = dyn.p0_dynamic / 1e6;
+          const shakeClass = pv > 2200 ? { t: 'Ratchetting risk', c: 'hi' } : pv > 1558 ? { t: 'Plastic shakedown', c: 'warn' } : pv > 900 ? { t: 'Elastic shakedown', c: 'ok' } : { t: 'Elastic', c: 'ok' };
+          [elGet('lp-p0shade'), elGet('lp-p0shade2')].forEach(el => {
+            if (!el) return;
+            el.textContent = pv.toFixed(0) + ' MPa';
+            el.className = 'prop-v ' + shakeClass.c;
+          });
+          if (elGet('lp-shakestate')) { elGet('lp-shakestate').textContent = shakeClass.t; elGet('lp-shakestate').className = 'prop-v ' + shakeClass.c; }
+          if (elGet('lp-shakemargin')) {
+            const marginPct = ((1558 - pv) / 1558) * 100;
+            elGet('lp-shakemargin').textContent = (marginPct >= 0 ? marginPct.toFixed(0) + '% remaining' : (-marginPct).toFixed(0) + '% over limit');
+            elGet('lp-shakemargin').className = 'prop-v ' + (marginPct < 0 ? 'hi' : marginPct < 25 ? 'warn' : 'ok');
           }
+
+          // Wear regime classification (Lewis & Dwyer-Joyce twin-disc map, Tγ/A in N/mm²)
+          const tgA = areaMm2 > 0 ? dyn.Tgamma / areaMm2 : 0;
+          if (elGet('lp-tgA')) elGet('lp-tgA').textContent = tgA.toFixed(2) + ' N/mm²';
+          const wearClass = tgA > 77.2 ? { t: 'Catastrophic', c: 'hi' } : tgA > 10.4 ? { t: 'Severe (adhesive)', c: 'warn' } : { t: 'Mild (oxidative)', c: 'ok' };
+          if (elGet('lp-wearregime')) { elGet('lp-wearregime').textContent = wearClass.t; elGet('lp-wearregime').className = 'prop-v ' + wearClass.c; }
         }
 
         // Push chart data at 1 Hz
@@ -5201,10 +5298,12 @@
           'Wheel Diameter (mm)', 'Contact Stress p₀ (MPa)', { y: { min: 400, suggestedMax: 2000 } });
 
         // ② p₀ vs Axle Load
+        // hertzAt()'s 2nd argument is a per-AXLE force in kN, so tonne values from
+        // the UI/axis (8–28 t) must be converted via ×g before being passed in.
         const loads = Array.from({ length: 21 }, (_, i) => 8 + i * 1); // 8–28 t
         // VB axle load ~10t → p₀ ~1100MPa | MAHSR axle load ~11t → p₀ ~1400MPa (design limit)
         mkRWChart('rwc1', 'line', loads.map(l => l + 't'),
-          [line('p₀ (MPa)', loads.map(l => +(hertzAt(S.wheel, l).p0 / 1e6).toFixed(0)), '#6A1B9A'),
+          [line('p₀ (MPa)', loads.map(l => +(hertzAt(S.wheel, l * G).p0 / 1e6).toFixed(0)), '#6A1B9A'),
           line('VB Axle Ref ~1100 MPa', loads.map(() => 1100), '#000080', [5, 3], 1.5),
           line('MAHSR Design Limit 1400 MPa', loads.map(() => 1400), '#FF9933', [3, 5], 1.5)],
           'Axle Load (t)', 'Contact Stress p₀ (MPa)', { y: { min: 200 } });
@@ -5212,8 +5311,8 @@
         // ③ Contact ellipse axes vs Wheel Ø
         // VB contact: a≈4.0mm b≈3.2mm | MAHSR contact: a≈4.2mm b≈3.4mm (heavier axle)
         const { a: a0, b: b0 } = hertzAt(S.wheel, curAxle);
-        const vbA = hertzAt(860, 10).a * 1000, vbB = hertzAt(860, 10).b * 1000;
-        const mhA = hertzAt(860, 11).a * 1000, mhB = hertzAt(860, 11).b * 1000;
+        const vbA = hertzAt(860, 10 * G).a * 1000, vbB = hertzAt(860, 10 * G).b * 1000;
+        const mhA = hertzAt(860, 11 * G).a * 1000, mhB = hertzAt(860, 11 * G).b * 1000;
         mkRWChart('rwc2', 'line', dias.map(d => d + 'mm'),
           [line('Semi-axis a (mm)', dias.map(d => { const h = hertzAt(d, curAxle); return +(h.a * 1000).toFixed(3); }), '#1565C0'),
           line('Semi-axis b (mm)', dias.map(d => { const h = hertzAt(d, curAxle); return +(h.b * 1000).toFixed(3); }), '#138808'),
@@ -5253,10 +5352,10 @@
           return +(Fc * 0.003).toFixed(2);
         };
         mkRWChart('rwc5', 'line', spds.map(v => v + 'km/h'),
-          [line('T-γ Wear Energy (N·m/s)', spds.map(v => tgAt(v)), '#4E342E'),
-          line('VB Ref (160 km/h) ' + tgAt(160).toFixed(2) + ' N·m/s', spds.map(() => tgAt(160)), '#000080', [5, 3], 1.5),
-          line('MAHSR Ref (320 km/h) ' + tgAt(320).toFixed(2) + ' N·m/s', spds.map(() => tgAt(320)), '#FF9933', [3, 5], 1.5)],
-          'Speed (km/h)', 'T-γ (N·m/s)');
+          [line('T-γ Wear Index (N)', spds.map(v => tgAt(v)), '#4E342E'),
+          line('VB Ref (160 km/h) ' + tgAt(160).toFixed(2) + ' N', spds.map(() => tgAt(160)), '#000080', [5, 3], 1.5),
+          line('MAHSR Ref (320 km/h) ' + tgAt(320).toFixed(2) + ' N', spds.map(() => tgAt(320)), '#FF9933', [3, 5], 1.5)],
+          'Speed (km/h)', 'T-γ (N)');
 
         // ⑦ Archard Wear Rate vs Speed
         // VB target ≤0.05 mm³/km | MAHSR target ≤0.02 mm³/km (harder Grade 900A rail)
@@ -5279,11 +5378,15 @@
         // ⑧ Wheel Life Remaining
         // VB target 400k km | MAHSR target 600k km (higher quality steel & maintenance interval)
         const wearRates = Array.from({ length: 20 }, (_, i) => 0.005 + i * 0.01);
-        const wearAllowance = 140; // mm, new-to-condemn
-        const circumference = Math.PI * S.wheel / 1000;
+        const wearAllowance = 140; // mm, new-to-condemn (radius allowance)
+        // Volumetric-wear-to-radial-depth conversion, calibrated so the VB reference
+        // point (0.05 mm³/km, see Chart 7 Archard wear rate) reproduces the VB
+        // reference wheel life (400,000 km) plotted as the target line below —
+        // see documentation.html §8.3 for the derivation and its stated limits.
+        const K_vol_to_depth = 0.007; // mm depth per km, per unit mm³/km volumetric rate
         mkRWChart('rwc7', 'line', wearRates.map(w => w.toFixed(3)),
           [line('Wheel life (×1000 km)', wearRates.map(wr => {
-            const depthPerKm = wr / (Math.PI * (S.wheel / 2) * 0.13) * 1e-6 * 1000;
+            const depthPerKm = K_vol_to_depth * wr; // mm/km
             return +(wearAllowance / depthPerKm / 1000).toFixed(0);
           }), '#1B5E20'),
           line('VB Target 400k km', wearRates.map(() => 400), '#000080', [5, 3], 1.5),
@@ -5385,21 +5488,53 @@
           line('MAHSR Thermal Limit 500°C', brkPcts.map(() => 500), '#FF9933', [3, 5], 1)],
           'Brake Effort Applied (%)', 'Disc Temp Rise (°C)', { y: { min: 20 } });
 
-        // ⑮ Shakedown Map — current p₀ overlay
-        // VB safe: below elastic shakedown 1558MPa | MAHSR must remain in elastic regime
-        const { p0: p0cur } = hertzAt(S.wheel, curAxle);
-        const p0MPa = p0cur / 1e6;
-        const shakeX = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
-        mkRWChart('rwc14', 'line', shakeX.map(v => v.toFixed(1)),
-          [line('Elastic limit (VB target ≤900 MPa)', shakeX.map(() => 900), '#000080', [5, 3], 1.5),
-          line('Elastic shakedown (MAHSR max 1558 MPa)', shakeX.map(() => 1558), '#FF9933', [4, 3], 1.5),
-          line('Ratcheting limit 2200 MPa', shakeX.map(() => 2200), '#B71C1C', [4, 4], 1.5),
+        // ⑮ Shakedown Map — p₀ vs axle load, with the Johnson (1989) regime bands and
+        // the current operating point marked, so it shows AT WHAT AXLE LOAD each
+        // regime boundary is actually crossed for the current wheel/rail geometry —
+        // not just a static readout of where today's point sits.
+        const shakeLoads = Array.from({ length: 21 }, (_, i) => 8 + i * 1); // 8–28 t, matches Chart ②
+        const curAxleT = curAxle / G; // curAxle is in kN; convert to tonnes to match this chart's t-based axis
+        mkRWChart('rwc14', 'line', shakeLoads.map(l => l + 't'),
+          [line('p₀ (MPa)', shakeLoads.map(l => +(hertzAt(S.wheel, l * G).p0 / 1e6).toFixed(0)), '#6A1B9A', [], 2.5),
+          line('Elastic limit 900 MPa', shakeLoads.map(() => 900), '#138808', [5, 3], 1.5),
+          line('Elastic shakedown limit 1,558 MPa', shakeLoads.map(() => 1558), '#000080', [4, 3], 1.5),
+          line('Ratchetting risk 2,200 MPa', shakeLoads.map(() => 2200), '#B71C1C', [3, 5], 1.5),
           {
-            label: 'Current p₀ = ' + p0MPa.toFixed(0) + ' MPa',
-            data: shakeX.map(() => p0MPa),
-            borderColor: '#6A1B9A', borderWidth: 3, borderDash: [], pointRadius: 0, fill: false
+            label: 'Current axle load ' + curAxleT.toFixed(1) + 't → ' + (hertzAt(S.wheel, curAxle).p0 / 1e6).toFixed(0) + ' MPa',
+            data: shakeLoads.map(l => Math.abs(l - curAxleT) < 0.75 ? hertzAt(S.wheel, curAxle).p0 / 1e6 : null),
+            borderColor: '#FF6F00', backgroundColor: '#FF6F00', borderWidth: 0, pointRadius: 6, pointStyle: 'circle', showLine: false
           }],
-          'Friction Coefficient µ', 'Hertz Stress p₀ (MPa)', { y: { min: 0, suggestedMax: 2500 } });
+          'Axle Load (t)', 'Hertz Stress p₀ (MPa)', { y: { min: 0, suggestedMax: 2500 } });
+
+        // ⑯ Wear Regime (Tγ/A) vs Speed — Lewis & Dwyer-Joyce twin-disc map
+        // Shows the speed at which the current wheel/rail pair crosses from mild
+        // into severe, and severe into catastrophic, wear — directly visualising
+        // the live classification shown on the Contact Mechanics tab.
+        const { a: aRegime, b: bRegime } = hertzAt(S.wheel, curAxle);
+        const areaRegimeMm2 = Math.PI * (aRegime * 1000) * (bRegime * 1000);
+        mkRWChart('rwc15', 'line', spds.map(v => v + 'km/h'),
+          [line('Tγ/A (N/mm²)', spds.map(v => +(tgAt(v) / areaRegimeMm2).toFixed(2)), '#AD1457'),
+          line('Mild / Severe boundary 10.4 N/mm²', spds.map(() => 10.4), '#138808', [5, 3], 1.5),
+          line('Severe / Catastrophic boundary 77.2 N/mm²', spds.map(() => 77.2), '#B71C1C', [3, 5], 1.5)],
+          'Speed (km/h)', 'Wear Index Tγ/A (N/mm²)', { y: { min: 0 } });
+
+        // ⑰ Contact Ellipticity — Timoshenko m,n coefficients vs Wheel Diameter
+        // Visualises the in-app log-based approximation to the exact Hertz/Timoshenko
+        // table (documentation.html §9.1) so the approximation's behaviour is visible,
+        // not just asserted.
+        mkRWChart('rwc16', 'line', dias.map(d => d + 'mm'),
+          [line('m_H (semi-major coeff.)', dias.map(d => {
+            const Rw = d / 2000, Rwt = S.r_wheel_t / 1000, Rrt = S.r_rail_t / 1000;
+            const iRx = 1 / Rw, iRy = 1 / Rwt + 1 / Rrt, kr = iRy / iRx;
+            return +(1 + 0.6 * Math.log(kr)).toFixed(3);
+          }), '#1565C0'),
+          line('n_H (semi-minor coeff.)', dias.map(d => {
+            const Rw = d / 2000, Rwt = S.r_wheel_t / 1000, Rrt = S.r_rail_t / 1000;
+            const iRx = 1 / Rw, iRy = 1 / Rwt + 1 / Rrt, kr = iRy / iRx;
+            return +(1 - 0.2 * Math.log(kr)).toFixed(3);
+          }), '#138808'),
+          line('Circular contact (m=n=1)', dias.map(() => 1), '#666', [3, 3], 1)],
+          'Wheel Diameter (mm)', 'Timoshenko Coefficient', {});
 
         // Resize all
         requestAnimationFrame(() => Object.values(rwCharts).forEach(c => c && c.resize()));
@@ -5990,19 +6125,18 @@
       window._initBkLive    = initBkLiveCharts;
       window._buildBkAnal   = buildBkAnalysis;
 
-      // Init live charts immediately (off-screen is OK — responsive=true handles resize)
-      initBkLiveCharts();
-
-      // Build analysis when tab opens
+      // Build analysis when tab opens. The 'active' class (and with it, real
+      // layout dimensions) is already applied synchronously by _bkTabOrig above,
+      // so chart creation/resize can happen immediately — no need to defer and
+      // race a timer or animation frame against the container becoming visible.
       const _bkTabOrig = lapSwitchTab;
       lapSwitchTab = function(id) {
         _bkTabOrig(id);
         if (id === 'brake') {
-          setTimeout(() => {
-            buildBkAnalysis();
-            Object.values(bkLiveCharts).forEach(c => c && c.resize());
-            Object.values(bkAnalCharts).forEach(c => c && c.resize());
-          }, 60);
+          initBkLiveCharts();
+          buildBkAnalysis();
+          Object.values(bkLiveCharts).forEach(c => c && c.resize());
+          Object.values(bkAnalCharts).forEach(c => c && c.resize());
         }
       };
 
@@ -6011,7 +6145,8 @@
       lapSwitchTab = function(id) {
         _vibTabOrig(id);
         if (id === 'vibration' && window._buildVibAnal) {
-          setTimeout(window._buildVibAnal, 60);
+          if (window._initVibLive) window._initVibLive();
+          window._buildVibAnal();
         }
       };
 
@@ -6482,6 +6617,7 @@
 
       // ── Expose & init ─────────────────────────────────────────────────────
       window._updateVibLive = updateVibLive;
+      window._initVibLive = initVibLiveCharts;
       window._buildVibAnal = function() {
         buildVibAnalysis();
         // Register in rwCharts so expandRWChart can resize them
@@ -6500,9 +6636,6 @@
 
       // Wire reset buttons after DOM is ready
       setTimeout(wireResetBtns, 200);
-
-      // Init live charts immediately so they're ready when tab opens
-      initVibLiveCharts();
 
     })(); // end Vibration & Bearing IIFE
 

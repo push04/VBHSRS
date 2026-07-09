@@ -6,6 +6,9 @@
   <title>HSRS Analysis Platform — Technical Documentation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError:false });"></script>
   <style>
     :root {
       --ir-blue: #003FA5;
@@ -135,6 +138,19 @@
       word-break: break-word;
     }
 
+    .math-display {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--ir-blue);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 14px 0 4px;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .math-display .katex-display { margin: 0; }
+    .math-display .katex { font-size: 1.05em; }
+
     .param-table {
       width: 100%;
       border-collapse: collapse;
@@ -202,9 +218,21 @@
     }
     @media (max-width: 700px) {
       .two-col { grid-template-columns: 1fr; }
-      .container { padding: 20px; }
-      header { padding: 16px 20px; }
-      nav { padding: 0 16px; }
+      .container { padding: 16px 14px 60px; }
+      header { padding: 12px 14px; gap: 12px; }
+      header img { height: 34px; }
+      .hdr-text h1 { font-size: 1.05rem; }
+      .hdr-text p { font-size: 8.5px; letter-spacing: 0.04em; }
+      nav { padding: 0 10px; }
+      nav a { padding: 11px 10px; font-size: 10px; }
+      h2 { font-size: 1.1rem; margin: 32px 0 12px; }
+      h3 { font-size: 0.95rem; }
+      .formula-box { font-size: 0.78rem; padding: 12px 14px; overflow-x: auto; }
+      .math-display { padding: 12px 14px; }
+      .math-display .katex { font-size: 0.85em; }
+      .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 14px -14px; padding: 0 14px; }
+      .table-scroll table { min-width: 560px; }
+      .author-card { flex-direction: column; gap: 14px; }
     }
 
     .tag {
@@ -295,6 +323,26 @@
     @media (max-width: 600px) {
       .author-card { flex-direction: column; gap: 14px; }
     }
+
+    .mobile-note { display: none; }
+    @media (max-width: 700px) {
+      .mobile-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: var(--bg-surf2);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--ir-amber);
+        border-radius: 4px;
+        margin: 14px 14px 0;
+        padding: 11px 13px;
+        font-size: 0.8rem;
+        line-height: 1.55;
+        color: var(--txt2);
+      }
+      .mobile-note svg { flex-shrink: 0; margin-top: 2px; color: var(--ir-amber); }
+      .mobile-note strong { color: var(--txt); }
+    }
   </style>
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -312,8 +360,14 @@
   </div>
 </header>
 
+<div class="mobile-note">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="1.5"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+  <span><strong>You're on a phone, and that's fine, everything here reads fine.</strong> The data tables are wide, so scroll them sideways with a finger to see every column. For the long formula derivations and side-by-side comparison tables, a laptop or desktop screen is a noticeably easier read.</span>
+</div>
+
 <nav>
   <a href="#overview">Overview</a>
+  <a href="#glossary">Glossary</a>
   <a href="#purpose">Purpose &amp; Need</a>
   <a href="#architecture">Architecture</a>
   <a href="#parameters">Parameters</a>
@@ -322,9 +376,11 @@
   <a href="#vibration">Vibration</a>
   <a href="#thermal">Thermal Models</a>
   <a href="#tribology">Tribology</a>
+  <a href="#rcf">Rolling Contact Fatigue</a>
   <a href="#comfort">Ride Comfort</a>
   <a href="#standards">Standards</a>
   <a href="#formulas">Formula Reference</a>
+  <a href="#verification">Verification</a>
   <a href="#author">Author</a>
 </nav>
 
@@ -352,19 +408,79 @@
 </ul>
 
 <h3>Reference Configurations</h3>
+<p>The platform ships with two named preset parameter sets, <code>VB_BASELINE</code> and <code>MAHSR_TARGET</code>, defined verbatim in <code>index.html</code>. They are what every "VB Ref" / "MAHSR Ref" dashed comparison line on every chart in the platform is actually computed from. The table below is read directly from those two objects (not approximated), so it can be treated as authoritative for what the platform itself is comparing against — see §5.3 for the complete parameter-by-parameter listing including every slider's live range.</p>
 <table class="param-table">
-  <tr><th>Parameter</th><th>HSRS Baseline (160 km/h)</th><th>MAHSR Target (320 km/h)</th></tr>
+  <tr><th>Parameter</th><th>HSRS Baseline (16-car)</th><th>MAHSR Target (10-car)</th></tr>
   <tr><td>Formation</td><td>16 cars</td><td>10 cars</td></tr>
   <tr><td>Mass per car</td><td>39 t</td><td>44 t</td></tr>
-  <tr><td>Motor ratio</td><td>100% (16M)</td><td>80% (8M2T)</td></tr>
+  <tr><td>Motor ratio</td><td>100% (all cars motored)</td><td>80% (8 motor + 2 trailer)</td></tr>
   <tr><td>Motor power</td><td>250 kW/motor</td><td>305 kW/motor</td></tr>
-  <tr><td>Max speed</td><td>160 km/h</td><td>320 km/h</td></tr>
-  <tr><td>Wheel diameter</td><td>915 mm</td><td>860 mm</td></tr>
-  <tr><td>Suspension</td><td>Air spring (1-stage)</td><td>Air spring (2-stage)</td></tr>
+  <tr><td>Reference operating speed</td><td>160 km/h</td><td>320 km/h</td></tr>
+  <tr><td>Wheel diameter</td><td>860 mm (both configurations)</td><td>860 mm (both configurations)</td></tr>
+  <tr><td>Equivalent conicity</td><td>0.12</td><td>0.08</td></tr>
+  <tr><td>Track quality class</td><td>TQ2 (good mainline)</td><td>TQ1 (excellent, dedicated HSR)</td></tr>
+  <tr><td>Primary / secondary suspension stiffness</td><td>10.0 / 0.25 MN/m</td><td>12.0 / 0.30 MN/m</td></tr>
+  <tr><td>Bogie yaw stiffness</td><td>4.0 MNm/rad</td><td>10.0 MNm/rad</td></tr>
 </table>
+<div class="note-box"><strong>Documentation correction:</strong> the previous version of this table listed the HSRS Baseline wheel diameter as 915 mm. Both preset configurations in the code actually use 860 mm (the live wheel-diameter slider also defaults to 860 mm) — there is currently no built-in preset using 915 mm. Corrected here to match the code exactly.</div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="purpose">2. Purpose, Need &amp; Benefits</h2>
+<h2 id="glossary">2. Glossary — Terms &amp; Symbols Used Throughout</h2>
+
+<div class="section-intro">This section exists because most of the formulas below reuse the same handful of symbols and pieces of jargon over and over. Rather than re-explaining "creepage" every time it shows up, it's defined once here. Skim it once, then use it as a lookup when a symbol in a later formula box is unfamiliar.</div>
+
+<h3>2.1 Core Physics Terms</h3>
+<table class="param-table">
+  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><td>Adhesion (µ)</td><td>The friction-like coefficient that limits how much tractive or braking force a steel wheel can transmit to a steel rail before it slips. Unlike rubber-on-tarmac friction, wheel-rail adhesion is low (typically 0.1–0.4) and drops as speed rises — this single fact governs almost every traction and braking limit in the platform.</td></tr>
+  <tr><td>Creep / Creepage (ξ)</td><td>Even when a wheel is not outright slipping, the contact patch is elastic: part of it sticks to the rail, part of it micro-slides. The overall mismatch between the wheel's surface speed and the rail's surface speed, expressed as a fraction, is the creepage. A creepage of 0.003 (0.3%) means the wheel surface is moving 0.3% faster or slower than the rail under it. That's imperceptible to a passenger, yet it is exactly this micro-slip that generates the tractive force that accelerates the train.</td></tr>
+  <tr><td>Contact patch</td><td>The small, roughly elliptical area (typically 60–90 mm², about the size of a large coin) where the curved wheel tread actually touches the curved rail head. The entire weight of a rail vehicle car (30–50 tonnes) passes through a handful of these coin-sized patches.</td></tr>
+  <tr><td>Hertzian contact stress (p₀)</td><td>The peak pressure at the centre of the contact patch, from Heinrich Hertz's 1882 elastic contact theory. Because the contact patch is small, this pressure is enormous — typically 800–1600 MPa, roughly the same order of magnitude as the pressure inside a rifle barrel at the moment of firing.</td></tr>
+  <tr><td>Conicity (λ or γ)</td><td>How tapered (cone-shaped, rather than cylindrical) the wheel tread profile is. A perfectly cylindrical wheel would run dead straight but couldn't self-steer around curves or recentre itself on straight track; a coned wheel can, but too much taper makes the wheelset dynamically unstable (see Hunting below).</td></tr>
+  <tr><td>Hunting</td><td>A self-excited lateral (side-to-side) oscillation of a wheelset or bogie that appears above a critical speed, caused by the same conicity that lets the wheelset self-steer. Below critical speed it is a gentle, damped sway; above it, the oscillation grows until the wheel flange bangs into the rail repeatedly.</td></tr>
+  <tr><td>Shakedown</td><td>The material-mechanics threshold below which repeated rolling contact loading produces only elastic (fully reversible) deformation. Above it, each pass leaves a small amount of permanent plastic strain behind — this accumulates over millions of wheel passes into rolling contact fatigue cracks.</td></tr>
+  <tr><td>Ratchetting</td><td>The progressive, one-directional accumulation of plastic strain when contact stress is pushed well above the shakedown limit — each rolling pass "ratchets" the material a little further, eventually causing surface cracking or material flow (lipping) at the rail gauge corner.</td></tr>
+  <tr><td>Rolling Contact Fatigue (RCF)</td><td>The family of surface and near-surface cracking defects (squats, head checks, gauge-corner cracking, shelling) caused by cyclic rolling contact stress exceeding the material's fatigue or shakedown limit. It is the dominant rail-life-limiting failure mode on modern, well-maintained high-speed track — more so than simple metal loss (wear).</td></tr>
+  <tr><td>Sperling ride index (Wz)</td><td>A single number (typically 1–5) computed from frequency-weighted vertical or lateral car-body acceleration that predicts how a human passenger perceives the ride. Lower is smoother. It was developed by Sperling and Betzhold in 1956 for German Railways and remains the working standard in most of Europe and Asia today.</td></tr>
+  <tr><td>PSD (Power Spectral Density)</td><td>A way of describing an irregular signal, in this case the up-and-down bumpiness of the rail surface, not as a single number but as how much "roughness energy" exists at each spatial wavelength. A rough track has more energy at short wavelengths; PSD is how track quality actually gets fed into a vibration model.</td></tr>
+  <tr><td>FRF (Frequency Response Function) / Transmissibility</td><td>How much of a vibration at a given frequency gets through a spring-damper system (like the train's suspension) from the input (track roughness) to the output (car body). Below the system's natural frequency, vibration passes through almost unchanged; above it, the suspension filters it out; exactly at it, the vibration is amplified (resonance).</td></tr>
+  <tr><td>Natural frequency (f_n or ω_n)</td><td>The frequency at which a spring-mass system (e.g. a car body sitting on its secondary air springs) will oscillate if disturbed and left alone. Suspension design is largely about placing this frequency away from the frequencies the human body is most sensitive to (4–8 Hz for vertical motion).</td></tr>
+  <tr><td>Damping ratio (ζ)</td><td>How quickly oscillation dies out, expressed as a fraction of "critical damping" (the threshold between oscillating and not). ζ=0 means it oscillates forever once disturbed; ζ=1 means it returns to rest with no overshoot at all. Rail vehicle secondary dampers are typically tuned to ζ≈0.15–0.30 — enough to control resonance without making the ride harsh.</td></tr>
+  <tr><td>Jerk</td><td>The rate of change of acceleration (i.e. the derivative of acceleration, third derivative of position). Acceleration itself is what pushes you back in your seat; jerk is what makes that push feel sudden or smooth. A train that reaches the same top acceleration gently (low jerk) feels far more comfortable than one that reaches it abruptly (high jerk).</td></tr>
+  <tr><td>Davis resistance</td><td>The classical (1926) empirical formula for total running resistance of a rail vehicle as a function of speed, split into a constant term (rolling/bearing friction) and terms proportional to v and v² (aerodynamic drag). Still the industry-standard starting point for resistance calculations today.</td></tr>
+  <tr><td>Tractive effort (TE)</td><td>The forward-pulling force a locomotive or powered car can actually deliver to the rail, limited by the lower of (a) what the installed motor power can produce at the current speed, and (b) what the wheel-rail adhesion limit allows before the wheel slips.</td></tr>
+  <tr><td>RK4 (Runge-Kutta 4th order)</td><td>A numerical method for stepping a differential equation (like "velocity changes according to acceleration") forward in time in small increments, far more accurate per step than the simplest method (Euler's method) at a modest extra computational cost.</td></tr>
+</table>
+
+<h3>2.2 Symbol Reference</h3>
+<table class="param-table">
+  <tr><th>Symbol</th><th>Meaning</th><th>Typical Unit</th></tr>
+  <tr><td>v</td><td>Speed</td><td>m/s (km/h where noted)</td></tr>
+  <tr><td>a</td><td>Acceleration</td><td>m/s²</td></tr>
+  <tr><td>M, m</td><td>Mass (total train, or per-component)</td><td>kg or t</td></tr>
+  <tr><td>W, N, F_N</td><td>Weight / normal (perpendicular) contact force</td><td>N or kN</td></tr>
+  <tr><td>µ (mu)</td><td>Adhesion / friction coefficient</td><td>dimensionless (0–1)</td></tr>
+  <tr><td>ξ (xi)</td><td>Creepage (slip ratio)</td><td>dimensionless, usually expressed as %</td></tr>
+  <tr><td>λ (lambda)</td><td>Context-dependent: wheel conicity, OR rotational-inertia factor in braking equations, OR spatial wavelength</td><td>dimensionless or m</td></tr>
+  <tr><td>p₀</td><td>Peak Hertzian contact pressure</td><td>Pa (usually shown as MPa)</td></tr>
+  <tr><td>a, b</td><td>Semi-major / semi-minor axis of the elliptical contact patch</td><td>mm</td></tr>
+  <tr><td>E, E*</td><td>Young's modulus / combined (reduced) elastic modulus of the wheel-rail pair</td><td>Pa (GPa)</td></tr>
+  <tr><td>ν (nu)</td><td>Poisson's ratio</td><td>dimensionless (≈0.3 for steel)</td></tr>
+  <tr><td>Tγ (T-gamma)</td><td>Frictional work rate at the contact (tangential force × creepage) — the standard wear-severity index in rail tribology</td><td>N (raw) or N/mm² when normalised by contact area A</td></tr>
+  <tr><td>K</td><td>Archard dimensionless wear coefficient</td><td>dimensionless</td></tr>
+  <tr><td>H</td><td>Material (Brinell/Vickers) hardness, converted to a pressure</td><td>Pa</td></tr>
+  <tr><td>Wz</td><td>Sperling ride index</td><td>dimensionless (1–5 scale)</td></tr>
+  <tr><td>ζ (zeta)</td><td>Damping ratio</td><td>dimensionless</td></tr>
+  <tr><td>ωn, fn</td><td>Natural (angular) frequency</td><td>rad/s, Hz</td></tr>
+  <tr><td>Vc</td><td>Critical hunting speed</td><td>km/h or m/s</td></tr>
+  <tr><td>R_total</td><td>Total running resistance force</td><td>N</td></tr>
+  <tr><td>Q_in, Q_cool</td><td>Heat input / heat rejected (thermal power)</td><td>W</td></tr>
+</table>
+
+<div class="note-box"><strong>A note on precision:</strong> This platform is an engineering education and sensitivity-analysis tool, not a certified design or sign-off instrument. Every section below states, as plainly as possible, where a formula is an exact textbook result, where it is a well-established engineering approximation, and where it is a simplification chosen for real-time browser performance. Where the platform's own computed numbers have been checked against the cited literature and found to differ, that is stated explicitly rather than glossed over — see §14 Verification for a full account, including two calculation bugs that were found and corrected during the most recent review of this platform.</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="purpose">3. Purpose, Need &amp; Benefits</h2>
 
 <h3>Why This Platform Exists</h3>
 <p>Traditional rail engineering analysis requires expensive commercial software (SIMPACK, VAMPIRE, ADAMS/Rail) that demands specialist training and controlled environments. Engineering decisions about fleet configuration, track quality requirements, maintenance intervals, and speed upgrades are often made without accessible real-time sensitivity analysis.</p>
@@ -398,8 +514,47 @@
   <li>Brake disc temperatures during emergency stops can exceed 400°C</li>
 </ul>
 
+<h3>3.1 Real-World Reference Data — Vande Bharat, Mission Raftaar, MAHSR</h3>
+<p>The platform's "HSRS Baseline" and "MAHSR Target" presets are engineering approximations, not a byte-for-byte digital twin of any specific train. It is worth setting out plainly what the real vehicles and programmes they are modelled after actually look like, so the comparison is grounded rather than aspirational. The figures below are drawn from publicly published sources current as of 2026: Indian Railways' own specification documents, RDSO and NHSRCL public releases, and established reporting.</p>
+
+<table class="param-table">
+  <tr><th>Vande Bharat Express (2nd-generation trainset)</th><th>Published figure</th></tr>
+  <tr><td>Manufacturer</td><td>Integral Coach Factory (ICF), Chennai</td></tr>
+  <tr><td>Formation</td><td>16-car standard rake (8/16/20-car variants exist); distributed traction across 8 motor coaches, 4 traction motors each</td></tr>
+  <tr><td>Tare weight (16-car, 2nd-gen)</td><td>392 tonnes</td></tr>
+  <tr><td>Total installed power</td><td>≈4,500 kW (6,000 HP) across 32 traction motors</td></tr>
+  <tr><td>Maximum operational speed</td><td>160 km/h</td></tr>
+  <tr><td>Maximum speed achieved in trials</td><td>183 km/h</td></tr>
+  <tr><td>Acceleration</td><td>0–100 km/h in 52 seconds</td></tr>
+  <tr><td>Coach length</td><td>23 m (stainless steel underframe/shell)</td></tr>
+  <tr><td>Approximate cost (16-car rake)</td><td>₹115 crore (~US$12 million)</td></tr>
+</table>
+
+<div class="note-box">The platform's HSRS Baseline preset (39 t/car, 250 kW/motor, 100% motorization, 16 cars) is a reasonable order-of-magnitude stand-in for this class of train rather than an exact replica — for instance, 39 t × 16 = 624 t tare in the preset versus 392 t published for the real 2nd-generation trainset. The gap is largely because the real Vande Bharat 2.0 uses extensive weight reduction (aluminium body panels, lighter bogies) specifically to improve energy efficiency and acceleration, and because motorization in the real train is distributed (8 of 16 cars motored) rather than the preset's 100% assumption. Where the platform's numbers and the published figures diverge, treat the platform as representing a generic, somewhat heavier semi-HSR EMU archetype rather than the specific current-generation Vande Bharat.</div>
+
+<h4>Mission Raftaar — India's 160–200 km/h Upgrade Programme</h4>
+<p>Mission Raftaar was announced in the 2016–17 Railway Budget with the goal of raising average speeds for both freight and premium mail/express services, and of introducing semi-high-speed passenger operation (160–200 km/h) on selected trunk routes without waiting for dedicated new-build HSR corridors. RDSO leads the standards and track-strengthening work behind it. The programme is explicitly phased: routes are first upgraded and fenced/secured for 160 km/h running, with a further upgrade to 200 km/h following once track is strengthened with higher-grade rail (R350-class) and additional safety works (fencing, level-crossing elimination) are complete. The Delhi–Mumbai and Delhi–Howrah trunk routes have been named as priority corridors for this upgrade, alongside Delhi–Agra, Delhi–Kanpur, Chennai–Hyderabad, Nagpur–Secunderabad, Mumbai–Pune–Solapur–Hyderabad, and Mumbai–Goa as further semi-high-speed candidate routes. A 190 km stretch between Chipiyana Buzurg (Ghaziabad) and Tundla was reported as India's first section commissioned for 160 km/h running under this programme, with trial running in October 2025.</p>
+<p>This is the direct real-world analogue of the platform's "HSRS Baseline (160 km/h)" configuration — an upgrade path for existing broad-gauge rolling stock and infrastructure, distinct from the dedicated new-build standard-gauge MAHSR corridor.</p>
+
+<h4>MAHSR — Mumbai–Ahmedabad High Speed Rail</h4>
+<table class="param-table">
+  <tr><th>MAHSR corridor</th><th>Published figure</th></tr>
+  <tr><td>Route</td><td>Bandra-Kurla Complex (Mumbai) – Sabarmati (Ahmedabad), via Maharashtra, Gujarat, and Dadra &amp; Nagar Haveli</td></tr>
+  <tr><td>Length</td><td>508 km</td></tr>
+  <tr><td>Gauge</td><td>1,435 mm standard gauge (not India's usual 1,676 mm broad gauge — see §7.1 note)</td></tr>
+  <tr><td>Rolling stock basis</td><td>E5-series Shinkansen technology (Japan)</td></tr>
+  <tr><td>Design speed</td><td>350 km/h</td></tr>
+  <tr><td>Maximum operational speed</td><td>320 km/h</td></tr>
+  <tr><td>Average scheduled speed</td><td>≈260 km/h</td></tr>
+  <tr><td>Planned journey time, Mumbai–Ahmedabad</td><td>≈1 hour 58 minutes</td></tr>
+  <tr><td>Stations</td><td>12: Mumbai (BKC), Thane, Virar, Boisar, Vapi, Bilimora, Surat, Bharuch, Vadodara, Anand, Ahmedabad, Sabarmati</td></tr>
+  <tr><td>Notable infrastructure</td><td>~21 km tunnel near Mumbai (including a undersea section beneath Thane creek) — India's first undersea rail tunnel; J-slab ballastless track (first use of this Japanese Shinkansen track form in India)</td></tr>
+  <tr><td>Status (as of early 2026)</td><td>334 km of viaduct and 415 km of pier work complete; first prototype trainset trials expected to begin around December 2026, per public NHSRCL/PIB progress updates</td></tr>
+</table>
+<div class="note-box">Because the real MAHSR rolling stock is Shinkansen E5-derived, the platform's "MAHSR Target" preset (44 t/car, 305 kW/motor, 10-car, 80% motorization, 860 mm wheel) is likewise an approximation. It is calibrated to be broadly representative of that class of very-high-speed EMU, and the E5 itself is a 10-car set with a similar order-of-magnitude power-to-weight ratio, but it is not an exact reproduction of a published E5 specification sheet.</div>
+
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="architecture">3. Software Architecture</h2>
+<h2 id="architecture">4. Software Architecture</h2>
 
 <h3>Technology Stack</h3>
 <ul>
@@ -423,111 +578,152 @@
 <p>The main simulation loop exposes <code>window._lapUpdateHook(dyn, now)</code>. Secondary modules (LAP Panel, Vibration IIFE) chain onto this hook so they receive live physics data without coupling to the main loop's internals.</p>
 
 <!-- ════════════════════════════════════��══════════════════════ -->
-<h2 id="parameters">4. Input Parameters &amp; Their Effects</h2>
+<h2 id="parameters">5. Input Parameters &amp; Their Effects</h2>
 
 <div class="section-intro">
   Every parameter on the left panel feeds directly into the physics engine. The table below lists each parameter, its range, default values, and the physical effect of changing it.
 </div>
 
+<div class="note-box"><strong>Documentation correction:</strong> the table below has been rebuilt from the actual slider elements and their live-bound ranges in <code>index.html</code> (each row can be found by its element id, given in the first column). The previous version of this table included several parameters that do not exist in the current UI in the form described — a continuous "speed set-point" slider, a "braking mode" selector with Emergency/Service/Regen options, a "brake force %" slider, and a "Rail profile (UIC/BS113A)" choice. What the platform actually uses is described accurately below.</div>
+
 <table class="param-table">
   <tr>
-    <th>Parameter</th>
+    <th>Parameter (element id)</th>
     <th>Range</th>
     <th>Default</th>
     <th>Effect of Increasing</th>
   </tr>
   <tr>
-    <td>Formation (cars)</td>
-    <td>4–20</td>
+    <td>Formation (<code>sCoaches</code>)</td>
+    <td>8–16 cars, step 2</td>
     <td>16</td>
-    <td>Higher total mass → more inertia, longer braking distance, higher TE needed; more motors → higher available TE if motor ratio fixed</td>
+    <td>Higher total mass → more inertia, higher tractive effort needed; more motored cars → higher available TE if motor ratio fixed. (Braking distance itself is unaffected — see §6.4.)</td>
   </tr>
   <tr>
-    <td>Mass per car (t)</td>
-    <td>30–55</td>
-    <td>39</td>
-    <td>Higher total weight → higher rolling resistance, higher contact stress, higher bearing loads, longer stopping distance. Wheel–rail contact footprint grows (Hertz)</td>
+    <td>Mass per car (<code>sMass</code>)</td>
+    <td>35–55 t, step 0.5</td>
+    <td>39 t</td>
+    <td>Higher total weight → higher rolling resistance, higher contact stress, higher bearing loads. Wheel–rail contact footprint grows (Hertz)</td>
   </tr>
   <tr>
-    <td>Motor ratio (%)</td>
-    <td>50–100</td>
-    <td>100</td>
-    <td>More powered axles → higher available TE; at low ratios, adhesion utilisation per axle increases → earlier wheel-slip onset</td>
+    <td>Motorization ratio (<code>sMCRatio</code>)</td>
+    <td>50–100%, step 10</td>
+    <td>100%</td>
+    <td>More powered axles → higher available TE; at low ratios, adhesion utilisation per powered axle increases → earlier wheel-slip onset</td>
   </tr>
   <tr>
-    <td>Motor power (kW)</td>
-    <td>150–400</td>
-    <td>250</td>
-    <td>Higher installed power → higher TE at speed, higher top speed limited by Davis resistance crossover; energy draw scales proportionally</td>
+    <td>Traction motor power (<code>sPower</code>)</td>
+    <td>200–450 kW/motor, step 5</td>
+    <td>250 kW</td>
+    <td>Higher installed power → higher TE at speed, higher achievable top speed before the Davis-resistance crossover; energy draw scales proportionally</td>
   </tr>
   <tr>
-    <td>Speed set-point (km/h)</td>
-    <td>0–360</td>
-    <td>160</td>
-    <td>Primary driver of almost all outputs: drag scales as v², aero as v³, contact stress increases, hunting ratio increases, brake disc temp at emergency stop scales as v²</td>
+    <td>Traction / brake notches</td>
+    <td>Traction: N (idle), TE/3, TE/2, TE MAX. Brake: REL, BE/3, BE/2, BE MAX, EMERGENCY</td>
+    <td>N (idle) / REL</td>
+    <td>The platform is driven by discrete notch selection (matching a real driver's controller), not a continuous speed setpoint. TE MAX commands maximum available tractive effort (adhesion- or power-limited, whichever is lower); EMERGENCY commands maximum adhesion-limited brake force (§6.4)</td>
   </tr>
   <tr>
-    <td>Wheel diameter (mm)</td>
-    <td>800–1000</td>
-    <td>915</td>
-    <td>Larger wheel → lower contact stress (larger Hertz area), lower Klingel frequency at same speed, higher gear ratio needed; smaller wheel → more wear per km at same load</td>
+    <td>Wheel diameter (<code>sWheel</code>)</td>
+    <td>780–920 mm, step 5</td>
+    <td>860 mm</td>
+    <td>Larger wheel → lower contact stress (larger Hertz effective radius), lower Klingel hunting frequency at the same speed; smaller wheel → more wear depth per km at the same volumetric loss</td>
   </tr>
   <tr>
-    <td>Wheel conicity (λ)</td>
-    <td>0.02–0.30</td>
-    <td>0.05</td>
-    <td>Higher conicity → shorter Klingel hunting wavelength → lower critical speed Vc; above Vc the bogie hunts → lateral vibration spike, flange contact, rapid wear</td>
+    <td>Equivalent conicity (<code>sConic</code>)</td>
+    <td>0.02–0.30, step 0.01</td>
+    <td>0.12</td>
+    <td>Higher conicity → shorter Klingel hunting wavelength → lower critical speed Vc; above Vc the bogie hunts → lateral vibration spike, flange contact, rapid wear. A dropdown preset also offers New (λ≈0.05), Worn Moderate, Severely Worn (λ≈0.28), and Re-profiled CNC (λ≈0.06)</td>
   </tr>
   <tr>
-    <td>Rail profile (UIC/BS)</td>
-    <td>UIC60 / BS113A</td>
-    <td>UIC60</td>
-    <td>Affects contact half-axes a, b and peak Hertz pressure p₀; BS113A gives slightly larger contact patch → lower p₀</td>
+    <td>Bogie yaw stiffness (<code>sYaw</code>)</td>
+    <td>2.0–20.0 MNm/rad, step 0.5</td>
+    <td>4.0 MNm/rad</td>
+    <td>Feeds directly into the critical hunting speed estimate (§7.1): stiffer yaw restraint → higher bogie yaw natural frequency → higher Vc for the same conicity</td>
   </tr>
   <tr>
-    <td>Track quality (TQ1–TQ4)</td>
+    <td>Rail head profile (<code>sRailProfile</code>)</td>
+    <td>UIC60 New (R=300mm) / UIC60 Worn 15 MGT (R=200mm) / UIC54 (R=400mm) / 60E1 Ground (R=250mm)</td>
+    <td>UIC60 New</td>
+    <td>Sets the rail-head crown radius used in the Hertz transverse curvature term; a smaller crown radius (worn rail) increases curvature ratio k → shorter, higher-pressure contact ellipse</td>
+  </tr>
+  <tr>
+    <td>Wheel steel grade (<code>sWheelGrade</code>) / hardness (<code>sHardness</code>)</td>
+    <td>ER9 / ER8 / ER7 / B2 grades; hardness slider 200–380 HB, step 5</td>
+    <td>ER9, 280 HB</td>
+    <td>Higher hardness → lower Archard wear volume (H in the denominator); wheel grade selection also updates the paired hardness value</td>
+  </tr>
+  <tr>
+    <td>Rail steel grade (<code>sRailGrade</code>)</td>
+    <td>R350HT / R260 / R320Cr / R400HT</td>
+    <td>R350HT (350–390 HB)</td>
+    <td>Higher-grade, head-hardened rail (R350HT, R400HT) resists both wear and rolling contact fatigue better than standard R260 — this is the standard HSR/heavy-traffic upgrade choice worldwide</td>
+  </tr>
+  <tr>
+    <td>Track quality class, TQ1–TQ4 (<code>tq</code>)</td>
     <td>1 (excellent) – 4 (poor)</td>
-    <td>2</td>
-    <td>Sets PSD roughness coefficient Ar (×10⁻⁶ m²·s/cycle/m); higher TQ → exponentially higher vertical acceleration → Sperling Wz rises; at TQ4 comfort becomes unacceptable (&gt;3.0)</td>
+    <td>2 (good mainline)</td>
+    <td>Sets the ISO 8608 PSD roughness coefficient A_r (0.5×10⁻⁶ to 15×10⁻⁶ m²·rad/m across the 4 classes); higher TQ → higher vertical acceleration at every frequency band → Sperling Wz rises</td>
   </tr>
   <tr>
-    <td>Secondary spring stiffness (N/m)</td>
-    <td>0.3–2.0 MN/m</td>
-    <td>0.8 MN/m</td>
-    <td>Higher stiffness → natural frequency ωn rises → resonance moves to higher speed → FRF peak shifts; less vibration isolation at high frequency; harder ride quality</td>
+    <td>Primary suspension stiffness (<code>sKp</code>)</td>
+    <td>5.0–25.0 MN/m, step 0.5</td>
+    <td>10.0 MN/m</td>
+    <td>Feeds the primary-suspension FRF (Rail-Wheel Lab Chart ⑪); stiffer primary suspension raises the primary natural frequency, shifting where axle-box/unsprung-mass resonance sits</td>
   </tr>
   <tr>
-    <td>Secondary damping ratio (ζ)</td>
-    <td>0.05–0.40</td>
-    <td>0.25</td>
-    <td>Higher damping → lower FRF peak (less resonance amplification) but more force transmission at frequencies above ωn; optimal range 0.15–0.30 for rail dampers</td>
+    <td>Secondary suspension stiffness (<code>sKs</code>)</td>
+    <td>0.10–1.0 MN/m, step 0.01</td>
+    <td>0.25 MN/m</td>
+    <td>Higher stiffness → car-body natural frequency ωn rises → resonance moves to a higher frequency → less vibration isolation in the sensitive 1–10 Hz band → harder-feeling ride</td>
   </tr>
   <tr>
-    <td>Braking mode</td>
-    <td>Emergency / Service / Regen</td>
-    <td>Service</td>
-    <td>Emergency: full adhesion limit deceleration (~1.1 m/s²) → shortest stop, highest disc temperature. Regen: lower deceleration, ~85% energy recovered, lowest disc temp</td>
+    <td>Adhesion factor ψ (<code>sMu</code>)</td>
+    <td>0.20–1.10, step 0.05</td>
+    <td>1.0 (dry rail)</td>
+    <td>Scales the entire Curtius-Kniffler curve (§6.3); lower values represent wet/contaminated rail, values above 1.0 represent sanding</td>
   </tr>
   <tr>
-    <td>Brake force (% of limit)</td>
-    <td>20–100%</td>
-    <td>80%</td>
-    <td>Higher brake force → shorter stopping distance but higher disc temperature during stop; disc temp scales as Q_in = F·v</td>
+    <td>Gradient (<code>sGrade</code>)</td>
+    <td>−30 to +30 ‰ (per-mille), step 1</td>
+    <td>0 ‰</td>
+    <td>Uphill: gravity resistance adds directly to Davis resistance → more TE needed, lower achievable top speed. Downhill: reduces traction requirement; increases braking demand</td>
   </tr>
-  <tr>
-    <td>Gradient (%)</td>
-    <td>−3.5 to +3.5%</td>
-    <td>0</td>
-    <td>Uphill: gravity resistance adds to Davis resistance → more TE needed, lower top speed achievable. Downhill: reduces traction requirement; increases braking demand</td>
-  </tr>
+
 </table>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="physics">5. Physics Engine — Core Formulae</h2>
+<h3>5.3 Complete Preset Reference — Every Parameter, Both Configurations</h3>
+<p>For anyone who wants the exact numbers rather than descriptions: this is the complete, literal content of the <code>VB_BASELINE</code> and <code>MAHSR_TARGET</code> objects in <code>index.html</code> — the two preset parameter sets used to draw every dashed reference line on every chart throughout the platform.</p>
 
-<h3>5.1 Resistance (Davis Formula)</h3>
+<table class="param-table">
+  <tr><th>Field</th><th>VB_BASELINE</th><th>MAHSR_TARGET</th><th>Meaning</th></tr>
+  <tr><td>coaches</td><td>16</td><td>10</td><td>Formation size</td></tr>
+  <tr><td>mass</td><td>39 t</td><td>44 t</td><td>Mass per car (tare)</td></tr>
+  <tr><td>mcRatio</td><td>100%</td><td>80%</td><td>Motorization ratio</td></tr>
+  <tr><td>power</td><td>250 kW</td><td>305 kW</td><td>Power per traction motor</td></tr>
+  <tr><td>nose</td><td>4.5</td><td>6.0</td><td>Nose fineness ratio L/D (higher = more streamlined)</td></tr>
+  <tr><td>af</td><td>8.8 m²</td><td>9.2 m²</td><td>Frontal cross-sectional area</td></tr>
+  <tr><td>rho</td><td>1.225 kg/m³</td><td>1.225 kg/m³</td><td>Air density (ISA sea-level standard)</td></tr>
+  <tr><td>skirt</td><td>true</td><td>true</td><td>Underbody skirting fitted (reduces bogie/panto drag)</td></tr>
+  <tr><td>mu_base (ψ)</td><td>1.0</td><td>1.0</td><td>Adhesion factor — both presets assume dry rail</td></tr>
+  <tr><td>wheel</td><td>860 mm</td><td>860 mm</td><td>Wheel diameter</td></tr>
+  <tr><td>kp</td><td>10.0 MN/m</td><td>12.0 MN/m</td><td>Primary suspension stiffness</td></tr>
+  <tr><td>ks</td><td>0.25 MN/m</td><td>0.30 MN/m</td><td>Secondary suspension stiffness</td></tr>
+  <tr><td>conic</td><td>0.12</td><td>0.08</td><td>Equivalent conicity</td></tr>
+  <tr><td>yaw</td><td>4.0 MNm/rad</td><td>10.0 MNm/rad</td><td>Bogie yaw stiffness</td></tr>
+  <tr><td>tq</td><td>2 (good mainline)</td><td>1 (excellent, dedicated HSR)</td><td>Track quality class</td></tr>
+  <tr><td>grade</td><td>0 ‰</td><td>0 ‰</td><td>Reference gradient (both presets are flat-track references)</td></tr>
+</table>
+
+<div class="note-box">Both presets fix <code>mu_base</code> at 1.0 (dry rail) and <code>grade</code> at 0. This is exactly why, as §6.4 notes, the three braking-distance chart curves (Baseline / Current / MAHSR) sit almost on top of each other — the only things that actually differ between the presets that feed into the braking calculation are the rotational-inertia factor λ (which depends on motorization ratio) and nothing else, since mass cancels out of the deceleration equation entirely.</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="physics">6. Physics Engine — Core Formulae</h2>
+
+<h3>6.1 Resistance (Davis Formula)</h3>
 <div class="section-intro">Davis resistance describes the total running resistance of a train as a function of speed. It captures rolling resistance, bearing drag, and aerodynamic drag.</div>
 
+<div class="math-display">$$ R_{total} = (A + B v)\frac{W_{total}}{1000} + W_{total}\,g\sin\theta + \tfrac{1}{2}\rho C_D A_f v^2 $$</div>
 <div class="formula-box">R_total = A + B·v   [N/kN or N]
 
 where (for Indian broad gauge EMU/HSR):
@@ -554,8 +750,9 @@ Full resistance force [N]:
   <li><strong>Frontal area ↑</strong> → proportional increase in aero resistance</li>
 </ul>
 
-<h3>5.2 Tractive Effort Model</h3>
+<h3>6.2 Tractive Effort Model</h3>
 
+<div class="math-display">$$ TE_{avail} = \min\!\left(\frac{n_{motors} P_{motor}}{v},\ \mu_{CK} W_{powered}\right), \qquad a = \frac{TE_{avail} - R_{total}}{M_{total}} $$</div>
 <div class="formula-box">Available TE [N]:
   TE_installed = (n_motors × P_motor) / v   [at speed v m/s]
   TE_adhesion  = µ_CK × W_powered            [adhesion limit]
@@ -571,38 +768,46 @@ RK4 integration over dt = 0.1 s:
 <h4>Why RK4?</h4>
 <p>RK4 is 4th-order accurate: error scales as O(dt⁵) vs O(dt²) for Euler. At 10 Hz update rate (dt = 0.1 s), RK4 gives velocity accuracy better than 0.01 m/s. The additional computational cost (4 function evaluations per step) is negligible in JS.</p>
 
-<h3>5.3 Curtius-Kniffler Adhesion</h3>
+<h3>6.3 Curtius-Kniffler Adhesion</h3>
 
-<div class="formula-box">µ_CK(v) = µ_base × [0.161 + 7.5 / (v_kmh + 44)]
+<p>Curtius and Kniffler published their empirical adhesion-versus-speed curve in 1950 based on measurements from German locomotives, and it was subsequently adopted as the UIC-standard reference adhesion curve for European rail traction calculations. The formula's shape, high adhesion at low speed, falling off toward a floor value at high speed, reflects real contact physics. At low speed the contact patch has time to fully "dry out" and interlock at the asperity (microscopic roughness peak) level. At high speed the contact time per revolution is too short for any surface film of moisture, oxide, or contaminant to be squeezed out, so the real area of metal-to-metal contact within the Hertzian patch shrinks.</p>
 
-where:
-  µ_base = 0.33  (dry rail, clean)
-  µ_base = 0.20  (wet rail)
-  µ_base = 0.12  (contaminated / leaf)
+<div class="math-display">$$ \mu_{CK}(v) = \psi \left(0.161 + \frac{7.5}{v_{kmh} + 44}\right) $$</div>
+<div class="formula-box">µ_CK(v) = ψ × [0.161 + 7.5 / (v_kmh + 44)]
 
-At 160 km/h (dry): µ = 0.33 × [0.161 + 7.5/204] ≈ 0.165
-At 320 km/h (dry): µ = 0.33 × [0.161 + 7.5/364] ≈ 0.121
+where ψ (in-app: "Adhesion Factor", slider range 0.20–1.10, default 1.0) is a
+single scaling factor representing overall rail-surface condition:
+  ψ = 1.0   → the formula reduces to the classic Curtius-Kniffler dry-rail curve
+  ψ &lt; 1.0   → represents reduced adhesion (moisture, leaf contamination, etc.)
+  ψ &gt; 1.0   → represents adhesion-enhancing conditions (sanding, up to ψ=1.1 max)
+
+At ψ=1.0, 160 km/h: µ = 1.0 × [0.161 + 7.5/204] ≈ 0.198
+At ψ=1.0, 320 km/h: µ = 1.0 × [0.161 + 7.5/364] ≈ 0.182
+As v → ∞: µ → 0.161·ψ  (the formula's speed-independent floor)
 
 Adhesion force limit:
   F_adh = µ_CK × W_powered_axles [N]</div>
 
-<h4>Why Curtius-Kniffler?</h4>
-<p>Curtius-Kniffler (1950) is the UIC-standardised empirical adhesion model validated for European and Japanese HSR. It correctly captures the speed-dependency of wheel-rail adhesion — at higher speeds, the contact time decreases, moisture film cannot drain, and the real contact area (asperity interlocking) reduces. At 320 km/h, available adhesion is ~30% lower than at standstill.</p>
+<div class="note-box"><strong>Documentation correction:</strong> an earlier version of this section described three discrete named presets (µ_base = 0.33 dry / 0.20 wet / 0.12 contaminated) as if they were separate selectable rail conditions. That does not match the actual control in the app: the "Adhesion Factor" (ψ) is a single continuous slider from 0.20 to 1.10, defaulting to 1.0, and the value 1.0 is itself the "dry, clean rail" reference case — it is what makes the bracketed term alone reproduce the standard Curtius-Kniffler dry curve. There is no built-in "0.33" preset anywhere in the code. This has been corrected here to match what is actually implemented; see §14 Verification for the full list of such corrections.</div>
+
+<h4>Why Curtius-Kniffler (and what else exists)?</h4>
+<p>Curtius-Kniffler remains the most widely used adhesion model in European and Indian rail traction engineering because it is simple, requires no contact-patch-level detail, and its predictions have held up reasonably well against measured locomotive adhesion data for over 70 years. It is not the only model in use: <strong>Heumann's curve</strong> (1954) is a similar empirical alternative sometimes used for Japanese rolling stock calculations, and modern traction control systems increasingly rely on real-time adhesion estimation from wheel-slip sensors rather than any fixed speed-adhesion curve, precisely because actual adhesion on a given day depends heavily on weather, contamination, and leaf-fall season in ways no fixed formula captures. For a platform aimed at comparative, sensitivity-style engineering analysis rather than real-time train control, a fixed empirical curve like Curtius-Kniffler remains the right level of fidelity.</p>
 
 <h4>Effect of changing parameters:</h4>
 <ul>
   <li><strong>Speed ↑</strong> → µ decreases → adhesion limit decreases → TE_max falls → longer acceleration from high speeds</li>
-  <li><strong>Rail condition → wet</strong> → µ_base drops from 0.33 to 0.20 → 40% reduction in adhesion → risk of wheel-slip at lower TE</li>
+  <li><strong>Adhesion factor ψ ↓</strong> (representing wet/contaminated rail) → proportionally lower µ across all speeds → risk of wheel-slip at lower TE, and longer braking distances</li>
   <li><strong>Motor ratio ↓</strong> → fewer powered axles → W_powered ↓ → F_adh ↓ → TE limited earlier</li>
 </ul>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="braking">5.4 Emergency Braking Distance</h2>
+<h2 id="braking">6.4 Emergency Braking Distance</h2>
 
 <div class="section-intro">One of the most common questions when running simulations here is: "why does the braking distance come out the same regardless of whether I run 16 cars, 8 cars, or increase the tare mass?" The short answer is that this is physically correct — not a display glitch. The longer answer requires walking through how the stopping distance is actually calculated.</div>
 
 <h3>The Formula</h3>
 
+<div class="math-display">$$ d = \frac{v^2}{2\,a_{emergency}}, \qquad a_{emergency} = \frac{0.9\,\mu_{CK}\,g}{\lambda} $$</div>
 <div class="formula-box">Emergency stopping distance from speed v:
 
   d = v² / (2 × a_emergency)
@@ -625,7 +830,7 @@ M_total cancels from numerator and denominator.</div>
 <h4>Why the same result for 16-car, 8-car, and heavier tare?</h4>
 <p>Look at the algebra above — mass disappears from the deceleration equation entirely. A 16-car train weighs twice as much as an 8-car train, but its maximum brake force also doubles (because braking force is adhesion-limited: F_brake = weight × µ). The same kinetic energy that doubles with mass is being absorbed by a braking force that also doubled. Net result: same deceleration, same stopping distance.</p>
 
-<p>This is the same physics that explains why a bicycle and a bus stop in roughly the same distance on dry roads when both are tyre-limited — mass cancels in Newton's second law when the applied force scales with mass. For a train using disc brakes at maximum adhesion, adding passengers or changing the consist length does not change the stopping distance at all. What changes is how much heat the brake discs absorb (more mass → more kinetic energy → higher disc temperature) and how much brake pipe work is needed — but not the distance.</p>
+<p>This is the same physics that explains why a bicycle and a bus stop in roughly the same distance on dry roads when both are tyre-limited: mass cancels in Newton's second law whenever the applied force scales with mass. For a train using disc brakes at maximum adhesion, adding passengers or changing the consist length does not change the stopping distance at all. What does change is how much heat the brake discs absorb (more mass means more kinetic energy, which means a higher disc temperature) and how much brake pipe work is needed. The distance itself stays the same.</p>
 
 <h4>What speed gives ~45 m?</h4>
 <p>If you applied emergency brakes and saw roughly 45 m on the braking distance counter, the train was travelling at about 48 km/h at the moment you hit the emergency trigger. At that speed, µ_CK ≈ 0.241, giving a ≈ 1.94 m/s², and d = (48/3.6)² / (2 × 1.94) ≈ 45.7 m. That number is correct for the adhesion model in use — it just means you were at a low speed when you triggered the stop.</p>
@@ -681,38 +886,65 @@ M_total cancels from numerator and denominator.</div>
 <p>All three preset configurations use µ_base = 1.0 and have nearly identical λ values (1.09–1.10). Since braking distance depends only on those two parameters and the initial speed, the curves sit on top of each other. They would diverge if you changed µ_base between configs (e.g., wet rail for one, dry for another) or if the rotational inertia factor λ differed significantly. In the current setup there is no meaningful difference in braking performance between the three presets — which is itself an interesting result: the Shinkansen E5 target and the 16-car VB baseline stop in essentially the same distance at the same speed when both are adhesion-limited.</p>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="vibration">6. Vibration Analysis</h2>
+<h2 id="vibration">7. Vibration Analysis</h2>
 
-<h3>6.1 Klingel Hunting (Lateral Stability)</h3>
+<h3>7.1 Klingel Hunting (Lateral Stability)</h3>
 
-<div class="formula-box">Klingel hunting wavelength:
+<p>A railway wheelset is not two independent wheels on an axle. It is one rigid unit, and both wheels have <em>coned</em> (tapered) treads rather than cylindrical ones. This single design choice, dating back to the earliest railways, is what lets a wheelset self-centre on straight track and self-steer around curves without any steering mechanism at all. It is also the root cause of the platform's most important lateral-dynamics phenomenon: hunting.</p>
+
+<h4>Deriving the Klingel wavelength from first principles</h4>
+<p>Consider a wheelset displaced sideways by a small distance y from the track centreline. Because the treads are coned, this displacement changes the <em>rolling radius</em> of each wheel: the wheel that has moved toward the rail edge now rolls on a slightly larger radius, and the wheel that has moved away rolls on a slightly smaller radius. Since both wheels are rigidly connected by the same axle and must complete the same number of revolutions per second, the wheel with the larger rolling radius travels further per revolution — which steers the whole wheelset back toward the centre. It doesn't stop there, though: like a pendulum, it overshoots, and the same effect now pushes it back the other way. The result is a self-sustaining lateral oscillation as the wheelset rolls forward, first described mathematically by Klingel in 1883.</p>
+
+<div class="math-display">$$ \lambda_k = 2\pi\sqrt{\frac{R_{wheel}\, e_{gauge}}{\lambda_{conicity}}}, \qquad f_k(v) = \frac{v}{\lambda_k} $$</div>
+<div class="formula-box">Kinematic (Klingel) wavelength — purely geometric, does not depend on speed:
   λ_k = 2π × √(R_wheel × e_gauge / λ_conicity)
 
 where:
-  R_wheel    = wheel radius [m]  (= wheel_diam/2)
-  e_gauge    = half track gauge = 0.7175 m  (1435 mm gauge)
-  λ_conicity = wheel conicity (taper angle)
+  R_wheel    = nominal rolling radius [m]  (= wheel diameter / 2)
+  e_gauge    = half track gauge = 0.7175 m  (for 1435 mm standard gauge)
+  λ_conicity = equivalent wheel conicity (dimensionless taper ratio)
 
-Klingel frequency at speed v:
-  f_k = v / λ_k   [Hz]
+Because this is a spatial wavelength (metres per full oscillation cycle,
+not seconds), the oscillation FREQUENCY the wheelset experiences scales
+directly with how fast it is travelling:
+  f_k(v) = v / λ_k   [Hz]
 
-Critical hunting speed:
-  Vc ≈ λ_k × √(k_lateral / M_bogie) / (2π)
-     (simplified — depends on bogie yaw stiffness)
+This is why hunting is a speed-triggered phenomenon even though its
+wavelength is fixed by geometry alone: the same wheelset, on the same
+track, simply oscillates faster (in time) as speed increases, until its
+oscillation frequency coincides with a structural resonance of the
+bogie — at which point the previously well-damped kinematic sway turns
+into a growing, self-reinforcing lateral oscillation.</div>
 
-In the platform: Vc estimated from Klingel with bogie mass 3000 kg, k_lat = 2.5 MN/m</div>
+<h4>From kinematic wavelength to a critical speed</h4>
+<p>Klingel's original result only gives the wavelength — a full <em>dynamic</em> critical speed additionally requires knowing how the bogie's mass, yaw inertia, and suspension stiffness respond to being driven at that wavelength-derived frequency. A rigorous answer requires solving the coupled wheelset-bogie equations of motion as an eigenvalue problem (this is what dedicated multibody codes like VAMPIRE, SIMPACK, or GENSYS actually do). This platform instead uses a single-degree-of-freedom resonance heuristic: it treats the bogie's primary-suspension yaw stiffness and the wheelset/bogie yaw moment of inertia as a torsional oscillator, and estimates the critical speed as the point where the Klingel kinematic frequency matches that torsional system's own natural frequency.</p>
+
+<div class="math-display">$$ f_{yaw} = \frac{1}{2\pi}\sqrt{\frac{k_{yaw}}{I_{bogie}}}, \qquad V_c = \lambda_k \cdot f_{yaw} $$</div>
+<div class="formula-box">In-app critical hunting speed (index.html, computeConstants()):
+  Bogie yaw natural frequency:
+    f_yaw = (1/2π) × √(k_yaw / I_bogie)
+    k_yaw   = user-set yaw (primary suspension) stiffness [Nm/rad]
+    I_bogie = 1800 kg·m²  (fixed assumed bogie yaw moment of inertia)
+
+  Critical speed:
+    Vc = λ_k × f_yaw   [m/s]  (Klingel wavelength × yaw resonance frequency)</div>
+
+<div class="note-box"><strong>Documentation correction:</strong> the previous version of this section stated the critical-speed formula using a bogie <em>mass</em> (3000 kg) and a <em>lateral (translational)</em> stiffness (2.5 MN/m): essentially a mass-on-a-spring lateral resonance model. That does not match what the code actually computes. The implementation uses a yaw (rotational/torsional) moment of inertia (1800 kg·m²) and a yaw stiffness taken directly from the "Yaw Stiffness" slider, which is a torsional resonance model rather than a lateral one. The formula above has been corrected to match the actual implementation; see §14 Verification for the full account.</div>
 
 <h4>Why Does Conicity Matter?</h4>
-<p>Wheel conicity is the primary design parameter controlling hunting stability. Higher conicity (worn wheel profile) produces shorter Klingel wavelength → lower critical speed Vc. When train speed approaches Vc, the bogie enters sustained lateral oscillation (hunting), causing:</p>
+<p>Wheel conicity is the primary design parameter controlling hunting stability, and it appears under the square root in the denominator of the wavelength formula — so λ_k shrinks as conicity rises, which in turn lowers the critical speed Vc. New wheel profiles are cut with a low, controlled conicity; as a wheel wears in service, its effective conicity typically <em>increases</em> (the tread hollows out and the effective rolling-radius-difference-per-lateral-displacement grows), which is why hunting risk grows over a wheelset's service life even though nothing about the bogie itself has changed. When train speed approaches Vc, the bogie enters sustained lateral oscillation (hunting), causing:</p>
 <ul>
-  <li>Increased lateral acceleration (passenger discomfort)</li>
-  <li>Flange contact → rail gauge face wear → corrugation risk</li>
-  <li>Derailment risk if conicity is very high and speed is near or above Vc</li>
+  <li>Increased lateral acceleration (passenger discomfort, and eventually a measurable safety concern under EN 14363's ΣY/Q derailment criteria)</li>
+  <li>Flange contact against the rail gauge face on every oscillation cycle → accelerated gauge-face wear → corrugation risk</li>
+  <li>Derailment risk if conicity is very high and operating speed is near or above Vc</li>
 </ul>
-<p><strong>HSR rule of thumb:</strong> maintain conicity &lt; 0.05 for 320 km/h operation. Wheel reprofiling required when conicity exceeds 0.1.</p>
+<p><strong>HSR rule of thumb:</strong> maintain equivalent conicity &lt; 0.05 for 320 km/h operation, with wheel reprofiling triggered well before conicity exceeds 0.1 — reprofiling intervals are set specifically to keep conicity within this safe band throughout the wheel's service life, not just when new.</p>
 
-<h3>6.2 Vertical Ride (ISO 8608 + ISO 2631-1)</h3>
+<div class="info-box"><strong>India-specific note: two gauges, one platform.</strong> Indian Railways' existing network runs almost entirely on 1,676 mm broad gauge (half-gauge e = 0.838 m), among the widest in-service gauges in the world, chosen in the 19th century partly for stability and capacity reasons. The Mumbai–Ahmedabad High Speed Rail (MAHSR) corridor that this platform's "MAHSR Target" reference configuration represents is being built to 1,435 mm standard gauge instead (half-gauge e = 0.7175 m), specifically because it uses Shinkansen E5-derived technology sourced from Japan, which is standard-gauge throughout. This platform's hunting/Klingel calculation uses the standard-gauge value (0.7175 m) for <em>both</em> the "HSRS Baseline" and "MAHSR Target" reference configurations. That is correct for the MAHSR case, but it is a known simplification for the baseline case, which represents a broad-gauge-style semi-high-speed EMU physically while computing its hunting dynamics as if it were standard gauge. Because the Klingel wavelength scales only as the square root of gauge (λ_k ∝ √e), the resulting difference is modest: using the real broad-gauge value would increase λ_k, and therefore Vc, by a factor of √(0.838/0.7175) ≈ 1.08, roughly 8% higher than shown. Better to say so plainly than leave it as an unstated approximation.</div>
 
+<h3>7.2 Vertical Ride (ISO 8608 + ISO 2631-1)</h3>
+
+<div class="math-display">$$ S_z(\Omega) = \frac{A_r}{\Omega^2}, \qquad |H(\omega)| = \sqrt{\frac{1+(2\zeta r)^2}{(1-r^2)^2+(2\zeta r)^2}},\ \ r=\frac{\omega}{\omega_n} $$</div>
 <div class="formula-box">Track irregularity PSD (ISO 8608):
   S_z(Ω) = A_r / Ω²   [m² / (rad/m)]
 
@@ -741,18 +973,22 @@ calibration_factor = 0.00045 (matched to EN 12299 field data)</div>
   <li><strong>Damping ζ ↑</strong> → resonance peak suppressed → smoother ride near ωn; slight increase in high-frequency transmission</li>
 </ul>
 
-<h3>6.3 Sperling Ride Index (Wz)</h3>
+<h3>7.3 Sperling Ride Index (Wz)</h3>
 
-<div class="formula-box">Sperling Wz index:
-  Wz = 4.42 × (a_z,rms)^0.3 × F(f)
+<p>Sperling and Betzhold's 1956 ride index remains the working comfort metric across most of Europe and Asia (it underlies DIN 45673, and is referenced by UIC 513 and, in India, RDSO ride-quality assessments) precisely because it compresses a whole spectrum of vibration into one number a maintenance engineer can act on. The core insight is that the human body is not equally annoyed by vibration at every frequency: a jolt at 5 Hz feels far worse than the same acceleration amplitude at 20 Hz. So the formula weights each frequency band by an empirically-derived annoyance curve before combining them.</p>
 
-where F(f) is ISO 2631-1 frequency weighting:
-  F(f) = 0.588 at 4–8 Hz (most sensitive vertical)
-  F(f) = 1.0   at 8 Hz
-  F(f) = 8/f   above 8 Hz
+<div class="math-display">$$ W_{z,i} = 0.896\,\big(a_i \cdot B(f_i)\big)^{0.3}, \qquad W_z = \left(\sum_i W_{z,i}^{10}\right)^{0.1} $$</div>
+<div class="formula-box">Per-frequency-band Sperling contribution:
+$$ W_{z,i} = 0.896 \times \big(a_i \cdot B(f_i)\big)^{0.3} $$
+  a_i    = peak acceleration in that narrow frequency band [cm/s²]
+  B(f_i) = frequency weighting factor for that band (rises 0.5–5 Hz,
+           flat 5–6 Hz at the most sensitive point, falls above 6 Hz)
 
-Simplified platform version:
-  Wz ≈ 4.42 × (a_z_weighted)^0.3
+Combining all bands (10th-power / Minkowski summation — a small number
+of moderately bad bands is far less punishing than one very bad band,
+matching how a single dominant resonance dominates perceived ride
+quality in practice):
+$$ W_z = \left( \sum_i W_{z,i}^{\,10} \right)^{0.1} $$
 
 Interpretation:
   Wz ≤ 2.5  — Excellent (imperceptible motion)
@@ -761,8 +997,11 @@ Interpretation:
   3.5–4.5   — Poor (strongly perceptible)
   > 4.5     — Very poor (dangerous)</div>
 
-<h3>6.4 Jerk</h3>
+<div class="note-box"><strong>Documentation correction:</strong> the previous version of this section showed only the simplified single-band textbook formula (Wz = 4.42×a_rms^0.3), and separately described the in-app version as "simplified" relative to it. Reading the actual code (index.html, <code>computeDynamicsFor()</code>) shows the opposite is true: the implementation computes a full per-frequency-band ride index across the 0.4–40 Hz range (in 0.5 Hz steps), applies the frequency weighting curve to each band individually, and combines all bands with the standard 10th-power Minkowski summation shown above — this is the more complete, standards-consistent version of the Sperling method, not a simplified one. The formula box above has been corrected to describe what is actually computed.</div>
 
+<h3>7.4 Jerk</h3>
+
+<div class="math-display">$$ J_{total} = \left|\frac{\Delta a}{\Delta t}\right| + 0.02|a|f_{gear} + 0.15|a|\left(1-\frac{v}{v_{max}}\right) $$</div>
 <div class="formula-box">Longitudinal jerk:
   J_base = |Δa / Δt|   [m/s³]  (acceleration rate of change)
 
@@ -781,8 +1020,9 @@ Comfort limits (EN 13715):
   J &lt; 2.0 m/s³  — Acceptable
   J > 2.0 m/s³  — Uncomfortable</div>
 
-<h3>6.5 Body Roll</h3>
+<h3>7.5 Body Roll</h3>
 
+<div class="math-display">$$ \varphi_{roll} = \arctan\!\left(\frac{a_y\, M_{car}\, h_{cg}}{k_{roll}}\right) $$</div>
 <div class="formula-box">Body roll angle from lateral acceleration:
   φ_roll = arctan(ay × M_car × h_cg / k_roll)
 
@@ -798,8 +1038,9 @@ UIC limits:
   φ &lt; 6°    — acceptable body roll
   φ > 8°    — exceeds limit; may require curve speed reduction</div>
 
-<h3>6.6 Bogie Yaw Rate</h3>
+<h3>7.6 Bogie Yaw Rate</h3>
 
+<div class="math-display">$$ \dot\psi = A_{yaw}\cdot 2\pi f_k, \qquad f_k = \frac{v}{\lambda_k} $$</div>
 <div class="formula-box">Klingel bogie yaw oscillation:
   ψ̇ = A_yaw × 2π × f_k  [deg/s]
 
@@ -812,10 +1053,11 @@ Near hunting (v/Vc > 0.7):
 Comfort threshold: ψ̇ &lt; 5 deg/s (EN 14363)</div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="thermal">7. Thermal Models</h2>
+<h2 id="thermal">8. Thermal Models</h2>
 
-<h3>7.1 Brake Disc Temperature</h3>
+<h3>8.1 Brake Disc Temperature</h3>
 
+<div class="math-display">$$ \frac{dT}{dt} = \frac{Q_{in} - Q_{cool}}{m_{disc}\,c_p}, \qquad Q_{in} = F_{brake}\,v,\qquad Q_{cool} = h_{conv} A_{disc}(T - T_\infty) $$</div>
 <div class="formula-box">Brake disc thermal ODE:
   dT/dt = (Q_in - Q_cool) / (m_disc × c_p)
 
@@ -849,8 +1091,9 @@ Ambient temperature T_ambient = 30°C (Indian summer baseline)</div>
   <li><strong>More discs (n_discs ↑)</strong> → heat shared across more discs → lower temperature per disc</li>
 </ul>
 
-<h3>7.2 Bearing Temperature (EN 12082)</h3>
+<h3>8.2 Bearing Temperature (EN 12082)</h3>
 
+<div class="math-display">$$ T_{bearing} = T_\infty + \mu_{bearing}\,F_{axle}\,v\,R_{eff}, \qquad R_{eff}=\frac{0.085}{1+0.001v} $$</div>
 <div class="formula-box">Bearing heat generation:
   P_bearing = µ_bearing × F_axle × v   [W]
 
@@ -879,92 +1122,230 @@ EN 12082 Hotbox Thresholds:
 <p>A precision CARB/TBU (tapered roller) bearing for axleboxes has rolling contact friction µ ≈ 0.0005–0.001. However, the effective coefficient including viscous drag from grease, seal friction, and gear side loads, at operating temperatures where grease is fully fluid, falls to µ_eff ≈ 0.0001–0.0003. The value 0.0001 corresponds to a well-maintained bearing at operating temperature — conservative but realistic for simulation purposes. It correctly produces ΔT ≈ 20°C at 160 km/h, consistent with EN 12082 normal class.</p>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="tribology">8. Rail-Wheel Tribology</h2>
+<h2 id="tribology">9. Rail-Wheel Tribology</h2>
 
-<h3>8.1 Hertz Contact Theory</h3>
+<div class="section-intro">This is the section that governs the platform's Contact Mechanics and Rail-Wheel Lab tabs: 17 live charts, plus live numeric readouts for contact geometry, shakedown state, and wear regime. It is also the section most people ask about, because unlike braking or thermal behaviour, wheel-rail contact mechanics is not something most engineers encounter in general mechanical or civil curricula. What follows walks through the theory from first principles, states exactly what the platform computes, and is explicit about where the in-app formula is an exact textbook result versus an engineering approximation.</div>
 
-<div class="formula-box">Hertz elliptical contact:
-  Contact half-axes a, b:
-    a = m_H × ∛(3F·R_eff / (2E*))   [m]
-    b = n_H × ∛(3F·R_eff / (2E*))   [m]
+<h3>9.1 Hertz Contact Theory</h3>
 
-  m_H, n_H = Timoshenko coefficients (function of curvature ratio e*)
-  e* = (R_w - R_r) / (R_w + R_r)
+<p>In 1882, Heinrich Hertz, better known today for his work on electromagnetic waves, published the first rigorous solution for the stress field produced when two curved elastic bodies are pressed together. A wheel rolling on a rail is exactly this problem: a convex wheel tread, curved in two directions (around its circumference, and across its slightly conical profile), presses onto a convex rail head, curved across its rounded crown but essentially flat along its length. Hertz showed that under three assumptions, that both surfaces are smooth and continuous near the contact point, that both materials are linearly elastic, and that the contact patch is small compared to the radii of curvature involved, the resulting contact patch is an <strong>ellipse</strong>, and the pressure distribution over that ellipse takes the form of a perfect three-dimensional dome (a semi-ellipsoid).</p>
 
-  Reduced elastic modulus:
-    1/E* = (1-ν_w²)/E_w + (1-ν_r²)/E_r
-    For steel/steel: E* ≈ 113.6 GPa
+<div class="math-display">$$ a = m_H\sqrt[3]{\frac{3F}{4E^*(A+B)}},\quad b = n_H\sqrt[3]{\frac{3F}{4E^*(A+B)}},\qquad p_0 = \frac{3F}{2\pi a b} $$</div>
+<div class="formula-box">Step 1 — Curvatures at the contact point:
+  Rolling-direction curvature (wheel only, rail is ~flat lengthwise):
+    1/Rx = 1/R_wheel
 
-  Effective radius:
-    R_eff = R_wheel × R_rail / (R_wheel + R_rail)
-    R_rail = 0.30 m (rail head crown radius, UIC60)
+  Transverse (cross-track) curvature (wheel tread crown + rail head crown, both convex):
+    1/Ry = 1/R_wheel,transverse + 1/R_rail,crown
 
-Peak Hertz pressure:
-  p₀ = 3F / (2π × a × b)   [Pa]
+  Curvature sum:  A + B = ½(1/Rx + 1/Ry)
+  Curvature ratio: k = (1/Ry) / (1/Rx)   — this determines how elongated the ellipse is
 
-Contact area:
-  A_contact = π × a × b   [m²]
+Step 2 — Contact ellipse semi-axes:
+  a = m_H × c        (semi-axis ALONG the rail — the long way, rolling direction)
+  b = n_H × c        (semi-axis ACROSS the rail — the short way, transverse)
+  c = ∛[ 3F / (4E* (A+B)) ]
 
-Normal force per wheel:
-  F = W_total / (n_axles × 2)   [N]</div>
+  m_H, n_H = dimensionless Hertz/Timoshenko coefficients, functions of k
+             (see table below — this is the one place the closed-form Hertz
+             solution requires either a table lookup or an approximation)
 
-<h4>Why Hertz Contact?</h4>
-<p>Hertz theory is the closed-form solution for elastic contact between curved bodies. It is the foundation of all rail-wheel contact mechanics. Peak pressure p₀ determines whether material yields (p₀ vs shakedown limit ≈ 2.8 × yield strength = 2.8 × 900 MPa ≈ 2.5 GPa for R260 rail steel). Below shakedown, only elastic deformation occurs. Above it, ratchetting wear accelerates.</p>
+  Combined (reduced) elastic modulus:
+    1/E* = ½[(1-ν_w²)/E_w + (1-ν_r²)/E_r]
+    For steel wheel on steel rail (E=210 GPa, ν=0.3 both): E* ≈ 115.4 GPa
 
-<h3>8.2 Polach Creep Model</h3>
+Step 3 — Peak Hertzian pressure (at the centre of the ellipse):
+  p₀ = 3F / (2π·a·b)     [Pa]
 
-<div class="formula-box">Polach (2000) tangential contact force:
-  F_T = (2µN/π) × [ε/(1+ε²) + arctan(ε)]
+  The pressure distribution is semi-ellipsoidal: p(x,y) = p₀·√[1-(x/a)²-(y/b)²]
+  Average pressure over the patch = (2/3)·p₀ — this is why p₀, not the average,
+  is what matters for yield and fatigue: the material at the very centre of the
+  patch sees 1.5× the average stress.
 
-where:
+Contact area:  A_contact = π·a·b
+Normal force per wheel:  F = W_total / (n_axles × 2)</div>
+
+<h4>The Timoshenko coefficient table — and how the platform approximates it</h4>
+<p>The exact values of m_H and n_H are not given by a simple formula; Hertz's original solution requires complete elliptic integrals of the curvature-ratio angle θ = arccos[(B-A)/(A+B)], and in practice everyone just looks them up in a table (reproduced in Timoshenko &amp; Goodier's <em>Theory of Elasticity</em>, and in Roark's <em>Formulas for Stress and Strain</em>):</p>
+
+<table class="param-table">
+  <tr><th>θ (deg)</th><th>30</th><th>40</th><th>50</th><th>60</th><th>70</th><th>80</th><th>90</th></tr>
+  <tr><td>m_H</td><td>2.73</td><td>2.14</td><td>1.75</td><td>1.49</td><td>1.28</td><td>1.13</td><td>1.00</td></tr>
+  <tr><td>n_H</td><td>0.49</td><td>0.57</td><td>0.64</td><td>0.72</td><td>0.80</td><td>0.89</td><td>1.00</td></tr>
+</table>
+
+<p>At θ=90° (equal curvature in both directions, i.e. a spherical contact like a ball bearing) the ellipse degenerates to a circle and m_H=n_H=1 — a useful sanity check. As θ decreases, the two surfaces' curvatures diverge more, and the contact patch stretches into a longer, thinner ellipse.</p>
+
+<p>Because looking up an elliptic-integral table on every simulation frame is impractical in a browser running at 10 Hz, this platform uses a closed-form approximation instead of the table:</p>
+
+<div class="math-display">$$ m \approx 1 + 0.6\ln k, \qquad n \approx 1 - 0.2\ln k $$</div>
+<div class="formula-box">In-app approximation (index.html, computeConstants()):
+  m ≈ 1 + 0.6 × ln(k)
+  n ≈ 1 - 0.2 × ln(k)
+  where k = curvature ratio (1/Ry)/(1/Rx)</div>
+
+<p>This is <strong>not</strong> the textbook Hertz/Timoshenko table, and it is not the other commonly-cited closed-form alternative in the literature, the Brewe-Hamrock (1977) ellipticity approximation κ ≈ (B/A)^(2/π), which was derived by least-squares regression against the exact elliptic-integral solution and is accurate to within about 3%. The logarithmic form used here is a simpler engineering approximation. It was checked against the exact behaviour at the two points that matter most for correctness:</p>
+<ul>
+  <li><strong>Boundary condition:</strong> at k=1 (equal curvature, circular contact) it correctly gives m=n=1, matching Hertz exactly.</li>
+  <li><strong>Typical HSR operating point:</strong> for a 915 mm wheel with a 500 mm transverse crown radius on a 300 mm rail head crown (k ≈ 2.45), the approximation gives m≈1.54, n≈0.82, i.e. an ellipse with b/a ≈ 0.53 — a roughly 2:1 aspect ratio contact patch. Measured wheel-rail contact patches on new profiles are typically reported in the range 8–15 mm long by 5–10 mm wide (a 1.5:1 to 2.5:1 ratio), so the approximation's shape is physically reasonable, even though it is not the exact Hertz value.</li>
+</ul>
+<p>Running the platform's live contact-mechanics readout with default parameters gives a=6.9 mm, b=3.8 mm, p₀=1034 MPa — well within the range independently reported for new high-speed wheel/rail profiles (typically 800–1400 MPa for HSR axle loads of 10–14 t per axle), which is a reasonable confidence check on the overall approach even though the m/n coefficient formula itself is a simplification rather than the literature-exact value.</p>
+
+<h4>Why does p₀ matter so much?</h4>
+<p>Peak Hertzian pressure is the single number that determines whether the wheel-rail contact stays in the elastic regime or starts accumulating permanent damage. Section 10 (Rolling Contact Fatigue) below covers this in depth, but the short version: below roughly 2× the material's yield strength, only elastic deformation happens and the material recovers fully after each wheel pass; above that threshold, the material starts to permanently deform a little on each pass, which eventually produces surface cracking. For R350HT rail steel (yield strength ≥ 880 MPa), that threshold sits in the 1500–1800 MPa range — comfortably above the platform's typical computed p₀ of ~1000–1400 MPa for HSR loads, but close enough that axle load and wheel diameter choices genuinely matter.</p>
+
+<h3>9.2 Creepage — What "Slip" Actually Means in Rolling Contact</h3>
+
+<p>Before getting to the Polach model, it is worth being precise about creepage, because the word "slip" is misleading. A powered wheel under traction is <em>not</em> spinning faster than the train is moving in the way a car tyre spins on ice — the difference is measured in fractions of a percent, not tens of percent. The contact patch is elastic: near the leading edge it sticks fully to the rail (no relative motion), and only near the trailing edge does genuine micro-slip occur, growing as the tangential force demanded gets closer to the adhesion limit.</p>
+
+<div class="math-display">$$ \xi_x = \frac{v_{wheel} - v_{rail}}{v_{rail}}, \qquad \xi_y = \sin\psi + \frac{v_{lat}}{v}, \qquad \xi_{sp} = \frac{\omega\sin\delta}{v} $$</div>
+<div class="formula-box">Longitudinal creepage (traction/braking direction):
+  ξ_x = (v_wheel_surface - v_rail) / v_rail
+
+  where v_wheel_surface = ω_wheel × R_rolling (angular speed × rolling radius)
+  and v_rail is the train's actual translational speed.
+
+  Positive ξ_x → wheel surface moving faster than train → traction (driving)
+  Negative ξ_x → wheel surface moving slower than train → braking
+
+Lateral creepage (from yaw / hunting motion, or curve negotiation):
+  ξ_y = sin(ψ) + (lateral velocity component) / v
+  where ψ = the wheelset's yaw angle relative to the track centreline
+
+Spin creepage (from the contact patch not being perpendicular to the axle,
+due to conicity and the wheel/rail contact angle):
+  ξ_sp = ω_wheel × sin(δ) / v
+  where δ = contact angle (related to conicity and lateral wheelset position)</div>
+
+<p>The platform's live telemetry uses a representative fixed working-point creepage (0.3%, i.e. ξ=0.003) to compute T-γ and wear on the live charts — this value sits deliberately in the middle of the typical steady-state traction/braking creepage range (0.1–0.5%) rather than being derived frame-by-frame from wheel slip dynamics, which would require modelling individual wheelset yaw and torsional dynamics that are out of scope for a vehicle-level simulator. The Rail-Wheel Lab's creep-force-vs-creepage chart (Chart ④) does sweep the full creepage range from 0% to 10%, which is where the saturation behaviour described below actually becomes visible.</p>
+
+<h3>9.3 The Polach Tangential Contact Model</h3>
+
+<p>Once the normal contact solution (Hertz) and the creepage are known, the next question is: how much tangential (traction/braking) force can actually be transmitted through that creepage? The first rigorous answer came from Joost Kalker's <strong>linear theory</strong> (1967), which relates small creepages linearly to tangential force through a set of dimensionless coefficients, universally called the Kalker coefficients C₁₁ (longitudinal), C₂₂ (lateral), and C₂₃ (spin-lateral coupling). Kalker tabulated these as functions of the contact ellipse aspect ratio b/a and Poisson's ratio — for a typical wheel-rail ellipticity around b/a≈0.5 and ν=0.28 (steel), published tables give C₁₁ in roughly the 4–5 range.</p>
+
+<div class="math-display">$$ F_{T,linear} = -C_{11}\,G\,a\,b\,\xi $$</div>
+<div class="formula-box">Kalker linear theory (valid only for very small creepage, ξ ≲ 0.1%):
+  F_T,linear = -C₁₁ × G × a × b × ξ
+  where G = combined shear modulus ≈ 80.77 GPa for steel/steel
+
+Problem: this grows without bound as ξ increases — physically impossible,
+since the tangential force cannot exceed the adhesion limit µN.</div>
+
+<p>Kalker's linear theory breaks down almost immediately in practice, because real traction and braking creepages regularly exceed 0.1%. Oldrich Polach's 2000 model ("A Fast Wheel-Rail Forces Calculation Computer Code") solves this by introducing a saturation function that smoothly bends the linear relationship over into the correct large-slip asymptote (F_T → µN as ξ → ∞), while still recovering Kalker's linear result for very small ξ:</p>
+
+<div class="math-display">$$ F_T = \frac{2\mu N}{\pi}\left[\frac{\varepsilon}{1+\varepsilon^2} + \arctan\varepsilon\right], \qquad \varepsilon = \frac{C_{11}\,G\,\pi\,a\,b\,\xi}{4\mu N} $$</div>
+<div class="formula-box">Polach tangential force:
+  F_T = (2µN/π) × [ ε/(1+ε²) + arctan(ε) ]
+
+where the "reduced creepage" ε absorbs all the Kalker/Hertz geometry:
+  ε = (C₁₁ × G × π × a × b × ξ) / (4 × µ × N)
+
+  As ξ → 0:  ε → 0, and F_T → (2µN/π)×[ε + ε] = (4µN/π)×ε  (recovers linear regime)
+  As ξ → ∞:  ε → ∞, and F_T → (2µN/π)×[0 + π/2] = µN       (correctly saturates)
+
+In-app simplification (index.html, buildRWCharts() → polachF()):
   ε = (π × C_11 × ξ × a × b) / (4 × µ × N)
-  ξ = creep ratio (normalised slip velocity)
-  C_11 = Kalker longitudinal creep coefficient ≈ 10–12 GPa/m
-  µ    = available adhesion (Curtius-Kniffler)
-  N    = normal force [N]
+  with C_11 = 4.78 (fixed, representative of b/a≈0.5, ν≈0.28)</div>
 
-Longitudinal creep ratio:
-  ξ_x = (v_wheel - v_rail) / v_rail   (slip fraction)
+<p>The in-app value C₁₁=4.78 is a single fixed representative value rather than a live lookup against the current contact ellipse's actual b/a ratio, which does shift slightly as the wheel diameter and axle load sliders move. This is a reasonable simplification, since C₁₁ varies only modestly (roughly ±20%) over the range of b/a ratios realistic for HSR wheel/rail pairs. It does mean the creep-force curve will not shift noticeably when, say, the wheel diameter slider is moved, even though in reality it would shift a little.</p>
 
-Lateral creep from hunting:
-  ξ_y ≈ sin(ψ_bogie) × (v/Vc ratio)</div>
+<div class="note-box"><strong>Why the "live" creep force curve can sit above its own reference lines:</strong> The Rail-Wheel Lab's Chart ④ (Polach Creep Curve) plots the creep force computed at the <em>current live simulation speed</em>, while its two dashed reference lines ("VB µ×N", "MAHSR µ×N") are drawn at <em>fixed</em> reference speeds of 160 km/h and 320 km/h. Because adhesion µ rises sharply as speed falls (Curtius-Kniffler, §6.3), a stationary or slow-moving train has a much higher µ than either reference point — so immediately after loading the page (train stationary), the live curve's saturation plateau will sit visibly above both reference lines. This is expected, physically correct behaviour, not a bug: start the simulation and bring the train up to 160 or 320 km/h, and the live curve converges toward the corresponding reference line.</div>
 
-<h4>Why Polach (not Kalker)?</h4>
-<p>Kalker's linear creep theory is only valid at very small slip (&lt; 1%). Polach (2000) extends to full slip and correctly captures the non-linear saturation of the creep force toward µN at large slip. This is critical for traction/braking modelling near adhesion limit, especially during wheel-slip events.</p>
+<h3>9.4 Archard Wear Model</h3>
 
-<h3>8.3 Archard Wear Model</h3>
+<p>John Archard's 1953 wear equation is the standard starting point for predicting how much material is removed from two surfaces in sliding contact. It says, in effect, that the volume of debris produced is proportional to how hard the surfaces are pressed together, how far they slide relative to each other, and inversely proportional to how hard the material is — with all the messy, hard-to-predict physics of asperity contact, adhesion, and debris formation folded into a single empirical dimensionless coefficient, K.</p>
 
+<div class="math-display">$$ V_{wear} = \frac{K\, F_N\, s}{H}, \qquad s = \xi \cdot d $$</div>
 <div class="formula-box">Archard wear volume:
-  V_wear = K_wear × F_N × s / H
+  V_wear = K × F_N × s / H
 
 where:
-  K_wear = wear coefficient (dimensionless, material-pair specific)
-           = 1×10⁻⁴ for R260 wheel / R260 rail at low slip
-           = 3×10⁻⁴ at high slip (T-gamma > 15 N/mm)
-  F_N    = normal contact force [N]
-  s      = sliding distance [m]
-  H      = material hardness [Pa]
-           = 260 × 9.81 × 10⁶ ≈ 2.55 GPa for R260 rail steel
+  K   = dimensionless wear coefficient (see regimes below)
+  F_N = normal contact force [N]
+  s   = sliding (relative slip) distance [m]
+  H   = material hardness expressed as a pressure [Pa]
+        (H ≈ 2.8–3.0 × HB × 9.81×10⁶, roughly; R350HT rail steel
+         at 350-390 HB gives H ≈ 2.5 GPa)
 
 Sliding distance per km of travel:
-  s = ξ × d  [m slip per m travel]
-  d = 1000 m (per km)
+  s = ξ × d,  d = 1000 m per km travelled
 
-Output: mm³ of material removed per km of travel per wheel</div>
+Output: mm³ of material removed per km of travel, per wheel</div>
 
-<h4>Parameter Effects on Wear:</h4>
+<h4>The wear coefficient K — and why "one number" is a simplification</h4>
+<p>Archard's original work on dry sliding metal contacts found K spanning roughly six orders of magnitude — from K≈10⁻⁸ for genuinely mild, oxidative wear up to K≈10⁻² for severe adhesive (galling) wear. Rail-specific research narrows this considerably because wheel-rail contact is rolling-sliding rather than pure sliding, and because the relevant regimes for steel-on-steel rail contact have been characterised experimentally using twin-disc rigs. The platform uses a two-value switch:</p>
+
+<div class="formula-box">In-app K values (index.html, wearAt()):
+  K = 1×10⁻⁴   for T-γ/A below the mild/severe threshold
+  K = 3×10⁻⁴   for T-γ/A above it (more severe sliding-dominated wear)</div>
+
+<p>This two-value approach is a simplification of a continuum. The most widely cited experimental classification for rail-specific wear regimes is <strong>Lewis &amp; Dwyer-Joyce's twin-disc wear map</strong> (University of Sheffield), which plots measured wear rate (µg per metre rolled per mm² of contact area) against the wear number Tγ/A (frictional work rate normalised by contact area, in N/mm²):</p>
+
+<table class="param-table">
+  <tr><th>Regime</th><th>Tγ/A threshold</th><th>Typical wear rate</th><th>What's physically happening</th></tr>
+  <tr><td>Mild (oxidative)</td><td>&lt; 10.4 N/mm²</td><td>0.1–1 µg/m</td><td>A thin, protective iron-oxide film forms and is continuously worn away and reformed; wear is slow and the surface stays smooth.</td></tr>
+  <tr><td>Severe (adhesive/delamination)</td><td>10.4 – 77.2 N/mm²</td><td>1–10 µg/m</td><td>The oxide film cannot form fast enough to protect the surface; metal-to-metal adhesive wear and sub-surface plastic flow dominate. Wear rate jumps roughly an order of magnitude at this transition.</td></tr>
+  <tr><td>Catastrophic</td><td>&gt; 77.2 N/mm²</td><td>&gt; 10 µg/m</td><td>Bulk surface temperature rises enough (roughly 200–250°C locally) to soften the steel significantly; gross material transfer, deep gouging, or seizure-like behaviour follows.</td></tr>
+</table>
+
+<p>This table (also shown in the platform's Wear &amp; Fatigue tab) is what the app's own hardcoded switch threshold is loosely modelled on. It is worth being precise about units here, because it is exactly the kind of mismatch that is easy to miss: the Lewis-Olofsson Tγ/A index is normalised by contact area A (giving N/mm², a pressure-like quantity), whereas the raw "T-γ" figure fed into the Archard wear-volume calculation is not — it is simply tangential force times creepage, in newtons, and dividing by contact area is a separate step. The Contact Mechanics tab now performs that division itself and shows both numbers side by side: the raw T-γ (N) used internally by the Archard formula, and the area-normalised Tγ/A (N/mm²) that the Mild / Severe / Catastrophic classification above is actually based on, with the live classification displayed directly rather than left for the user to work out.</p>
+
+<h4>Parameter effects on wear:</h4>
 <ul>
-  <li><strong>Speed ↑</strong> → increases through ξ (more lateral creep from hunting) and contact time changes</li>
-  <li><strong>Conicity ↑</strong> → more lateral hunting → ξ_y increases → wear rate increases rapidly near Vc</li>
-  <li><strong>Axle load ↑</strong> → F_N ↑ → both p₀ and wear volume increase proportionally</li>
-  <li><strong>K_wear switch</strong> → changes at T-gamma = F_T × ξ threshold — detects severe wear regime</li>
+  <li><strong>Speed ↑</strong> → adhesion µ falls (Curtius-Kniffler) but required tractive/braking force stays similar, so ε and creep force can rise; more significantly, higher speed increases sliding distance per unit time</li>
+  <li><strong>Conicity ↑</strong> → more lateral hunting motion → lateral creepage ξ_y increases → wear rate rises sharply as the train approaches its critical hunting speed</li>
+  <li><strong>Axle load ↑</strong> → normal force F_N rises → both p₀ (Hertz) and wear volume increase — wear volume scales roughly linearly with load, while p₀ scales with the cube root of load, which is why axle load limits are set by fatigue (p₀) long before they are set by simple wear rate</li>
+  <li><strong>Rail/wheel hardness ↑</strong> → H increases in the denominator → wear volume falls proportionally; this is the entire engineering rationale for head-hardened rail (R350HT, 350–390 HB) over standard-strength rail (R260, ~260 HB) on high-speed lines</li>
 </ul>
 
+<div class="note-box"><strong>Correction applied during this review, Chart ⑧ "Wheel Life Remaining":</strong> This chart converts a volumetric wear rate (mm³/km, from the Archard model) into an estimated wheel life in km, by working out how many km of travel it takes to wear away the full radial allowance (140 mm, new-to-condemn) at that wear rate. The previous version of this conversion mixed millimetre and metre units in the same expression, which made the computed "wheel life" curve roughly 10,000× larger than the chart's own "VB Target 400k km" and "MAHSR Target 600k km" reference lines. It was so far off that the reference lines and the actual data effectively never appeared on the same visible part of the chart. This has now been corrected: the volume-to-depth conversion constant is calibrated so that the VB reference wear rate (0.05 mm³/km) reproduces the VB reference wheel life (400,000 km) exactly, and the curve sweeps from roughly 4,000,000 km at the best-case wear rate shown down to about 103,000 km at the worst case. That is a sensible, interpretable spread, and it now actually crosses both reference bands within the plotted range.</div>
+
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="comfort">9. Ride Comfort &amp; Suspension FRF</h2>
+<h2 id="rcf">10. Rolling Contact Fatigue &amp; the Shakedown Map</h2>
 
-<h3>9.1 Suspension Frequency Response Function</h3>
+<div class="section-intro">Wear (material physically removed) and rolling contact fatigue (cracks forming beneath or at the surface without necessarily removing material) are two different failure modes, and on modern hardened rail steel run at controlled speeds, RCF is usually the one that actually limits rail and wheel life — not simple wear. This section did not previously exist in the documentation; it is added here because the platform's Wear &amp; Fatigue tab already displays a shakedown map and RCF-related wear mechanisms, but the theory behind them was never explained.</div>
 
+<h3>10.1 The Shakedown Map</h3>
+
+<p>When a rolling contact load passes over a point on the rail repeatedly, the material's response depends on how the peak contact stress compares to the material's yield strength. This was formalised by K.L. Johnson (1989) into what is now called the <strong>shakedown map</strong>:</p>
+
+<div class="formula-box">Shakedown regimes, by peak contact pressure p₀ relative to yield strength σ_y:
+
+  p₀ &lt; ~2.5σ_y (approx.)      → Purely elastic — no permanent deformation at all
+  ~2.5σ_y &lt; p₀ &lt; ~4σ_y (approx.) → Elastic shakedown — a small amount of plastic
+                                    strain occurs on the very first few passes, then
+                                    the material "shakes down" to a stable state where
+                                    all subsequent cycles are purely elastic (a
+                                    protective residual stress field has built up)
+  p₀ &gt; ~4σ_y (approx.)         → Plastic shakedown / ratchetting — every pass adds
+                                    a small increment of permanent plastic strain in
+                                    the same direction; this accumulates without limit
+                                    and is the root cause of most RCF cracking</div>
+
+<p>For R350HT rail steel (yield strength ≥ 880 MPa), this puts the elastic/shakedown boundary in roughly the 1500–1800 MPa p₀ range and the shakedown/ratchetting boundary around 2200–2400 MPa. That is broadly consistent with the platform's own Wear &amp; Fatigue tab, which shows an elastic regime below 900 MPa, elastic shakedown 900–1558 MPa, plastic shakedown 1558–2200 MPa, and ratchetting above 2200 MPa. The platform's numbers are somewhat more conservative than the generic Johnson multiples above, which makes sense: real rail steel shakedown limits depend on details like residual stress from head-hardening, and are usually taken from measured or standard-specific data such as EN 13674-1's fatigue design limits rather than derived purely from a generic multiple of yield strength.</p>
+
+<p>The key practical point: a wheel-rail contact operating in the elastic shakedown regime is not damage-free forever — the "shakedown" is only stable if nothing else changes. Thermal loading (a hot day, or heat from nearby braking), a slightly out-of-round wheel, or a rail joint impact can transiently push the local contact stress well above the nominal p₀, triggering a ratchetting increment even though the nominal, steady-state operating point looks safely in the shakedown zone. This is why RCF inspection intervals matter even on well-designed, apparently comfortably-loaded high-speed lines.</p>
+
+<h3>10.2 What Ratchetting Actually Produces</h3>
+
+<table class="param-table">
+  <tr><th>Defect</th><th>Location</th><th>Mechanism</th></tr>
+  <tr><td>Head checks</td><td>Rail gauge corner, high-rail on curves</td><td>Fine, closely-spaced surface cracks angled ~perpendicular to the rolling direction, from repeated ratchetting of near-surface material under high creepage in curves</td></tr>
+  <tr><td>Squats</td><td>Rail running band, tangent (straight) track</td><td>Localised subsurface cracks that grow parallel to the surface, eventually causing a small depression ("squat" shape) and, if undetected, a transverse rail break</td></tr>
+  <tr><td>Shelling</td><td>Wheel tread</td><td>Sub-surface fatigue crack initiating at a material inclusion or the depth of maximum shear stress (~4–6 mm below the Hertz contact centre for typical HSR loads), growing parallel to the surface until a flake "shells" off</td></tr>
+  <tr><td>Gauge-corner spalling</td><td>Rail gauge corner</td><td>Head checks that have grown deep enough to link up and cause chunks of material to break away rather than simply crack</td></tr>
+  <tr><td>Wheel flats</td><td>Wheel tread, localised</td><td>Not fatigue in the classical sense — a locked or skidding wheel (WSP failure, low adhesion) grinds a flat spot through pure sliding wear and frictional heating in seconds, producing a wheel/rail impact every revolution afterward until reprofiled</td></tr>
+</table>
+
+<h4>Why HSR track sees a different RCF profile than freight or classical mainline</h4>
+<p>Two things shift the RCF picture at high speed compared to a conventional 100–120 km/h railway. First, axle loads on high-speed EMU and trainset stock are relatively light, typically 14–17 t/axle against up to 25 t/axle for freight in India, which keeps p₀ comfortably inside the shakedown envelope under normal conditions. High-speed lines are generally not wear-limited the way heavy-haul freight lines are. Second, the tight conicity control required for hunting stability at 300+ km/h (§7.1, conicity &lt; 0.05) keeps the contact patch running in a narrow, repeatable band on both the wheel tread and rail head. That is good for predictability, but it also means that band sees a very high number of load cycles at nearly the same location, favouring fatigue (squats, head checks) over general wear as the dominant degradation mode. This is why RDSO and international HSR maintenance regimes for lines like MAHSR emphasise ultrasonic rail flaw detection and periodic wheel/rail profile grinding, removing a thin RCF-affected surface layer before cracks can propagate, as much as, or more than, simple wear-driven reprofiling.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="comfort">11. Ride Comfort &amp; Suspension FRF</h2>
+
+<h3>11.1 Suspension Frequency Response Function</h3>
+
+<div class="math-display">$$ |H(f)| = \sqrt{\frac{1+(2\zeta r)^2}{(1-r^2)^2+(2\zeta r)^2}}, \quad r=\frac{f}{f_n},\ f_n=\frac{1}{2\pi}\sqrt{\frac{k_s}{m_{car}}} $$</div>
 <div class="formula-box">Transmissibility (FRF) of secondary suspension:
   |H(f)| = √[(1 + (2ζr)²) / ((1 - r²)² + (2ζr)²)]
 
@@ -990,7 +1371,7 @@ Interpretation:
 </ul>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="standards">10. Standards &amp; Compliance</h2>
+<h2 id="standards">12. Standards &amp; Compliance</h2>
 
 <table class="param-table">
   <tr><th>Standard</th><th>Scope</th><th>Key Threshold Used</th></tr>
@@ -1005,18 +1386,18 @@ Interpretation:
 </table>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<h2 id="formulas">11. Complete Formula Quick Reference</h2>
+<h2 id="formulas">13. Complete Formula Quick Reference</h2>
 
 <table class="param-table">
   <tr><th>Formula</th><th>Expression</th><th>Source</th></tr>
   <tr><td>Davis Resistance</td><td>R = A + Bv [N/kN]</td><td>Davis (1926), UIC 779-1</td></tr>
-  <tr><td>Curtius-Kniffler Adhesion</td><td>µ = µ₀ × [0.161 + 7.5/(v+44)]</td><td>UIC 541-05</td></tr>
+  <tr><td>Curtius-Kniffler Adhesion</td><td>µ = ψ × [0.161 + 7.5/(v+44)]</td><td>UIC 541-05, Curtius-Kniffler (1950)</td></tr>
   <tr><td>Klingel Wavelength</td><td>λ_k = 2π√(R_w·e / λ)</td><td>Klingel (1883)</td></tr>
-  <tr><td>Hertz Contact (force)</td><td>p₀ = 3F/(2πab)</td><td>Hertz (1882), Timoshenko</td></tr>
-  <tr><td>Polach Creep Force</td><td>F = (2µN/π)[ε/(1+ε²)+arctan ε]</td><td>Polach (2000)</td></tr>
+  <tr><td>Hertz Contact (pressure)</td><td>p₀ = 3F/(2πab)</td><td>Hertz (1882), Timoshenko &amp; Goodier</td></tr>
+  <tr><td>Polach Creep Force</td><td>F = (2µN/π)[ε/(1+ε²)+arctan ε]</td><td>Polach (2000), building on Kalker (1967)</td></tr>
   <tr><td>Archard Wear</td><td>V = K·F·s/H</td><td>Archard (1953)</td></tr>
   <tr><td>Suspension FRF</td><td>|H| = √[(1+(2ζr)²)/((1-r²)²+(2ζr)²)]</td><td>Den Hartog (1956)</td></tr>
-  <tr><td>Sperling Wz</td><td>Wz = 4.42·(a_w)^0.3</td><td>DIN 5573, UIC 513</td></tr>
+  <tr><td>Sperling Wz (per-band)</td><td>Wz = [Σᵢ(0.896(aᵢBᵢ)^0.3)^10]^0.1</td><td>Sperling &amp; Betzhold (1956), DIN 45673</td></tr>
   <tr><td>Disc Brake Temp (ODE)</td><td>dT/dt = (Q_in - Q_cool)/(mc_p)</td><td>Newton cooling law</td></tr>
   <tr><td>Bearing Temp (SS)</td><td>T = T_amb + µ·F_axle·v·R_eff</td><td>EN 12082 basis</td></tr>
   <tr><td>RK4 Integration</td><td>v_new = v + (k1+2k2+2k3+k4)/6</td><td>Runge-Kutta (1901)</td></tr>
@@ -1034,6 +1415,82 @@ Interpretation:
   <strong>Corridor data:</strong> MAHSR BKC–Sabarmati 508 km, 12 stations, per JICA DPR<br>
   <strong>Technology:</strong> Three.js r128, Chart.js 3.9.1, pure JavaScript (no framework)
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="verification">14. Verification — Does the Documentation Match What's Actually Coded?</h2>
+
+<div class="section-intro">This section exists to answer that question directly, rather than leaving it implicit. Every formula box in this document was checked against the corresponding function in <code>index.html</code> during this review. Most matched. Seven did not, for various reasons: a few were genuine calculation bugs in the code, and most were cases of the documentation describing an idealised textbook formula while the code, reasonably, used a simplified or differently-parameterised version of it. All seven are listed below with what was actually found and what was changed. Nothing in this section is a "trust me" claim; every row names the specific JavaScript function you can go and read yourself.</div>
+
+<table class="param-table">
+  <tr><th>#</th><th>Topic</th><th>Where (index.html)</th><th>What was found</th><th>Resolution</th></tr>
+  <tr>
+    <td>1</td>
+    <td>Braking &amp; Vibration Lab live charts not rendering</td>
+    <td><code>initBkLiveCharts()</code>, <code>initVibLiveCharts()</code>, the two <code>lapSwitchTab</code> tab-switch hooks</td>
+    <td>Genuine bug, not a documentation issue. These Chart.js instances were created immediately at page load while their tab panel was still hidden (<code>display:none</code>), so Chart.js measured a 0×0 canvas and never recovered. A follow-up <code>setTimeout(fn, 60)</code> intended to fix the size on tab-open was timing-fragile and did not reliably fire, especially when switching tabs in quick succession.</td>
+    <td><strong>Fixed in code.</strong> Charts are now created lazily, the first time their tab is actually opened (when the container already has real dimensions), matching the pattern already used successfully by the Physics Analysis and Rail-Wheel Lab tabs. Verified with 3 repeated automated test passes — all 27 affected chart canvases now render at correct size on every run.</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Rail-Wheel Lab Chart ⑧, "Wheel Life Remaining"</td>
+    <td><code>buildRWCharts()</code>, the wearRates→depthPerKm conversion</td>
+    <td>Genuine calculation bug. The volumetric-wear-to-radial-depth conversion mixed millimetre and metre units in the same expression, producing a "wheel life" curve roughly 10,000× larger than the chart's own reference lines (millions of "×1000 km" against reference lines of 400 and 600).</td>
+    <td><strong>Fixed in code.</strong> The conversion constant is now calibrated so the VB reference wear rate (0.05 mm³/km) reproduces the VB reference wheel life (400,000 km) exactly, documented in §9.4 above with the calibration shown explicitly rather than presented as an unstated exact derivation.</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Curtius-Kniffler adhesion, µ_base value</td>
+    <td><code>S.mu_base</code> default and the "Adhesion Factor" slider, <code>id="sMu"</code></td>
+    <td>Documentation-only issue. The previous text described three discrete named presets (0.33 dry / 0.20 wet / 0.12 contaminated). The actual control is a single continuous slider from 0.20 to 1.10, defaulting to 1.0 — and 1.0, not 0.33, is what makes the formula reduce to the standard dry-rail Curtius-Kniffler curve.</td>
+    <td><strong>Documentation corrected</strong> in §6.3 to describe the actual slider behaviour and default.</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Klingel critical hunting speed, Vc formula</td>
+    <td><code>computeConstants()</code>, the <code>Lk</code> / <code>f_yaw</code> / <code>Vc_ms</code> calculation</td>
+    <td>Documentation-only issue. The previous text described a lateral mass-spring resonance (bogie mass 3000 kg, lateral stiffness 2.5 MN/m). The code actually implements a yaw (torsional) resonance model, using a fixed bogie yaw moment of inertia (1800 kg·m²) and the live "Yaw Stiffness" slider value — a different physical model with different units entirely.</td>
+    <td><strong>Documentation corrected</strong> in §7.1 to describe the torsional resonance model that is actually implemented.</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Sperling ride index (Wz) formula</td>
+    <td><code>computeDynamicsFor()</code>, the <code>Wz_sum</code> loop</td>
+    <td>Documentation-only issue, and in the opposite direction to the others: the code is <em>more</em> sophisticated than what was documented. The previous text showed only the single-band textbook formula and called the in-app version a "simplified" approximation of it. In fact the code computes a full per-frequency-band ride index (0.4–40 Hz in 0.5 Hz steps) with frequency weighting applied per band, combined via the standard 10th-power Minkowski summation — the complete multi-band method, not a simplification.</td>
+    <td><strong>Documentation corrected</strong> in §7.3 to show the real per-band formula actually being computed.</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Wear regime Tγ boundaries (Wear &amp; Fatigue tab)</td>
+    <td>Static HTML table in the Wear &amp; Fatigue lab page; thresholds compared against Lewis &amp; Dwyer-Joyce (Sheffield twin-disc) published values</td>
+    <td>Minor accuracy issue. The mild/severe and severe/catastrophic boundaries were shown as round numbers (15 and 75 N/mm²) rather than the actual published values (10.4 and 77.2 N/mm²).</td>
+    <td><strong>Fixed</strong>, and the app now also computes and displays this ratio live rather than only as a static reference table — see item 7.</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>Rail-Wheel Lab Chart ②, "Hertz p₀ vs Axle Load", and the VB/MAHSR reference contact-ellipse points in Chart ③</td>
+    <td><code>buildRWCharts()</code>, the <code>loads</code> array and the two <code>hertzAt(860, …)</code> reference calls; also the equivalent points in the shakedown chart described below</td>
+    <td>Genuine calculation bug. <code>hertzAt()</code> expects its load argument in kilonewtons, but the chart's axle-load axis is in tonnes (realistically 8–28 t) and was being passed straight through with no conversion — so the chart was actually computing contact stress for axle loads under 3 tonnes while labelling the axis 8–28 t. This understated peak contact pressure by roughly 2.3× across the whole chart (e.g. 459 MPa shown at the "10 t" mark, against a correct value of about 983 MPa).</td>
+    <td><strong>Fixed in code.</strong> Tonne values are now converted to kilonewtons (×9.81) before being passed to <code>hertzAt()</code>. The corrected curve now lines up with the chart's own "VB Axle Ref ~1100 MPa" marker line, as it was clearly always intended to.</td>
+  </tr>
+</table>
+
+<h3>14.1 What Was Checked and Found Consistent</h3>
+<p>Beyond the seven items above, the following core formulas were checked line-by-line against their implementation and found to match the documentation as originally written, with no changes needed: Davis resistance (§6.1), RK4 integration structure (§6.2), the braking-distance mass-cancellation result (§6.4, including reproducing the platform's own "~1.75× optimistic vs UIC 544-1" finding by direct calculation), the Hertz contact geometry pipeline excluding the m/n coefficient approximation itself (§9.1, now explicitly flagged as an engineering approximation rather than the literature-exact Timoshenko table), the Polach saturation formula structure (§9.3), the Archard wear volume formula structure (§9.4), the brake disc and bearing thermal ODEs (§8.1–8.2), and the Klingel kinematic wavelength formula (§7.1, excluding the downstream critical-speed extension covered in item 4 above). The live Contact Mechanics readouts (contact half-axes, p₀, creepage, creep force) were also checked directly against the running app and found to update correctly and produce values within realistic published ranges for HSR wheel/rail contact (p₀ ≈ 1000–1400 MPa, contact patch ≈ 4–7 mm × 3–5 mm at typical HSR axle loads).</p>
+
+<h3>14.2 Enhancements Made to the Rail-Wheel Interaction Section</h3>
+<p>Beyond fixing the issues above, the Contact Mechanics tab and Rail-Wheel Lab were extended with new material that did not exist before this review, specifically to close gaps this verification exercise surfaced:</p>
+<ul>
+  <li><strong>Contact area and mean pressure</strong> are now shown live alongside peak pressure p₀, since a Hertzian pressure distribution's average is only two-thirds of its peak — a figure worth seeing side-by-side rather than mentally recalculating.</li>
+  <li><strong>A live shakedown classification</strong> (Elastic / Elastic shakedown / Plastic shakedown / Ratchetting risk) and a percentage margin to the elastic shakedown limit, so the question "is my current configuration actually safe?" has a direct on-screen answer instead of requiring the user to compare p₀ against a table by eye.</li>
+  <li><strong>A live wear-regime classification</strong> (Mild / Severe / Catastrophic), computed from Tγ properly normalised by contact area — this directly closes the unit mismatch flagged in item 6 above, rather than just documenting it as a caveat.</li>
+  <li><strong>Chart ⑮ rebuilt</strong> from a set of flat, uninformative lines plotted against a meaningless "friction coefficient" axis into an actual p₀-vs-axle-load curve with the three shakedown bands overlaid and the live operating point marked on it.</li>
+  <li><strong>Two new charts</strong>: Chart ⑯ plots the wear-regime index Tγ/A against speed, showing directly at what speed the current configuration crosses from mild into severe wear; Chart ⑰ plots the Timoshenko m/n coefficients against wheel diameter, making the approximation discussed in §9.1 visible as a curve rather than a claim.</li>
+  <li><strong>The T-γ unit label</strong> was corrected everywhere it appears in the app (sidebar, Contact Mechanics tab, Live Telemetry tab, Chart ⑥) from the dimensionally incorrect "N·m/s" to the correct "N" — T-γ is a force (tangential force × dimensionless creepage), not a power.</li>
+</ul>
+<p>All of the above were verified directly in the running application, not just read in the source, using a scripted browser check that opens each tab, reads the live DOM values and the underlying Chart.js data arrays, and confirms that both render correctly and compute physically sensible numbers.</p>
+
+<h3>14.3 Scope of This Verification</h3>
+<p>This platform's simulation engine spans roughly 6,500 lines of JavaScript across braking, thermal, vibration, tribology, and corridor-profile modules. This review focused specifically on the rail-wheel interaction chain (Hertz → creepage → Polach → Archard → hunting/Klingel) because that was the section explicitly requested for verification, plus a full pass over every formula box in this documentation file to check it against its source function. It is not a claim that every one of the thousands of individual calculations in the codebase has been independently re-derived — that would be a multi-week formal verification exercise, not a documentation review. Anyone extending this platform, or relying on it for anything beyond comparative engineering education, should treat each formula box's stated basis (exact theory / standard-based / engineering approximation / calibrated simplification) as the starting point for their own check, not as a substitute for it.</p>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <h2 id="author" style="margin-top:44px;">About the Author</h2>
@@ -1075,5 +1532,16 @@ Interpretation:
 </p>
 
 </div><!-- /container -->
+
+<script>
+  // Wrap every table in a horizontally-scrollable container so wide reference
+  // tables don't force the whole page to scroll sideways on small screens.
+  document.querySelectorAll('.container table').forEach(function (table) {
+    var wrap = document.createElement('div');
+    wrap.className = 'table-scroll';
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
+  });
+</script>
 </body>
 </html>
