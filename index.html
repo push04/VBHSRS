@@ -1173,6 +1173,31 @@
         padding: 6px 14px;
         border-radius: var(--radius-md);
       }
+      #mobileBlock .mb-doc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 10px;
+        padding: 11px 22px;
+        background: var(--ir-blue);
+        color: #fff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        border: none;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.12s ease;
+      }
+      #mobileBlock .mb-doc-btn:hover {
+        background: var(--ir-blue-mid);
+        transform: translateY(-1px);
+      }
+      #mobileBlock .mb-doc-btn svg {
+        width: 16px; height: 16px; color: #fff; margin: 0;
+      }
     }
   </style>
   <script>
@@ -1192,6 +1217,10 @@
     <h1>This one needs a bigger screen</h1>
     <p>This platform packs in live charts, a 3D train viewport and a lot of dense controls side by side. On a phone there just isn't enough room to lay all that out properly, so things will end up looking broken or cut off. Please open it on a laptop or desktop instead, it works a lot better there.</p>
     <span class="tag">Best viewed on a PC</span>
+    <a href="documentation.html" target="_blank" class="mb-doc-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Read Documentation
+    </a>
   </div>
 
   <div id="hdr">
@@ -1491,6 +1520,17 @@
         <div class="infra-tag" id="ib-bridge" style="display:none; color:var(--acc);">&#127902; VIADUCT</div>
       </div>
       <div id="cv-overlay">LEFT-CLICK PAN &middot; RIGHT-CLICK ORBIT &middot; SCROLL ZOOM</div>
+      <!-- CFD overlay canvas -->
+      <canvas id="cfd-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none;z-index:10;"></canvas>
+      <!-- CFD legend -->
+      <div id="cfd-legend" style="display:none;position:absolute;bottom:12px;left:12px;z-index:11;background:rgba(0,0,0,0.72);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;pointer-events:none;">
+        <div style="font-weight:700;letter-spacing:.06em;margin-bottom:6px;">AERO CFD &mdash; Pressure Distribution</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div style="width:80px;height:10px;border-radius:3px;background:linear-gradient(to right,#1a1aff,#00cfff,#00ff88,#ffee00,#ff4400);"></div>
+          <span style="font-size:9px;color:#aaa;">Low &rarr; High pressure</span>
+        </div>
+        <div id="cfd-speed-label" style="color:#88ccff;font-size:9px;">v = 0 km/h &nbsp;|&nbsp; Cd = --</div>
+      </div>
       <!-- Station approach HUD — always visible in 3D view when near station -->
       <div id="sta-hud">
         <div class="sh-name" id="sh-name">NEXT STATION</div>
@@ -3972,6 +4012,8 @@
       if (typeof updateStationObjects === 'function') updateStationObjects();
 
       renderer.render(scene, camera);
+      // CFD overlay
+      if (S.cfd) updateCFDOverlay(dyn);
     }
 
     window.addEventListener('resize', () => {
@@ -3983,6 +4025,182 @@
 
     rebuildTrain();
     updatePhysicsDerived();
+
+    // ─── Wireframe toggle ─────────────────────────────────────────────────────
+    document.getElementById('bWire').addEventListener('click', function() {
+      S.wire = !S.wire;
+      this.classList.toggle('on', S.wire);
+      // Walk every mesh in the scene and toggle wireframe
+      scene.traverse(obj => {
+        if (obj.isMesh && obj.material) {
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          mats.forEach(m => { if (m.isMeshStandardMaterial || m.isMeshBasicMaterial) m.wireframe = S.wire; });
+        }
+      });
+    });
+
+    // ─── CFD mode ─────────────────────────────────────────────────────────────
+    const cfdCanvas = document.getElementById('cfd-canvas');
+    const cfdLegend = document.getElementById('cfd-legend');
+    const cfdSpeedLabel = document.getElementById('cfd-speed-label');
+    let cfdCtx = null;
+
+    // Streamline particles
+    const CFD_PARTICLES = 320;
+    const cfdParts = Array.from({ length: CFD_PARTICLES }, () => ({
+      x: Math.random(), y: Math.random(), age: Math.random(), speed: 0.004 + Math.random() * 0.006
+    }));
+
+    function pressureColor(p) {
+      // p in [0,1]: 0=low (blue), 0.5=neutral (green), 1=high (red)
+      if (p < 0.25) {
+        const t = p / 0.25;
+        return `rgba(${Math.round(26 + t*0)},${Math.round(26 + t*183)},${Math.round(255-t*0)},0.82)`;
+      } else if (p < 0.5) {
+        const t = (p - 0.25) / 0.25;
+        return `rgba(${Math.round(26+t*0)},${Math.round(207+t*48)},${Math.round(255-t*119)},0.82)`;
+      } else if (p < 0.75) {
+        const t = (p - 0.5) / 0.25;
+        return `rgba(${Math.round(26+t*230)},${Math.round(255-t*21)},${Math.round(136-t*136)},0.82)`;
+      } else {
+        const t = (p - 0.75) / 0.25;
+        return `rgba(${Math.round(256-t*22)},${Math.round(234-t*166)},${Math.round(0)},0.82)`;
+      }
+    }
+
+    function updateCFDOverlay(dyn) {
+      if (!cfdCtx) return;
+      const W = cfdCanvas.width, H = cfdCanvas.height;
+      cfdCtx.clearRect(0, 0, W, H);
+
+      const v = dyn ? dyn.v_kmh : 0;
+      const vn = Math.min(1, v / 350); // 0..1 normalized speed
+
+      // ── Pressure heatmap zones over train silhouette ──────────────────────
+      // Project approximate train position onto 2D canvas
+      // Train occupies roughly center of viewport, we paint zones in screen space
+      const numCars = Math.min(S.coaches, 16);
+      const carSpc = 26;
+      const trainWorldLen = numCars * carSpc;
+
+      // Approximate 2D bounding box of train from camera projection
+      const toScreen = (wx, wy, wz) => {
+        const v3 = new THREE.Vector3(wx, wy, wz);
+        v3.project(camera);
+        return { sx: (v3.x + 1) / 2 * W, sy: (1 - (v3.y + 1) / 2) * H };
+      };
+      const startZ = ((numCars - 1) * carSpc) / 2 + (5 + S.nose);
+      const endZ = -startZ;
+      const sFront = toScreen(0, 2.5, startZ);
+      const sRear  = toScreen(0, 2.5, endZ);
+      const sTop   = toScreen(0, 4.5, 0);
+      const sBot   = toScreen(0, 0.5, 0);
+
+      const trainLeft  = Math.min(sFront.sx, sRear.sx);
+      const trainRight = Math.max(sFront.sx, sRear.sx);
+      const trainTop   = Math.min(sTop.sy, sBot.sy);
+      const trainBot   = Math.max(sTop.sy, sBot.sy);
+      const trainW = trainRight - trainLeft;
+      const trainH = trainBot - trainTop;
+
+      if (trainW > 10 && v > 0) {
+        // Nose stagnation — high pressure front
+        const noseX = trainLeft;
+        const noseGrad = cfdCtx.createRadialGradient(noseX, (trainTop+trainBot)/2, 2, noseX, (trainTop+trainBot)/2, trainW * 0.18);
+        noseGrad.addColorStop(0, `rgba(255,60,0,${0.55*vn})`);
+        noseGrad.addColorStop(0.5, `rgba(255,160,0,${0.35*vn})`);
+        noseGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        cfdCtx.fillStyle = noseGrad;
+        cfdCtx.fillRect(0, 0, W, H);
+
+        // Roof suction — low pressure top
+        const roofGrad = cfdCtx.createLinearGradient(trainLeft + trainW*0.1, trainTop-10, trainLeft + trainW*0.9, trainTop+20);
+        roofGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        roofGrad.addColorStop(0.3, `rgba(0,120,255,${0.22*vn})`);
+        roofGrad.addColorStop(0.7, `rgba(0,200,255,${0.18*vn})`);
+        roofGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        cfdCtx.fillStyle = roofGrad;
+        cfdCtx.fillRect(trainLeft, trainTop-15, trainW*0.9, trainH * 0.35);
+
+        // Undercar turbulence — medium pressure
+        const underGrad = cfdCtx.createLinearGradient(trainLeft, trainBot, trainLeft, trainBot+20);
+        underGrad.addColorStop(0, `rgba(0,220,120,${0.2*vn})`);
+        underGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        cfdCtx.fillStyle = underGrad;
+        cfdCtx.fillRect(trainLeft + trainW*0.1, trainBot-8, trainW*0.8, trainH * 0.3);
+
+        // Wake — turbulent low pressure behind nose
+        const wakeX = trainRight;
+        const wakeGrad = cfdCtx.createRadialGradient(wakeX, (trainTop+trainBot)/2, 5, wakeX + trainW*0.08, (trainTop+trainBot)/2, trainW * 0.28);
+        wakeGrad.addColorStop(0, `rgba(80,0,180,${0.42*vn})`);
+        wakeGrad.addColorStop(0.5, `rgba(0,80,220,${0.22*vn})`);
+        wakeGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        cfdCtx.fillStyle = wakeGrad;
+        cfdCtx.fillRect(0, 0, W, H);
+      }
+
+      // ── Streamline particles ──────────────────────────────────────────────
+      const pSpeed = 0.003 + vn * 0.018;
+      cfdParts.forEach(p => {
+        p.age += pSpeed * (0.8 + Math.random() * 0.4);
+        if (p.age > 1) { p.age = 0; p.x = 0; p.y = 0.05 + Math.random() * 0.9; }
+
+        // Streamline path: flow mostly left→right, deflect around train center
+        const cx = 0.5, cy = 0.5;
+        const dx = p.x - cx, dy = p.y - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        // Move right (flow direction)
+        p.x += pSpeed * (1 + 0.3 / (dist + 0.15));
+        // Deflect around train (potential flow approximation)
+        if (dist < 0.28 && p.x > 0.1 && p.x < 0.9) {
+          p.y += (dy / (dist + 0.01)) * pSpeed * 0.9;
+          p.x += (dx / (dist + 0.01)) * pSpeed * 0.3;
+        }
+        if (p.x > 1.05) { p.x = 0; p.y = 0.05 + Math.random() * 0.9; p.age = 0; }
+
+        // Color by speed: faster near train = cyan, far = blue
+        const localSpeed = Math.min(1, 0.3 / (dist + 0.1));
+        const alpha = v > 1 ? (0.4 + localSpeed * 0.4) : 0;
+        const r = Math.round(0 + localSpeed * 0);
+        const g2 = Math.round(120 + localSpeed * 135);
+        const b2 = Math.round(200 + localSpeed * 55);
+        cfdCtx.beginPath();
+        cfdCtx.arc(p.x * W, p.y * H, 1.2 + localSpeed * 1.5, 0, Math.PI * 2);
+        cfdCtx.fillStyle = `rgba(${r},${g2},${b2},${alpha})`;
+        cfdCtx.fill();
+      });
+
+      // ── Update label ─────────────────────────────────────────────────────
+      if (cfdSpeedLabel) {
+        const Cd = lastConsts ? (0.12 - 0.004 * S.nose + 0.003 * S.af / 10).toFixed(3) : '--';
+        const q = 0.5 * S.rho * (v/3.6)**2; // Pa
+        cfdSpeedLabel.textContent = `v = ${v.toFixed(0)} km/h  |  Cd ≈ ${Cd}  |  q = ${(q/1000).toFixed(1)} kPa`;
+      }
+    }
+
+    function initCFDCanvas() {
+      cfdCanvas.width  = canvasWrap.clientWidth;
+      cfdCanvas.height = canvasWrap.clientHeight;
+      cfdCtx = cfdCanvas.getContext('2d');
+    }
+    window.addEventListener('resize', () => {
+      cfdCanvas.width  = canvasWrap.clientWidth;
+      cfdCanvas.height = canvasWrap.clientHeight;
+    });
+    initCFDCanvas();
+
+    document.getElementById('bCFD').addEventListener('click', function() {
+      S.cfd = !S.cfd;
+      this.classList.toggle('on', S.cfd);
+      cfdCanvas.style.display = S.cfd ? 'block' : 'none';
+      cfdLegend.style.display = S.cfd ? 'block' : 'none';
+      if (!S.cfd && cfdCtx) cfdCtx.clearRect(0, 0, cfdCanvas.width, cfdCanvas.height);
+    });
+    // Initialise to on (button starts with class 'on')
+    cfdCanvas.style.display = 'block';
+    cfdLegend.style.display = 'block';
+
     requestAnimationFrame(simulationLoop);
 
     // ══════════════════════════════════════════════════════════════════════
@@ -5226,6 +5444,10 @@
           rwCharts[id].update('none');
           return;
         }
+        // Merge y-axis options — beginAtZero defaults to true unless caller explicitly
+        // sets min (which overrides it) or disables it via beginAtZero:false
+        const yOpts = opts && opts.y ? opts.y : {};
+        const yAxis = Object.assign({ beginAtZero: true }, yOpts);
         rwCharts[id] = new Chart(el.getContext('2d'), {
           type, data: { labels, datasets },
           options: {
@@ -5239,9 +5461,9 @@
               y: {
                 title: { display: !!yLabel, text: yLabel, font: { family: 'JetBrains Mono', size: 9 } },
                 grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 6 },
-                ...((opts && opts.y) || {})
+                ...yAxis
               }
-            }, ...(opts || {})
+            }, ...(opts ? (({ y, ...rest }) => rest)(opts) : {})
           }
         });
       }

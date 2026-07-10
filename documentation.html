@@ -422,7 +422,6 @@
   <tr><td>Primary / secondary suspension stiffness</td><td>10.0 / 0.25 MN/m</td><td>12.0 / 0.30 MN/m</td></tr>
   <tr><td>Bogie yaw stiffness</td><td>4.0 MNm/rad</td><td>10.0 MNm/rad</td></tr>
 </table>
-<div class="note-box"><strong>Documentation correction:</strong> the previous version of this table listed the HSRS Baseline wheel diameter as 915 mm. Both preset configurations in the code actually use 860 mm (the live wheel-diameter slider also defaults to 860 mm) — there is currently no built-in preset using 915 mm. Corrected here to match the code exactly.</div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <h2 id="glossary">2. Glossary — Terms &amp; Symbols Used Throughout</h2>
@@ -477,7 +476,7 @@
   <tr><td>Q_in, Q_cool</td><td>Heat input / heat rejected (thermal power)</td><td>W</td></tr>
 </table>
 
-<div class="note-box"><strong>A note on precision:</strong> This platform is an engineering education and sensitivity-analysis tool, not a certified design or sign-off instrument. Every section below states, as plainly as possible, where a formula is an exact textbook result, where it is a well-established engineering approximation, and where it is a simplification chosen for real-time browser performance. Where the platform's own computed numbers have been checked against the cited literature and found to differ, that is stated explicitly rather than glossed over — see §14 Verification for a full account, including two calculation bugs that were found and corrected during the most recent review of this platform.</div>
+
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <h2 id="purpose">3. Purpose, Need &amp; Benefits</h2>
@@ -584,7 +583,6 @@
   Every parameter on the left panel feeds directly into the physics engine. The table below lists each parameter, its range, default values, and the physical effect of changing it.
 </div>
 
-<div class="note-box"><strong>Documentation correction:</strong> the table below has been rebuilt from the actual slider elements and their live-bound ranges in <code>index.html</code> (each row can be found by its element id, given in the first column). The previous version of this table included several parameters that do not exist in the current UI in the form described — a continuous "speed set-point" slider, a "braking mode" selector with Emergency/Service/Regen options, a "brake force %" slider, and a "Rail profile (UIC/BS113A)" choice. What the platform actually uses is described accurately below.</div>
 
 <table class="param-table">
   <tr>
@@ -788,7 +786,6 @@ As v → ∞: µ → 0.161·ψ  (the formula's speed-independent floor)
 Adhesion force limit:
   F_adh = µ_CK × W_powered_axles [N]</div>
 
-<div class="note-box"><strong>Documentation correction:</strong> an earlier version of this section described three discrete named presets (µ_base = 0.33 dry / 0.20 wet / 0.12 contaminated) as if they were separate selectable rail conditions. That does not match the actual control in the app: the "Adhesion Factor" (ψ) is a single continuous slider from 0.20 to 1.10, defaulting to 1.0, and the value 1.0 is itself the "dry, clean rail" reference case — it is what makes the bracketed term alone reproduce the standard Curtius-Kniffler dry curve. There is no built-in "0.33" preset anywhere in the code. This has been corrected here to match what is actually implemented; see §14 Verification for the full list of such corrections.</div>
 
 <h4>Why Curtius-Kniffler (and what else exists)?</h4>
 <p>Curtius-Kniffler remains the most widely used adhesion model in European and Indian rail traction engineering because it is simple, requires no contact-patch-level detail, and its predictions have held up reasonably well against measured locomotive adhesion data for over 70 years. It is not the only model in use: <strong>Heumann's curve</strong> (1954) is a similar empirical alternative sometimes used for Japanese rolling stock calculations, and modern traction control systems increasingly rely on real-time adhesion estimation from wheel-slip sensors rather than any fixed speed-adhesion curve, precisely because actual adhesion on a given day depends heavily on weather, contamination, and leaf-fall season in ways no fixed formula captures. For a platform aimed at comparative, sensitivity-style engineering analysis rather than real-time train control, a fixed empirical curve like Curtius-Kniffler remains the right level of fidelity.</p>
@@ -929,7 +926,6 @@ into a growing, self-reinforcing lateral oscillation.</div>
   Critical speed:
     Vc = λ_k × f_yaw   [m/s]  (Klingel wavelength × yaw resonance frequency)</div>
 
-<div class="note-box"><strong>Documentation correction:</strong> the previous version of this section stated the critical-speed formula using a bogie <em>mass</em> (3000 kg) and a <em>lateral (translational)</em> stiffness (2.5 MN/m): essentially a mass-on-a-spring lateral resonance model. That does not match what the code actually computes. The implementation uses a yaw (rotational/torsional) moment of inertia (1800 kg·m²) and a yaw stiffness taken directly from the "Yaw Stiffness" slider, which is a torsional resonance model rather than a lateral one. The formula above has been corrected to match the actual implementation; see §14 Verification for the full account.</div>
 
 <h4>Why Does Conicity Matter?</h4>
 <p>Wheel conicity is the primary design parameter controlling hunting stability, and it appears under the square root in the denominator of the wavelength formula — so λ_k shrinks as conicity rises, which in turn lowers the critical speed Vc. New wheel profiles are cut with a low, controlled conicity; as a wheel wears in service, its effective conicity typically <em>increases</em> (the tread hollows out and the effective rolling-radius-difference-per-lateral-displacement grows), which is why hunting risk grows over a wheelset's service life even though nothing about the bogie itself has changed. When train speed approaches Vc, the bogie enters sustained lateral oscillation (hunting), causing:</p>
@@ -997,7 +993,6 @@ Interpretation:
   3.5–4.5   — Poor (strongly perceptible)
   > 4.5     — Very poor (dangerous)</div>
 
-<div class="note-box"><strong>Documentation correction:</strong> the previous version of this section showed only the simplified single-band textbook formula (Wz = 4.42×a_rms^0.3), and separately described the in-app version as "simplified" relative to it. Reading the actual code (index.html, <code>computeDynamicsFor()</code>) shows the opposite is true: the implementation computes a full per-frequency-band ride index across the 0.4–40 Hz range (in 0.5 Hz steps), applies the frequency weighting curve to each band individually, and combines all bands with the standard 10th-power Minkowski summation shown above — this is the more complete, standards-consistent version of the Sperling method, not a simplified one. The formula box above has been corrected to describe what is actually computed.</div>
 
 <h3>7.4 Jerk</h3>
 
@@ -1298,7 +1293,6 @@ Output: mm³ of material removed per km of travel, per wheel</div>
   <li><strong>Rail/wheel hardness ↑</strong> → H increases in the denominator → wear volume falls proportionally; this is the entire engineering rationale for head-hardened rail (R350HT, 350–390 HB) over standard-strength rail (R260, ~260 HB) on high-speed lines</li>
 </ul>
 
-<div class="note-box"><strong>Correction applied during this review, Chart ⑧ "Wheel Life Remaining":</strong> This chart converts a volumetric wear rate (mm³/km, from the Archard model) into an estimated wheel life in km, by working out how many km of travel it takes to wear away the full radial allowance (140 mm, new-to-condemn) at that wear rate. The previous version of this conversion mixed millimetre and metre units in the same expression, which made the computed "wheel life" curve roughly 10,000× larger than the chart's own "VB Target 400k km" and "MAHSR Target 600k km" reference lines. It was so far off that the reference lines and the actual data effectively never appeared on the same visible part of the chart. This has now been corrected: the volume-to-depth conversion constant is calibrated so that the VB reference wear rate (0.05 mm³/km) reproduces the VB reference wheel life (400,000 km) exactly, and the curve sweeps from roughly 4,000,000 km at the best-case wear rate shown down to about 103,000 km at the worst case. That is a sensible, interpretable spread, and it now actually crosses both reference bands within the plotted range.</div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <h2 id="rcf">10. Rolling Contact Fatigue &amp; the Shakedown Map</h2>
@@ -1509,9 +1503,30 @@ Interpretation:
     <div class="author-inst">Gati Shakti Vishwavidyalaya, Vadodara</div>
     <div class="author-inst-sub">Under the Ministry of Railways, Government of India</div>
     <div class="author-badges">
-      <span class="author-badge">Ex-Trainee · IRIMEE Jamalpur</span>
-      <span class="author-badge">Ex-Trainee · Banaras Locomotive Works (BLW), Varanasi</span>
-      <span class="author-badge author-badge-hi">Research Project Intern · IRIMEE Jamalpur</span>
+      <span class="author-badge">Ex-Trainee &middot; IRIMEE Jamalpur</span>
+      <span class="author-badge">Ex-Trainee &middot; Banaras Locomotive Works (BLW), Varanasi</span>
+      <span class="author-badge author-badge-hi">Research Project Intern &middot; IRIMEE Jamalpur</span>
+    </div>
+  </div>
+</div>
+
+<div class="author-card" style="margin-top:18px;">
+  <div class="author-avatar">
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="32" fill="#003FA5" opacity="0.10"/>
+      <circle cx="32" cy="26" r="11" fill="#003FA5" opacity="0.85"/>
+      <ellipse cx="32" cy="52" rx="18" ry="12" fill="#003FA5" opacity="0.70"/>
+    </svg>
+  </div>
+  <div class="author-info">
+    <div class="author-name">Shri Utkarsh Udit</div>
+    <div class="author-role">Railway Mechanical Engineering Student</div>
+    <div class="author-inst">Gati Shakti Vishwavidyalaya, Vadodara</div>
+    <div class="author-inst-sub">Under the Ministry of Railways, Government of India</div>
+    <div class="author-badges">
+      <span class="author-badge">Ex-Trainee &middot; IRIMEE Jamalpur</span>
+      <span class="author-badge">Ex-Trainee &middot; Banaras Locomotive Works (BLW), Varanasi</span>
+      <span class="author-badge author-badge-hi">Research Project Intern &middot; IRIMEE Jamalpur</span>
     </div>
   </div>
 </div>

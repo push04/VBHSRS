@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2D Train-Nose CFD — WebGL2 Fluid Sim</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#07090f;color:#b4c8de;font-family:'JetBrains Mono','Consolas',monospace;font-size:11px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#hdr{padding:6px 14px;background:#0b1019;border-bottom:1px solid #182230;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ttl{font-size:12px;font-weight:700;color:#4db8f0;letter-spacing:.05em}
+.st{color:#6a8aaa}.st b{color:#e8d070}
+#ctl{padding:5px 14px;background:#0b1019;border-bottom:1px solid #182230;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cl{display:flex;align-items:center;gap:5px}.cl label{color:#6a8aaa;white-space:nowrap}
+input[type=range]{width:84px;accent-color:#2a7fc0;cursor:pointer}
+.cv{color:#e8d070;min-width:36px;text-align:right}
+.btn{padding:4px 10px;background:#111c2c;border:1px solid #1e3048;color:#7aaac8;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit;transition:background .15s}
+.btn:hover{background:#172438}.btn.on{background:#082858;border-color:#2a7fc0;color:#4db8f0}
+select.btn{padding:3px 6px}
+#main{flex:1;position:relative;overflow:hidden}
+canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+#ov{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.78);border:1px solid #182a3e;border-radius:5px;padding:8px 12px;font-size:10px;line-height:1.9;pointer-events:none}
+.ok{color:#4db8f0}.ov{color:#e8d070}
+#inf{max-height:0;overflow:hidden;background:#070a10;border-top:1px solid #182230;font-size:10.5px;line-height:1.65;padding:0 16px;color:#6a8aaa;transition:max-height .35s}
+#inf.open{max-height:260px;overflow-y:auto;padding:12px 16px}
+#inf h3{color:#4db8f0;margin:6px 0 3px;font-size:10.5px;letter-spacing:.04em}
+#inf p{margin-bottom:6px}#inf em{color:#a8cce0}
+</style>
+</head>
+<body>
+<!-- ═══════════ HEADER ═══════════ -->
+<div id="hdr">
+  <div class="ttl">🌊 2D Train-Nose CFD — WebGL2</div>
+  <div class="st">Re&nbsp;=&nbsp;<b id="sRe">—</b></div>
+  <div class="st">FPS&nbsp;=&nbsp;<b id="sFps">—</b></div>
+  <div class="st">Grid&nbsp;<b id="sRes">—</b></div>
+  <div class="st">ν&nbsp;=&nbsp;<b id="sNu">—</b></div>
+  <div class="st">β&nbsp;=&nbsp;<b id="sBeta">—</b></div>
+</div>
+<!-- ═══════════ CONTROLS ═══════════ -->
+<div id="ctl">
+  <div class="cl">
+    <label>Inflow km/h</label>
+    <input type="range" id="cVel" min="20" max="420" value="180" step="10">
+    <span class="cv" id="vVel">180</span>
+  </div>
+  <div class="cl">
+    <label>Target Re</label>
+    <input type="range" id="cRe" min="50" max="6000" value="1000" step="50">
+    <span class="cv" id="vRe">1000</span>
+  </div>
+  <div class="cl">
+    <input type="checkbox" id="cUseRe" checked>
+    <label for="cUseRe">Auto-ν&nbsp;from&nbsp;Re</label>
+  </div>
+  <div class="cl">
+    <label>Cs (Smagorinsky)</label>
+    <input type="range" id="cCs" min="0" max="0.35" value="0.13" step="0.01">
+    <span class="cv" id="vCs">0.13</span>
+  </div>
+  <div class="cl">
+    <label>β (art. sound)</label>
+    <input type="range" id="cBeta" min="0.5" max="6" value="2" step="0.25">
+    <span class="cv" id="vBeta">2.00</span>
+  </div>
+  <div class="cl">
+    <label>Substeps</label>
+    <input type="range" id="cSs" min="1" max="24" value="8" step="1">
+    <span class="cv" id="vSs">8</span>
+  </div>
+  <div style="display:flex;gap:4px">
+    <button class="btn on" id="b0" onclick="setView(0)">Dye</button>
+    <button class="btn"    id="b1" onclick="setView(1)">Velocity</button>
+    <button class="btn"    id="b2" onclick="setView(2)">Vorticity</button>
+  </div>
+  <div style="display:flex;gap:4px">
+    <select class="btn" id="cRes">
+      <option value="256x128">256×128 Fast</option>
+      <option value="512x256" selected>512×256</option>
+      <option value="768x384">768×384 HQ</option>
+    </select>
+    <button class="btn" onclick="resetSim()">↺ Reset</button>
+    <button class="btn" onclick="document.getElementById('inf').classList.toggle('open')">ℹ Explain</button>
+  </div>
+</div>
+<!-- ═══════════ CANVAS ═══════════ -->
+<div id="main">
+  <canvas id="c"></canvas>
+  <div id="ov">
+    <div><span class="ok">View</span>&nbsp;<span class="ov" id="sMode">Dye</span></div>
+    <div><span class="ok">Inflow</span>&nbsp;<span class="ov" id="sVel">—</span>&nbsp;km/h</div>
+    <div><span class="ok">Max|ω|</span>&nbsp;<span class="ov" id="sVmax">—</span></div>
+    <div><span class="ok">Substeps</span>&nbsp;<span class="ov" id="sSs">—</span>/frame</div>
+  </div>
+</div>
+<!-- ═══════════ EXPLANATION PANEL ═══════════ -->
+<div id="inf">
+  <h3>Artificial Compressibility (Chorin 1967)</h3>
+  <p>Incompressible Navier–Stokes normally needs a pressure Poisson solve every step — expensive and iterative.
+  Chorin's method replaces it with <em>∂p/∂τ = −β²∇·u</em>. Pressure evolves pseudo-dynamically, pushing the
+  flow toward zero-divergence without any iterative solver. β is an artificial "speed of sound"; when M = U/β ≪ 1,
+  the flow looks nearly incompressible. Trade-off: transient pressure propagates at speed β (not ∞), so
+  short-duration pressure transients are not exactly physical.</p>
+  <h3>Smagorinsky SGS Eddy-Viscosity Model</h3>
+  <p>DNS resolves every turbulent scale — prohibitively expensive. LES (large-eddy simulation) resolves
+  large eddies and <em>models</em> sub-grid ones. The Smagorinsky model adds eddy viscosity
+  <em>ν_t = (Cs·Δ)²·|S̄|</em> — proportional to grid spacing Δ and the local strain-rate magnitude |S̄|.
+  This damps motions the grid cannot resolve. <b>Known limitation:</b> over-dissipates near walls (too much
+  ν_t in boundary layers where the true SGS contribution is small). Improved variants: dynamic Smagorinsky,
+  WALE model, σ-model.</p>
+  <h3>What This Is (and Isn't)</h3>
+  <p>Educational 2D LES toy — not a sign-off CFD code. 2D turbulence has an <em>inverse energy cascade</em>
+  (energy flows to larger scales), opposite to 3D. Real train aero is 3D and needs RANS/LES codes
+  (OpenFOAM, STAR-CCM+, Ansys Fluent) with wall functions, proper 3D meshing, and validation against
+  wind-tunnel data for engineering decisions.</p>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════
+let NX = 512, NY = 256;          // Grid resolution
+let U_KMH  = 180;                // Display velocity (km/h)
+let U_IN   = 0.08;               // Simulation inflow velocity (cells/step)
+let NU     = 0.01;               // Kinematic viscosity (cells²/step)  — auto-derived
+let BETA   = 2.0;                // Artificial compressibility speed
+let CS     = 0.13;               // Smagorinsky constant
+let RE     = 1000;               // Target Reynolds number
+let USE_RE = true;               // Auto-derive ν from Re
+let VIEW   = 0;                  // 0=dye 1=velocity 2=vorticity
+let SS     = 8;                  // Substeps/frame
+
+// Obstacle geometry — 2D cross-section of streamlined train nose (UV [0,1])
+// Shape: quarter-ellipse nose → rectangular body → blunt tail
+const OX0 = 0.14;  // nose tip x
+const OX1 = 0.28;  // shoulder (body begins)
+const OX2 = 0.62;  // tail (blunt end, triggers vortex shedding)
+const OH  = 0.115; // body half-height
+
+// GLSL code shared across all shaders — defines obstacle shape and obs() predicate
+function makeObstGLSL() {
+  return `
+// ── Parametric train-nose obstacle ─────────────────────────────────────
+// Quarter-ellipse nose (x0→x1), rectangular body (x1→x2), blunt tail.
+// The blunt tail causes the boundary layers to separate and roll into
+// alternating vortices (von Kármán vortex street) at Re > ~50.
+const float OX0=${OX0.toFixed(5)}, OX1=${OX1.toFixed(5)}, OX2=${OX2.toFixed(5)}, OH=${OH.toFixed(5)};
+float obstH(float x){
+  if(x<OX0||x>OX2) return 0.;
+  if(x<=OX1){ float t=(x-OX0)/(OX1-OX0); return OH*sqrt(max(0.,2.*t-t*t)); }
+  return OH;
+}
+bool obs(vec2 p){ float h=obstH(p.x); return h>0.&&abs(p.y-.5)<h; }`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// VERTEX SHADER — fullscreen quad (reused by every pass)
+// layout(location=0) binds directly to our VAO attribute slot 0
+// ═══════════════════════════════════════════════════════════════════════
+const VS = `#version 300 es
+layout(location=0) in vec2 pos;
+out vec2 uv;
+void main(){ gl_Position=vec4(pos,0,1); uv=pos*.5+.5; }`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 1 — BOUNDARY CONDITIONS
+// Left:  inflow u=U_in with small sinusoidal perturbation (triggers instability)
+// Right: Neumann outflow (copy left neighbour)
+// Top/Bottom: free-slip (zero normal velocity, copy tangential)
+// Obstacle: no-slip (zero velocity inside all obstacle cells)
+// ═══════════════════════════════════════════════════════════════════════
+const mkBC = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel; uniform float uIn,t; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+void main(){
+  vec2 px=1./res;
+  if(obs(uv)){ frag=vec4(0,0,0,1); return; }
+  // Inflow — small sinusoidal perturbation essential for breaking symmetry at high Re
+  if(uv.x<px.x*1.5){
+    float p=sin(uv.y*62.8+t*.06)*uIn*.05;
+    frag=vec4(uIn+p,p*.4,0,1); return;
+  }
+  // Outflow Neumann — copy from left neighbour
+  if(uv.x>1.-px.x*1.5){ frag=texture(vel,uv-vec2(px.x,0)); return; }
+  // Free-slip walls: zero normal (v), copy tangential (u)
+  if(uv.y<px.y*1.5){ vec4 q=texture(vel,vec2(uv.x,px.y*2.)); frag=vec4(q.r,0,0,1); return; }
+  if(uv.y>1.-px.y*1.5){ vec4 q=texture(vel,vec2(uv.x,1.-px.y*2.)); frag=vec4(q.r,0,0,1); return; }
+  frag=texture(vel,uv);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 2 — SEMI-LAGRANGIAN VELOCITY ADVECTION (RK2 backtracing)
+// For each grid point, trace a particle path backward by dt steps,
+// sample velocity at the departure point. Unconditionally stable —
+// allows large CFL numbers without blow-up (at cost of numerical diffusion).
+// ═══════════════════════════════════════════════════════════════════════
+const mkAdvV = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel; uniform float dt; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+vec2 sv(vec2 p){
+  p=clamp(p,.5/res,1.-.5/res);
+  if(obs(p)) return vec2(0);
+  return texture(vel,p).rg;
+}
+void main(){
+  if(obs(uv)){ frag=vec4(0,0,0,1); return; }
+  vec2 dx=1./res;
+  // RK2: k1 at current, k2 at midpoint, depart from k2
+  vec2 k1=sv(uv), mid=uv-.5*dt*k1*dx;
+  vec2 k2=sv(mid), dep=uv-dt*k2*dx;
+  frag=vec4(sv(dep),0,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 3 — SEMI-LAGRANGIAN DYE ADVECTION (identical backtracing, RGB field)
+// Dye is a passive scalar — it marks fluid parcels without affecting dynamics.
+// ═══════════════════════════════════════════════════════════════════════
+const mkAdvD = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel,dye; uniform float dt; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+vec2 sv(vec2 p){ p=clamp(p,.5/res,1.-.5/res); return texture(vel,p).rg; }
+void main(){
+  if(obs(uv)){ frag=vec4(0); return; }
+  vec2 dx=1./res, k1=sv(uv), mid=uv-.5*dt*k1*dx;
+  vec2 k2=sv(clamp(mid,.5/res,1.-.5/res));
+  vec2 dep=clamp(uv-dt*k2*dx,.5/res,1.-.5/res);
+  frag=vec4(texture(dye,dep).rgb*.9994,1); // mild dissipation prevents dye pile-up
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 4 — SMAGORINSKY SUBGRID-SCALE EDDY VISCOSITY
+// Computes ν_t = (Cs·Δ)² · |S̄| per cell, where:
+//   Strain-rate tensor: Sij = ½(∂ui/∂xj + ∂uj/∂xi)
+//   Magnitude: |S̄| = √(2·Sij·Sij) = √(2(S11²+S22²+2S12²))
+//   Δ = 1 cell (filter width = grid spacing for this implicit LES)
+// Output r channel = ν_t (cells²/step) — added to molecular ν in diffusion.
+// ═══════════════════════════════════════════════════════════════════════
+const mkSmag = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel; uniform float cs; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+void main(){
+  if(obs(uv)){ frag=vec4(0); return; }
+  vec2 px=1./res;
+  vec2 E=texture(vel,uv+vec2(px.x,0)).rg, W=texture(vel,uv-vec2(px.x,0)).rg;
+  vec2 N=texture(vel,uv+vec2(0,px.y)).rg, S=texture(vel,uv-vec2(0,px.y)).rg;
+  // Zero velocity for obstacle neighbours (no-slip contributes to SGS)
+  if(obs(uv+vec2(px.x,0))) E=vec2(0);
+  if(obs(uv-vec2(px.x,0))) W=vec2(0);
+  if(obs(uv+vec2(0,px.y))) N=vec2(0);
+  if(obs(uv-vec2(0,px.y))) S=vec2(0);
+  // Velocity gradients — central differences in cell units (÷2 for 2-cell span)
+  float dudx=(E.r-W.r)*.5, dudy=(N.r-S.r)*.5;
+  float dvdx=(E.g-W.g)*.5, dvdy=(N.g-S.g)*.5;
+  // Strain-rate components: S11=∂u/∂x, S22=∂v/∂y, S12=½(∂u/∂y+∂v/∂x)
+  float S11=dudx, S22=dvdy, S12=.5*(dudy+dvdx);
+  // |S̄|² = 2(S11²+S22²+2·S12²)
+  float Smag=sqrt(2.*(S11*S11+S22*S22+2.*S12*S12));
+  // Eddy viscosity: ν_t = (Cs·Δ)²·|S̄|, Δ=1 cell → ν_t = Cs²·|S̄|
+  frag=vec4(cs*cs*Smag,0,0,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 5 — DIFFUSION
+// Explicit 5-point Laplacian: u += dt · ν_eff · ∇²u
+// ν_eff = ν_molecular + ν_t(Smagorinsky)
+// Stability requires: ν_eff·dt < 0.25 (2D) — enforced by dt choice.
+// No-slip BC at obstacle: obstacle-neighbour cells get zero ghost velocity.
+// ═══════════════════════════════════════════════════════════════════════
+const mkDiff = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel,smag; uniform float dt,nu; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+void main(){
+  if(obs(uv)){ frag=vec4(0,0,0,1); return; }
+  vec2 px=1./res,vc=texture(vel,uv).rg;
+  vec2 E=texture(vel,uv+vec2(px.x,0)).rg, W=texture(vel,uv-vec2(px.x,0)).rg;
+  vec2 N=texture(vel,uv+vec2(0,px.y)).rg, S=texture(vel,uv-vec2(0,px.y)).rg;
+  if(obs(uv+vec2(px.x,0))) E=vec2(0);
+  if(obs(uv-vec2(px.x,0))) W=vec2(0);
+  if(obs(uv+vec2(0,px.y))) N=vec2(0);
+  if(obs(uv-vec2(0,px.y))) S=vec2(0);
+  // 5-point Laplacian in cell units: ∇²u ≈ (E+W+N+S - 4·vc)/1² (cell spacing=1)
+  vec2 lap=E+W+N+S-4.*vc;
+  float nut=texture(smag,uv).r;
+  frag=vec4(vc+dt*(nu+nut)*lap,0,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 6 — ARTIFICIAL COMPRESSIBILITY PRESSURE UPDATE (Chorin 1967)
+// ∂p/∂τ = −β²·∇·u  →  p_new = p − dt·β²·div(u)
+// div(u) = ∂u/∂x + ∂v/∂y — central differences in cell units.
+// When div→0, the flow becomes incompressible. No Poisson solver needed.
+// Neumann BC at obstacle: ∂p/∂n = 0 (use current cell's p for solid neighbours).
+// ═══════════════════════════════════════════════════════════════════════
+const mkPres = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel,pres; uniform float dt,beta; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+float gp(vec2 p){ return obs(p)?texture(pres,uv).r:texture(pres,p).r; }
+void main(){
+  if(obs(uv)){ frag=vec4(0); return; }
+  vec2 px=1./res;
+  float uE=texture(vel,uv+vec2(px.x,0)).r, uW=texture(vel,uv-vec2(px.x,0)).r;
+  float vN=texture(vel,uv+vec2(0,px.y)).g, vS=texture(vel,uv-vec2(0,px.y)).g;
+  // Central-difference divergence (÷2 for 2-cell span)
+  float div=(uE-uW+vN-vS)*.5;
+  frag=vec4(texture(pres,uv).r-dt*beta*beta*div,0,0,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 7 — PROJECTION (pressure-gradient velocity correction)
+// u^(n+1) = u^* − dt·∇p
+// Subtracting ∇p drives the velocity field toward divergence-free.
+// ═══════════════════════════════════════════════════════════════════════
+const mkProj = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel,pres; uniform float dt; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+float gp(vec2 p){ return obs(p)?texture(pres,uv).r:texture(pres,p).r; }
+void main(){
+  if(obs(uv)){ frag=vec4(0,0,0,1); return; }
+  vec2 px=1./res, v=texture(vel,uv).rg;
+  // Central-difference pressure gradient (÷2 for 2-cell span)
+  vec2 gP=vec2((gp(uv+vec2(px.x,0))-gp(uv-vec2(px.x,0)))*.5,
+               (gp(uv+vec2(0,px.y))-gp(uv-vec2(0,px.y)))*.5);
+  frag=vec4(v-dt*gP,0,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// PASS 8 — DYE INJECTION
+// Injects rainbow-striped dye at the left inflow boundary.
+// Multiple hues make individual streamlines distinguishable and
+// turbulent mixing clearly visible.
+// ═══════════════════════════════════════════════════════════════════════
+const mkInj = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D dye; uniform float uIn,t; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+vec3 stripe(float y){
+  float p=mod(y*9.,1.);
+  if(p<.2)  return vec3(.12,.55,1.00);
+  if(p<.4)  return vec3(.08,.88,.52);
+  if(p<.6)  return vec3(1.00,.88,.08);
+  if(p<.8)  return vec3(1.00,.30,.05);
+  return          vec3(.72,.12,1.00);
+}
+void main(){
+  vec3 d=texture(dye,uv).rgb;
+  if(uv.x<2./res.x) d=mix(d,stripe(uv.y),.88);
+  frag=vec4(d,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// DISPLAY SHADER — renders to screen (not to FBO)
+// Mode 0: Dye density — shows coloured streamlines + train silhouette
+// Mode 1: Velocity magnitude — jet heatmap (blue→cyan→green→yellow→red)
+// Mode 2: Vorticity ω = ∂v/∂x − ∂u/∂y — diverging red/blue colormap
+//         Red = CCW (positive ω), Blue = CW (negative ω)
+//         Turbulent eddies become spectacularly visible in this mode.
+// ═══════════════════════════════════════════════════════════════════════
+const mkDisp = O => `#version 300 es
+precision highp float;
+${O}
+uniform sampler2D vel,dye; uniform int mode; uniform float uIn,vmax; uniform vec2 res;
+in vec2 uv; out vec4 frag;
+// Jet/turbo colormap for velocity magnitude
+vec3 jet(float t){
+  t=clamp(t,0.,1.);
+  vec3 c;
+  if(t<.25)      c=mix(vec3(0,.02,.55),vec3(0,.55,1.),(t)*4.);
+  else if(t<.5)  c=mix(vec3(0,.55,1.),vec3(.05,1.,.45),(t-.25)*4.);
+  else if(t<.75) c=mix(vec3(.05,1.,.45),vec3(1.,.92,.04),(t-.5)*4.);
+  else           c=mix(vec3(1.,.92,.04),vec3(.88,.04,.02),(t-.75)*4.);
+  return c;
+}
+// Diverging red–white–blue for vorticity
+vec3 rdbu(float t){
+  t=clamp(t,-1.,1.);
+  return t>0.?mix(vec3(.96,.97,1.),vec3(.85,.08,.04),t):mix(vec3(.96,.97,1.),vec3(.04,.18,.88),-t);
+}
+void main(){
+  bool isO=obs(uv);
+  vec2 px=1./res;
+  vec3 col;
+  if(mode==0){
+    if(isO){
+      // Metallic train silhouette — edge highlight + Indian Railways blue stripe
+      bool edge=!obs(uv+vec2(px.x,0))||!obs(uv-vec2(px.x,0))||!obs(uv+vec2(0,px.y))||!obs(uv-vec2(0,px.y));
+      col=edge?vec3(.38,.44,.52):vec3(.13,.16,.21);
+      if(uv.x>OX1&&uv.x<OX2-.04&&abs(uv.y-.5)<.016) col=mix(col,vec3(.04,.18,.70),.9);
+    } else {
+      vec3 d=texture(dye,uv).rgb;
+      col=length(d)<.015?vec3(.02,.05,.09):pow(d,vec3(.75))*1.3;
+    }
+  } else if(mode==1){
+    col=isO?vec3(.07,.09,.13):jet(length(texture(vel,uv).rg)/(uIn*1.9));
+  } else {
+    if(isO){ col=vec3(.07,.09,.13); }
+    else {
+      // Vorticity: ω = ∂v/∂x − ∂u/∂y (central differences)
+      float dvdx=(texture(vel,uv+vec2(px.x,0)).g-texture(vel,uv-vec2(px.x,0)).g)*.5;
+      float dudy=(texture(vel,uv+vec2(0,px.y)).r-texture(vel,uv-vec2(0,px.y)).r)*.5;
+      float w=dvdx-dudy;
+      col=rdbu(w/max(vmax,1e-5));
+    }
+  }
+  frag=vec4(col,1);
+}`;
+
+// ═══════════════════════════════════════════════════════════════════════
+// WEBGL2 INITIALISATION
+// ═══════════════════════════════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2',{antialias:false});
+if(!gl) alert('WebGL2 required — please use Chrome 56+, Firefox 51+, or Edge 79+.');
+if(!gl.getExtension('EXT_color_buffer_float'))
+  console.warn('EXT_color_buffer_float missing — float FBOs may fail on this device.');
+
+// Compile one shader stage
+function mkSh(src, type){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+    const err=gl.getShaderInfoLog(s);
+    console.error('Shader compile error:\n'+err);
+    // Print numbered lines for debugging
+    src.split('\n').forEach((l,i)=>console.log(`${i+1}: ${l}`));
+  }
+  return s;
+}
+
+// Link program + cache uniform locations
+function mkProg(fs){
+  const p=gl.createProgram();
+  gl.attachShader(p,mkSh(VS,gl.VERTEX_SHADER));
+  gl.attachShader(p,mkSh(fs,gl.FRAGMENT_SHADER));
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS))
+    console.error('Link error:',gl.getProgramInfoLog(p));
+  p.u={};
+  const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
+  for(let i=0;i<n;i++){ const info=gl.getActiveUniform(p,i); p.u[info.name]=gl.getUniformLocation(p,info.name); }
+  return p;
+}
+const u1i=(p,n,v)=>gl.uniform1i(p.u[n],v);
+const u1f=(p,n,v)=>gl.uniform1f(p.u[n],v);
+const u2f=(p,n,x,y)=>gl.uniform2f(p.u[n],x,y);
+
+// Fullscreen quad VAO — attribute 0 matches layout(location=0) in VS
+const vao=gl.createVertexArray();
+gl.bindVertexArray(vao);
+const qbuf=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,qbuf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0);
+gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+gl.bindVertexArray(null);
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEXTURE / FBO HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+function mkFBO(){
+  const tex=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,NX,NY,0,gl.RGBA,gl.FLOAT,null);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  const fbo=gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+  const st=gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+  if(st!==gl.FRAMEBUFFER_COMPLETE) console.error('FBO incomplete:',st.toString(16));
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  return {tex,fbo};
+}
+
+function bindT(p,name,unit,tex){
+  gl.activeTexture(gl.TEXTURE0+unit);
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  u1i(p,name,unit);
+}
+
+// Run one fullscreen-quad shader pass into targetFBO
+function pass(prog,targetFBO,bindFn,uniFn){
+  gl.bindFramebuffer(gl.FRAMEBUFFER,targetFBO);
+  gl.viewport(0,0,NX,NY);
+  gl.useProgram(prog);
+  bindFn(prog); uniFn(prog);
+  gl.bindVertexArray(vao);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SIMULATION STATE — ping-pong float texture pairs
+// ═══════════════════════════════════════════════════════════════════════
+let velA,velB,presA,presB,dyeA,dyeB,smagT;
+let pBC,pAdvV,pAdvD,pSmag,pDiff,pPres,pProj,pInj,pDisp;
+
+function buildPrograms(){
+  const O=makeObstGLSL();
+  pBC   =mkProg(mkBC(O));
+  pAdvV =mkProg(mkAdvV(O));
+  pAdvD =mkProg(mkAdvD(O));
+  pSmag =mkProg(mkSmag(O));
+  pDiff =mkProg(mkDiff(O));
+  pPres =mkProg(mkPres(O));
+  pProj =mkProg(mkProj(O));
+  pInj  =mkProg(mkInj(O));
+  pDisp =mkProg(mkDisp(O));
+}
+
+function allocTextures(){
+  [velA,velB,presA,presB,dyeA,dyeB,smagT].forEach(t=>{
+    if(!t) return;
+    gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fbo);
+  });
+  velA=mkFBO(); velB=mkFBO();
+  presA=mkFBO(); presB=mkFBO();
+  dyeA=mkFBO(); dyeB=mkFBO();
+  smagT=mkFBO();
+}
+
+// CPU-side obstacle test (must match GLSL exactly for initFields)
+function obstH_js(x){
+  if(x<OX0||x>OX2) return 0;
+  if(x<=OX1){ const t=(x-OX0)/(OX1-OX0); return OH*Math.sqrt(Math.max(0,2*t-t*t)); }
+  return OH;
+}
+function inObs_js(x,y){ const h=obstH_js(x); return h>0&&Math.abs(y-.5)<h; }
+
+function initFields(){
+  const N4=NX*NY*4;
+  const vd=new Float32Array(N4), zd=new Float32Array(N4);
+  for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){
+    const idx=(j*NX+i)*4, x=(i+.5)/NX, y=(j+.5)/NY;
+    vd[idx]  = inObs_js(x,y)?0:U_IN;
+    vd[idx+3]=1;
+  }
+  [velA.tex,velB.tex].forEach(t=>{
+    gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,NX,NY,0,gl.RGBA,gl.FLOAT,vd);
+  });
+  [presA.tex,presB.tex,dyeA.tex,dyeB.tex,smagT.tex].forEach(t=>{
+    gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,NX,NY,0,gl.RGBA,gl.FLOAT,zd);
+  });
+  gl.bindTexture(gl.TEXTURE_2D,null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SIMULATION STEP PIPELINE
+// Order matters: advect → SGS → diffuse → pressure → project → BC → dye
+// ═══════════════════════════════════════════════════════════════════════
+let simT=0;
+
+function computeNu(){
+  if(!USE_RE) return NU;
+  const Lc=(OX2-OX0)*NX;             // obstacle chord length in cells
+  return Math.max(4e-5,U_IN*Lc/RE);  // ν = U·L/Re
+}
+
+function simStep(){
+  // Safe dt: β·dt ≤ 0.9 (acoustic CFL), also guard against stiff diffusion
+  const nu=computeNu(); NU=nu;
+  const dt=Math.min(0.9/Math.max(BETA,0.1), 0.22/Math.max(nu*4,1e-6), 0.9/Math.max(U_IN*2,0.01));
+
+  // ── 1. ADVECT VELOCITY (semi-Lagrangian RK2) ─────────────────────────
+  pass(pAdvV,velB.fbo, p=>bindT(p,'vel',0,velA.tex),
+    p=>{ u1f(p,'dt',dt); u2f(p,'res',NX,NY); });
+  [velA,velB]=[velB,velA];
+
+  // ── 2. SMAGORINSKY EDDY VISCOSITY ────────────────────────────────────
+  pass(pSmag,smagT.fbo, p=>bindT(p,'vel',0,velA.tex),
+    p=>{ u1f(p,'cs',CS); u2f(p,'res',NX,NY); });
+
+  // ── 3. DIFFUSION with ν_eff = ν + ν_t ────────────────────────────────
+  pass(pDiff,velB.fbo,
+    p=>{ bindT(p,'vel',0,velA.tex); bindT(p,'smag',1,smagT.tex); },
+    p=>{ u1f(p,'dt',dt); u1f(p,'nu',nu); u2f(p,'res',NX,NY); });
+  [velA,velB]=[velB,velA];
+
+  // ── 4. PRESSURE UPDATE (artificial compressibility) ───────────────────
+  pass(pPres,presB.fbo,
+    p=>{ bindT(p,'vel',0,velA.tex); bindT(p,'pres',1,presA.tex); },
+    p=>{ u1f(p,'dt',dt); u1f(p,'beta',BETA); u2f(p,'res',NX,NY); });
+  [presA,presB]=[presB,presA];
+
+  // ── 5. PROJECTION (subtract ∇p) ───────────────────────────────────────
+  pass(pProj,velB.fbo,
+    p=>{ bindT(p,'vel',0,velA.tex); bindT(p,'pres',1,presA.tex); },
+    p=>{ u1f(p,'dt',dt); u2f(p,'res',NX,NY); });
+  [velA,velB]=[velB,velA];
+
+  // ── 6. BOUNDARY CONDITIONS ────────────────────────────────────────────
+  pass(pBC,velB.fbo, p=>bindT(p,'vel',0,velA.tex),
+    p=>{ u1f(p,'uIn',U_IN); u2f(p,'res',NX,NY); u1f(p,'t',simT); });
+  [velA,velB]=[velB,velA];
+
+  // ── 7. ADVECT DYE ─────────────────────────────────────────────────────
+  pass(pAdvD,dyeB.fbo,
+    p=>{ bindT(p,'vel',0,velA.tex); bindT(p,'dye',1,dyeA.tex); },
+    p=>{ u1f(p,'dt',dt); u2f(p,'res',NX,NY); });
+  [dyeA,dyeB]=[dyeB,dyeA];
+
+  // ── 8. INJECT DYE AT INFLOW ───────────────────────────────────────────
+  pass(pInj,dyeB.fbo, p=>bindT(p,'dye',0,dyeA.tex),
+    p=>{ u1f(p,'uIn',U_IN); u2f(p,'res',NX,NY); u1f(p,'t',simT); });
+  [dyeA,dyeB]=[dyeB,dyeA];
+
+  simT+=dt;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// RENDER TO SCREEN
+// ═══════════════════════════════════════════════════════════════════════
+let vortMax=0.01;
+function render(){
+  vortMax=Math.max(vortMax*.994,U_IN*2.);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.useProgram(pDisp);
+  bindT(pDisp,'vel',0,velA.tex);
+  bindT(pDisp,'dye',1,dyeA.tex);
+  u1i(pDisp,'mode',VIEW);
+  u1f(pDisp,'uIn',U_IN);
+  u1f(pDisp,'vmax',vortMax);
+  u2f(pDisp,'res',NX,NY);
+  gl.bindVertexArray(vao);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN LOOP
+// ═══════════════════════════════════════════════════════════════════════
+let frameN=0, fps=0, fpsT=0, fpsF=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  // Warmup: extra substeps for first ~90 frames so flow develops quickly
+  const steps=frameN<90?Math.max(SS,14):SS;
+  for(let i=0;i<steps;i++) simStep();
+  render();
+  frameN++; fpsF++;
+  if(t-fpsT>600){ fps=fpsF*1000/(t-fpsT); fpsT=t; fpsF=0; updateUI(); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════════════════════
+function updateUI(){
+  const Lc=(OX2-OX0)*NX, re=U_IN*Lc/Math.max(NU,1e-9);
+  document.getElementById('sRe').textContent   =Math.round(re);
+  document.getElementById('sFps').textContent  =fps.toFixed(1);
+  document.getElementById('sRes').textContent  =NX+'×'+NY;
+  document.getElementById('sNu').textContent   =NU.toExponential(2);
+  document.getElementById('sBeta').textContent =BETA.toFixed(2);
+  document.getElementById('sMode').textContent =['Dye density','Velocity magnitude','Vorticity ω'][VIEW];
+  document.getElementById('sVel').textContent  =U_KMH;
+  document.getElementById('sVmax').textContent =vortMax.toFixed(4);
+  document.getElementById('sSs').textContent   =SS;
+}
+
+function setView(v){
+  VIEW=v;
+  ['b0','b1','b2'].forEach((id,i)=>document.getElementById(id).classList.toggle('on',i===v));
+}
+function resetSim(){ simT=0; vortMax=0.01; frameN=0; initFields(); }
+
+// Slider handlers
+document.getElementById('cVel').addEventListener('input',function(){
+  U_KMH=+this.value;
+  U_IN=Math.max(.005,U_KMH/420*.175); // 420 km/h → 0.175 cells/step
+  document.getElementById('vVel').textContent=U_KMH;
+});
+document.getElementById('cRe').addEventListener('input',function(){
+  RE=+this.value; document.getElementById('vRe').textContent=RE;
+});
+document.getElementById('cUseRe').addEventListener('change',function(){ USE_RE=this.checked; });
+document.getElementById('cCs').addEventListener('input',function(){
+  CS=+this.value; document.getElementById('vCs').textContent=CS.toFixed(2);
+});
+document.getElementById('cBeta').addEventListener('input',function(){
+  BETA=+this.value; document.getElementById('vBeta').textContent=BETA.toFixed(2);
+});
+document.getElementById('cSs').addEventListener('input',function(){
+  SS=+this.value; document.getElementById('vSs').textContent=SS;
+});
+document.getElementById('cRes').addEventListener('change',function(){
+  const[w,h]=this.value.split('x').map(Number);
+  NX=w; NY=h; allocTextures(); initFields(); frameN=0;
+});
+
+// Canvas sizing
+function resize(){ const d=document.getElementById('main'); canvas.width=d.clientWidth; canvas.height=d.clientHeight; }
+window.addEventListener('resize',resize);
+
+// ═══════════════════════════════════════════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════════════════════════════════════════
+resize();
+buildPrograms();
+allocTextures();
+initFields();
+updateUI();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
