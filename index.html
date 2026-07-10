@@ -534,24 +534,28 @@
       top: 50%;
       transform: translateY(-50%);
       z-index: 90;
-      background: var(--ir-blue);
-      color: #fff;
-      padding: 14px 10px;
+      background: var(--panel);
+      color: var(--ir-blue);
+      padding: 18px 10px;
       border-radius: var(--radius-md) 0 0 var(--radius-md);
       cursor: pointer;
       font-family: 'Inter', sans-serif;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.10em;
       text-transform: uppercase;
-      border: none;
+      border: 1px solid var(--border);
+      border-right: none;
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      transition: right 0.3s ease;
-      border-left: 1px solid var(--border-accent);
+      transition: right 0.3s ease, background-color 0.15s ease, color 0.15s ease;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
     }
 
-    #btn-tele-toggle:hover { background: var(--ir-blue-mid); }
+    #btn-tele-toggle:hover {
+      background: var(--bg);
+      color: var(--ir-blue-mid);
+    }
 
     #btn-tele-toggle.open {
       right: 550px;
@@ -1818,7 +1822,7 @@
 </div>
     </div>
 
-    <button id="btn-tele-toggle">ANALYTICS</button>
+    <button id="btn-tele-toggle">TELEMETRY CHARTS</button>
   </div>
 
   <!-- BOTTOM CONTROL BAR -->
@@ -4576,7 +4580,7 @@
       const lapDiv = document.createElement('div');
       lapDiv.innerHTML = `
 <div id="lap-overlay"></div>
-<button id="lap-fab"><span class="dot"></span>LIVE ANALYSIS</button>
+<button id="lap-fab"><span class="dot"></span>🔬 LIVE ANALYSIS</button>
 
 <div id="lap-panel">
   <div id="lap-hdr">
