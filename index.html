@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>High Speed Rolling Stock Analysis Platform — Ministry of Railways, GoI · RDSO</title>
+  <title>High Speed Rolling Stock Analysis Platform - Ministry of Railways, GoI · RDSO</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -12,13 +12,13 @@
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Barlow:wght@300;400;500;600&display=swap');
 
     :root {
-      /* Indian Railways blue — matches IR corporate identity */
+      /* Indian Railways blue - matches IR corporate identity */
       --ir-blue: #003FA5;
       --ir-blue-mid: #0055CC;
       --ir-blue-light: #1A7FD4;
       --ir-blue-pale: rgba(0,63,165,0.08);
       --ir-blue-border: rgba(0,63,165,0.25);
-      /* Saffron/amber — GoI accent */
+      /* Saffron/amber - GoI accent */
       --ir-amber: #E8920A;
       --ir-amber-bright: #F5A623;
       --ir-amber-pale: rgba(232,146,10,0.10);
@@ -29,7 +29,7 @@
       --status-warning-bg: #FEF3E2;
       --status-critical: #B91C1C;
       --status-critical-bg: #FDF0F0;
-      /* Backgrounds — light mode */
+      /* Backgrounds - light mode */
       --bg-base: #F0F4F8;
       --bg-surface: #FFFFFF;
       --bg-surface-2: #F8FAFC;
@@ -968,7 +968,7 @@
       box-shadow: 0 0 0 2px var(--ir-blue-pale);
     }
 
-    /* --- CAB VIEW TCMS DASHBOARD — Indian Railways Professional Theme --- */
+    /* --- CAB VIEW TCMS DASHBOARD - Indian Railways Professional Theme --- */
     #cab-overlay {
       position: absolute;
       bottom: 0;
@@ -1012,7 +1012,7 @@
     .cb-pill-warn { color: #FFD700; border-color: #FFD700; }
     .cb-pill-crit { color: #FF6666; border-color: #FF6666; animation: blink 1s infinite; }
 
-    /* Main panel grid — 5 columns, fills full screen width */
+    /* Main panel grid - 5 columns, fills full screen width */
     .cab-panel {
       display: grid;
       grid-template-columns: 1fr 1.3fr 1.8fr 1.5fr 1.2fr;
@@ -1089,7 +1089,7 @@
     .cab-sta-adv.warn   { background: #FFF8E1; color: #B06000; border: 1px solid #FFD166; }
     .cab-sta-adv.danger { background: #CC0000; color: #fff; animation: blink .7s infinite; }
 
-    /* Station approach HUD on 3D view — professional IR style */
+    /* Station approach HUD on 3D view - professional IR style */
     #sta-hud {
       position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
       z-index: 50; background: rgba(255,255,255,0.95);
@@ -1109,7 +1109,7 @@
     .cab-map-sta   { width: 2px; height: 10px; background: #FF9933; position: absolute; top: -4px; }
     .cab-map-sta-lbl { position: absolute; top: 9px; transform: translateX(-50%); font-size: 6px; color: #6B7A94; white-space: nowrap; }
 
-    /* Keyboard hint — compact strip */
+    /* Keyboard hint - compact strip */
     .cab-controls-hint {
       font-size: 8px; color: #6B7A94; white-space: nowrap;
       overflow: hidden; text-overflow: ellipsis;
@@ -1124,7 +1124,7 @@
     .cab-pill-ok, .cab-pill-warn, .cab-pill-crit { display: none; }
     .cab-atp { border-top-color: #003380; }
     .cab-sta { border-top-color: #FF9933; }
-    /* Legacy cab class stubs — all values set inline in redesigned HTML */
+    /* Legacy cab class stubs - all values set inline in redesigned HTML */
 
     .cab-bar-bg-dark { width: 100%; height: 5px; background: #1A2B1A; border-radius: 3px; overflow: hidden; margin: 2px 0; }
     .cab-pill-crit { color: #CC0000; border-color: #CC0000;
@@ -1240,7 +1240,6 @@
     <div class="hdr-r">
       <a href="documentation.html" target="_blank" class="btn" style="text-decoration:none;">Docs</a>
       <button class="btn" id="bMatSci">Material Science</button>
-      <button class="btn on" id="bCFD">Aero CFD</button>
       <button class="btn" id="bWire">Wireframe</button>
       <button class="btn" id="bReset">Camera</button>
     </div>
@@ -1363,8 +1362,8 @@
           <div class="ctrl">
             <div class="ctrl-row"><span class="ctrl-name">Wheel Profile</span></div>
             <select id="sWheelProfile" onchange="applyWheelProfile(this.value)">
-              <option value="s1002">S1002 — New HSR (λ≈0.05)</option>
-              <option value="p8">P8 — Indian Railways (λ≈0.12)</option>
+              <option value="s1002">S1002 - New HSR (λ≈0.05)</option>
+              <option value="p8">P8 - Indian Railways (λ≈0.12)</option>
               <option value="worn_mild">Mildly Worn (λ≈0.18)</option>
               <option value="worn_severe">Severely Worn (λ≈0.28)</option>
               <option value="reprofiled">Re-profiled CNC (λ≈0.06)</option>
@@ -1385,10 +1384,10 @@
           <div class="ctrl">
             <div class="ctrl-row"><span class="ctrl-name">Wheel Steel Grade</span></div>
             <select id="sWheelGrade" onchange="applyWheelGrade(this.value)">
-              <option value="er9">ER9 — EN 13262 (HB 255–305)</option>
-              <option value="er8">ER8 — EN 13262 (HB 235–285)</option>
-              <option value="er7">ER7 — Standard (HB 220–260)</option>
-              <option value="b2">B2 — Heavy Haul (HB 270–320)</option>
+              <option value="er9">ER9 - EN 13262 (HB 255–305)</option>
+              <option value="er8">ER8 - EN 13262 (HB 235–285)</option>
+              <option value="er7">ER7 - Standard (HB 220–260)</option>
+              <option value="b2">B2 - Heavy Haul (HB 270–320)</option>
             </select>
           </div>
           <div class="ctrl">
@@ -1400,10 +1399,10 @@
           <div class="ctrl">
             <div class="ctrl-row"><span class="ctrl-name">Rail Steel Grade</span></div>
             <select id="sRailGrade" onchange="applyRailGrade(this.value)">
-              <option value="r350ht">R350HT — Head Hardened (350–390 HB)</option>
-              <option value="r260">R260 — Standard (260 HB)</option>
-              <option value="r320cr">R320Cr — Cr alloyed (320 HB)</option>
-              <option value="r400ht">R400HT — Premium HSR (400 HB)</option>
+              <option value="r350ht">R350HT - Head Hardened (350–390 HB)</option>
+              <option value="r260">R260 - Standard (260 HB)</option>
+              <option value="r320cr">R320Cr - Cr alloyed (320 HB)</option>
+              <option value="r400ht">R400HT - Premium HSR (400 HB)</option>
             </select>
           </div>
           <div class="ctrl">
@@ -1424,10 +1423,10 @@
           <div class="ctrl">
             <div class="ctrl-row"><span class="ctrl-name">Lubrication</span></div>
             <select id="sLube" onchange="applyLube(this.value)">
-              <option value="dry">Dry — No lubrication (K×1.0)</option>
+              <option value="dry">Dry - No lubrication (K×1.0)</option>
               <option value="flange">Flange Lubricator Active (K×0.4)</option>
               <option value="tof">Top-of-Rail Friction Modifier (K×0.6)</option>
-              <option value="wet">Wet Rail — Contaminated (K×1.8)</option>
+              <option value="wet">Wet Rail - Contaminated (K×1.8)</option>
               <option value="sand">Sanding Applied (ψ×1.3, K×1.2)</option>
             </select>
           </div>
@@ -1520,27 +1519,16 @@
         <div class="infra-tag" id="ib-bridge" style="display:none; color:var(--acc);">&#127902; VIADUCT</div>
       </div>
       <div id="cv-overlay">LEFT-CLICK PAN &middot; RIGHT-CLICK ORBIT &middot; SCROLL ZOOM</div>
-      <!-- CFD overlay canvas -->
-      <canvas id="cfd-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none;z-index:10;"></canvas>
-      <!-- CFD legend -->
-      <div id="cfd-legend" style="display:none;position:absolute;bottom:12px;left:12px;z-index:11;background:rgba(0,0,0,0.72);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;pointer-events:none;">
-        <div style="font-weight:700;letter-spacing:.06em;margin-bottom:6px;">AERO CFD &mdash; Pressure Distribution</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <div style="width:80px;height:10px;border-radius:3px;background:linear-gradient(to right,#1a1aff,#00cfff,#00ff88,#ffee00,#ff4400);"></div>
-          <span style="font-size:9px;color:#aaa;">Low &rarr; High pressure</span>
-        </div>
-        <div id="cfd-speed-label" style="color:#88ccff;font-size:9px;">v = 0 km/h &nbsp;|&nbsp; Cd = --</div>
-      </div>
-      <!-- Station approach HUD — always visible in 3D view when near station -->
+      <!-- Station approach HUD - always visible in 3D view when near station -->
       <div id="sta-hud">
         <div class="sh-name" id="sh-name">NEXT STATION</div>
         <div class="sh-dist" id="sh-dist">-- m</div>
         <div class="sh-adv" id="sh-adv">--</div>
       </div>
-      <!-- CAB VIEW TCMS — Indian Railways Professional (KAVACH/ATC Cab Signalling) -->
+      <!-- CAB VIEW TCMS - Indian Railways Professional (KAVACH/ATC Cab Signalling) -->
       <div id="cab-overlay">
 
-        <!-- Header bar — system status strip -->
+        <!-- Header bar - system status strip -->
         <div id="cab-hdr-bar">
           <div style="font-size:9px;letter-spacing:1.5px;font-weight:900;color:#FF9933;">
             INDIAN RAILWAYS &nbsp;|&nbsp; MAHSR TCMS &nbsp;·&nbsp; KAVACH 4.0 &nbsp;·&nbsp; ATC ETCS L2
@@ -1556,7 +1544,7 @@
           <div class="cab-controls-hint">W/S NOTCH &nbsp; B BRAKE &nbsp; SPACE EMERGENCY &nbsp; T ANALYTICS &nbsp; F CAB</div>
         </div>
 
-        <!-- Main compact panel — 5 columns -->
+        <!-- Main compact panel - 5 columns -->
         <div class="cab-panel">
 
           <!-- COL 1 : SPEED + LIMIT -->
@@ -1621,7 +1609,7 @@
 
           <!-- COL 3 : NEXT STATION (widest) -->
           <div class="cab-sect ir-orange">
-            <div class="cab-lbl">NEXT STATION — MAHSR CORRIDOR (BKC TO SABARMATI)</div>
+            <div class="cab-lbl">NEXT STATION - MAHSR CORRIDOR (BKC TO SABARMATI)</div>
             <div style="display:flex;align-items:baseline;gap:6px;margin:2px 0;flex-wrap:wrap;">
               <div style="font-size:13px;font-weight:900;color:#003380;letter-spacing:.8px;line-height:1.2;" id="cab-sta-name">--</div>
               <div style="font-size:9px;color:#6B7A94;white-space:nowrap;">PLF: <span style="color:#1A2233;font-weight:800;" id="cab-sta-plat">--</span></div>
@@ -1630,7 +1618,7 @@
               <div style="font-size:24px;font-weight:900;color:#1A2233;line-height:1;" id="cab-sta-dist">--</div>
               <div style="font-size:9px;color:#6B7A94;white-space:nowrap;">ETA: <span style="font-weight:800;color:#1A2233;" id="cab-sta-eta">--</span></div>
             </div>
-            <div class="cab-sta-adv safe" id="cab-sta-adv">CAN STOP — SAFE</div>
+            <div class="cab-sta-adv safe" id="cab-sta-adv">CAN STOP - SAFE</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:2px;">
               <div class="cb-row"><span class="cb-row-lbl">BRAKE START</span><span class="cb-row-val" id="cab-sta-bstart">--</span></div>
               <div class="cb-row"><span class="cb-row-lbl">REQ DECEL</span><span class="cb-row-val" id="cab-sta-req-a">-- m/s²</span></div>
@@ -1669,7 +1657,7 @@
         </div>
         <!-- Track geometry curve alert bar -->
         <div id="cab-curve-alert" style="display:none;padding:3px 12px;margin:1px 4px;border-radius:3px;font-size:9px;font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:.6px;background:#FFF3CD;border:1px solid #E8A000;color:#7A4F00;">
-          CURVE — <span id="cab-curve-alert-txt">--</span>
+          CURVE - <span id="cab-curve-alert-txt">--</span>
         </div>
         <!-- hidden IDs for legacy JS compatibility -->
         <span id="cab-atp-mode" style="display:none;"></span>
@@ -1681,7 +1669,7 @@
       </div>
     </div>
 
-    <!-- RIGHT PANEL — Scrollable Analytics -->
+    <!-- RIGHT PANEL - Scrollable Analytics -->
     <div id="right">
       <div id="tele">
         <div class="tele-hdr">Rail-Wheel &amp; Physical Telemetry</div>
@@ -1729,7 +1717,7 @@
         </div>
       </div>
 
-      <!-- SCROLLABLE CHART COLUMN — click any chart to expand fullscreen -->
+      <!-- SCROLLABLE CHART COLUMN - click any chart to expand fullscreen -->
       <div id="graph-area">
         <div class="chart-block" id="cb0"><div class="chart-hdr"><div class="chart-hdr-left"><span class="chart-num">01</span>Speed (km/h) <span class="live-dot" style="display:inline-block;margin-left:8px"></span></div><button class="chart-expand-btn" onclick="expandChart('cb0')">⤢ EXPAND</button></div><div class="chart-body"><canvas id="rc-spd"></canvas></div></div>
         <div class="chart-block" id="cb1"><div class="chart-hdr"><div class="chart-hdr-left"><span class="chart-num">02</span>Net Accel (m/s²) <span class="live-dot" style="display:inline-block;margin-left:8px"></span></div><button class="chart-expand-btn" onclick="expandChart('cb1')">⤢ EXPAND</button></div><div class="chart-body"><canvas id="rc-accel"></canvas></div></div>
@@ -1805,7 +1793,7 @@
       bridge: false, span: 30,
       v_ms: 0, x_m: 0, teNotch: 0, beNotch: 0, brakeTemp: 30,
       regen: 100,
-      cfd: true, wire: false, eddyW: 0
+      wire: false, eddyW: 0
     };
 
     const UI = {
@@ -2091,7 +2079,7 @@
           camera.lookAt(0, 2.5, noseTipZ + 400);
           document.getElementById('bReset').innerText = "Cam: Cab View";
           document.getElementById('cab-overlay').classList.add('visible');
-          // Collapse left column via grid — avoids zero-canvas-size bug from display:none
+          // Collapse left column via grid - avoids zero-canvas-size bug from display:none
           document.getElementById('main').style.gridTemplateColumns = '0px 1fr';
           document.getElementById('left').style.minWidth = '0';
           document.getElementById('left').style.overflow = 'hidden';
@@ -2131,13 +2119,13 @@
     });
 
     // ══════════════════════════════════════════════════════
-    // KEYBOARD CONTROLS — Enhanced
+    // KEYBOARD CONTROLS - Enhanced
     // ══════════════════════════════════════════════════════
     document.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
       switch (e.code) {
         case 'KeyW': case 'ArrowUp':
-          // Throttle up — click next traction notch
+          // Throttle up - click next traction notch
           {
             const btns = [...document.querySelectorAll('.sbtn[data-te]')];
             const curIdx = btns.findIndex(b => b.classList.contains('te-on'));
@@ -2175,8 +2163,6 @@
           // Toggle cab view
           document.getElementById('bReset') && document.getElementById('bReset').click();
           break;
-        case 'KeyC':
-          document.getElementById('bCFD').click(); break;
         case 'KeyV':
           document.getElementById('bWire').click(); break;
         case 'KeyT':
@@ -2440,10 +2426,10 @@
       let E_thermal_rate = 0;
       if (S.beNotch > 0) {
         if (S.beNotch > 1) {
-          // EMERGENCY BRAKING — Indian Railways standard (RDSO/IRS specifications):
+          // EMERGENCY BRAKING - Indian Railways standard (RDSO/IRS specifications):
           // 1. Traction isolated (TE=0, already handled)
           // 2. Regenerative braking DISCONNECTED (brake pipe at 0 bar isolates regen circuit)
-          // 3. All disc brakes applied at structural maximum — thermal fade override active
+          // 3. All disc brakes applied at structural maximum - thermal fade override active
           // 4. Eddy current brake (if fitted) supplements disc at high speed
           // 5. WSP (Wheel Slide Protection) limits to 95% adhesion to prevent flat spots
           const F_disc_emer = F_adh * 0.9;           // structural disc limit (no fade factor)
@@ -2453,7 +2439,7 @@
           BE = Math.min(F_adh * 0.95, F_disc_emer + F_eddy_emer); // WSP limits to 95% adhesion
           E_thermal_rate = F_disc_emer * v;           // all disc thermal (no regen heat share)
         } else {
-          // SERVICE BRAKING — blended regen + disc
+          // SERVICE BRAKING - blended regen + disc
           const desired_BE = F_adh * S.beNotch;
           const applied_regen = Math.min(desired_BE, max_regen);
           const applied_disc = Math.min(desired_BE - applied_regen, max_disc);
@@ -2634,7 +2620,7 @@
         lastSyncTime = now;
       }
 
-      // Update Cab View TCMS Dashboard — IR Professional Theme (runs every frame in cab mode)
+      // Update Cab View TCMS Dashboard - IR Professional Theme (runs every frame in cab mode)
       if (camMode === 4) {
         const gc = id => document.getElementById(id);
 
@@ -2653,7 +2639,7 @@
         if (wzVal) { wzVal.textContent = wz.toFixed(2); wzVal.style.color = wz < 2.5 ? '#1A6B2D' : (wz > 3 ? '#CC0000' : '#B06000'); }
 
         // Col 2: Notch status (no emoji)
-        let notchStr = 'IDLE — COAST', notchColor = '#6B7A94';
+        let notchStr = 'IDLE - COAST', notchColor = '#6B7A94';
         if (S.beNotch > 1.0)    { notchStr = 'EMERGENCY BRAKE APPLIED';          notchColor = '#CC0000'; }
         else if (S.beNotch > 0) { notchStr = 'SERVICE BRAKE ' + (S.beNotch * 100).toFixed(0) + '%'; notchColor = '#B06000'; }
         else if (S.teNotch > 0) { notchStr = 'POWER NOTCH ' + (S.teNotch * 100).toFixed(0) + '%';   notchColor = '#003380'; }
@@ -2666,7 +2652,7 @@
         const tLbl = gc('cab-te-lbl'); if (tLbl) tLbl.textContent = (dyn.TE / 1000).toFixed(1) + ' kN';
         const bLbl = gc('cab-be-lbl'); if (bLbl) bLbl.textContent = ((dyn.BE || 0) / 1000).toFixed(1) + ' kN';
 
-        // Col 5: Power & thermal — plain text, no HTML injection
+        // Col 5: Power & thermal - plain text, no HTML injection
         const powEl = gc('cab-pow');
         if (powEl) powEl.textContent = (S.teNotch * lastConsts.P_max_W / 1000).toFixed(0) + ' kW';
         const tempEl = gc('cab-temp');
@@ -2701,7 +2687,7 @@
       // ATP/ATC cab signalling + station approach + extended telemetry (every frame)
       if (typeof updateCabSignalling === 'function') updateCabSignalling(dyn);
 
-      // Throttle chart live-tracker redraws to 10Hz — use SEPARATE timer, not lastSyncTime
+      // Throttle chart live-tracker redraws to 10Hz - use SEPARATE timer, not lastSyncTime
       if (now - _chartTick > 100) {
         _chartTick = now;
         const rightOpen = document.getElementById('right').classList.contains('open');
@@ -2727,7 +2713,7 @@
         let xVal = S.v_ms * 3.6;
         let isPercentage = false;
 
-        // c3 = conicity axis, c7 = frequency axis, c8 = time axis — skip tracker
+        // c3 = conicity axis, c7 = frequency axis, c8 = time axis - skip tracker
         if (cid === 'c3' || cid === 'c7' || cid === 'c8') return;
         if (cid === 'c2') { xVal = lastDyn.creepage * 100; isPercentage = true; }
 
@@ -2811,7 +2797,7 @@
             ctx.fill();
             ctx.stroke();
 
-            // Value label — flip side if near right edge
+            // Value label - flip side if near right edge
             const onLeft = xPixel > (xAxis.left + xAxis.right) / 2;
             ctx.font = "bold 9px 'JetBrains Mono', Arial, sans-serif";
             ctx.textAlign = onLeft ? 'right' : 'left';
@@ -2836,7 +2822,7 @@
 
     function createChart(id, type, data, options = {}) {
       const el = document.getElementById(id);
-      if (!el) return; // canvas not present in current layout — skip silently
+      if (!el) return; // canvas not present in current layout - skip silently
       const ctx = el.getContext('2d');
       if (charts[id]) charts[id].destroy();
       const opts = JSON.parse(JSON.stringify(chartOpts));
@@ -3066,7 +3052,7 @@
         ]
       }, { scales: { x: { title: { display: true, text: 'Speed (km/h)' } }, y: { title: { display: true, text: 'Stopping Distance (m)' }, min: 0 } } });
 
-      // --- Chart 7: Suspension FRF — Secondary Air Spring Transmissibility ---
+      // --- Chart 7: Suspension FRF - Secondary Air Spring Transmissibility ---
       const fArr = Array.from({ length: 40 }, (_, i) => +(0.2 + i * 0.5).toFixed(1));
       const massCar = (lastConsts.totalMass_kg / curP.coaches);
       createChart('c7', 'line', {
@@ -3081,7 +3067,7 @@
         ]
       }, { scales: { x: { title: { display: true, text: 'Frequency (Hz)' } }, y: { title: { display: true, text: 'Transmissibility (dB)' } } } });
 
-      // --- Chart 8: Brake Disc Temp Rise — Emergency Stop from 320 km/h ---
+      // --- Chart 8: Brake Disc Temp Rise - Emergency Stop from 320 km/h ---
       // Simulate temp vs time for each configuration
       function simBrakeTemp(C, params) {
         const arr = [30]; const N = 60;
@@ -3365,7 +3351,7 @@
       const stripeS = new THREE.Mesh(new THREE.BoxGeometry(3.22, 0.1, bodyLen), matSaffron);
       stripeS.position.y = 1.6; g.add(stripeS);
 
-      // Windows — flat panes on each body side (no protruding geometry)
+      // Windows - flat panes on each body side (no protruding geometry)
       const winZ = -bodyLen / 2 + 2;
       const winPaneMat = new THREE.MeshStandardMaterial({ color: 0x1A2C40, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.65 });
       const winFrameMat = new THREE.MeshStandardMaterial({ color: 0x080A0C, roughness: 0.8 });
@@ -3391,7 +3377,7 @@
       const fairingB = new THREE.Mesh(fairingGeo, matWhite);
       fairingB.rotation.z = Math.PI / 2; fairingB.position.set(0, 4.1, -2.0); g.add(fairingB);
 
-      // Underframe equipment — slim boxes tucked above floor level (y=0.8), inside body width
+      // Underframe equipment - slim boxes tucked above floor level (y=0.8), inside body width
       const ufMat = new THREE.MeshStandardMaterial({ color: 0x18191E, roughness: 0.88, metalness: 0.5 });
       const ufMat2 = new THREE.MeshStandardMaterial({ color: 0x1E2228, roughness: 0.85, metalness: 0.6 });
       // Traction converter (stays above y=0.8 floor, within 2.4m body clear zone)
@@ -3411,7 +3397,7 @@
       const skirt = new THREE.Mesh(new THREE.BoxGeometry(3.22, 0.28, bodyLen - 0.4), skirtMat);
       skirt.position.set(0, 0.68, 0); g.add(skirt);
 
-      // Doors — flat panels flush with each body side (not full-width protrusions)
+      // Doors - flat panels flush with each body side (not full-width protrusions)
       const doorMat = new THREE.MeshStandardMaterial({ color: 0xD8D8D6, roughness: 0.55, metalness: 0.25 });
       const doorGMat = new THREE.MeshStandardMaterial({ color: 0x1A2C3A, roughness: 0.06, metalness: 0.2, transparent: true, opacity: 0.6 });
       const stepMat = new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.95 });
@@ -3485,7 +3471,7 @@
           g.add(foldInner);
         }
 
-        // Center Buffer Coupler (CBC) — both ends of intermediate cars
+        // Center Buffer Coupler (CBC) - both ends of intermediate cars
         const cbcMat = new THREE.MeshStandardMaterial({ color: 0x2A2E38, roughness: 0.55, metalness: 0.85 });
         for (let ce of [-1, 1]) {
           // CBC body
@@ -3524,7 +3510,7 @@
       const matBolster = new THREE.MeshStandardMaterial({ color: 0x252A32, roughness: 0.7, metalness: 0.6 });
       const matMotor = new THREE.MeshStandardMaterial({ color: 0x1A3060, roughness: 0.55, metalness: 0.65 });
 
-      // ── BOGIE FRAME — realistic H-frame with bolster ──────────────────────
+      // ── BOGIE FRAME - realistic H-frame with bolster ──────────────────────
       // Main side beams (left + right longitudinal box beams)
       for (let sx of [-0.96, 0.96]) {
         const beam = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.30, 3.40), matFrame);
@@ -3547,7 +3533,7 @@
       const kpRing = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.025, 8, 20), matFrame);
       kpRing.position.set(0, 0.79, 0); bg.add(kpRing);
 
-      // ── AIR SPRINGS (secondary suspension — bellows shape) ───────────────
+      // ── AIR SPRINGS (secondary suspension - bellows shape) ───────────────
       for (let sx of [-0.88, 0.88]) {
         // Bellows body (stacked rings to simulate corrugated rubber)
         const bellowsMat = new THREE.MeshStandardMaterial({ color: 0x0E1014, roughness: 0.95, metalness: 0.0 });
@@ -3603,12 +3589,12 @@
         for (let ws of [-1, 1]) {
           const wx = ws * 0.7175; // wheel centre X
 
-          // ── WHEEL — 4-part assembly ──────────────────────────────────────
+          // ── WHEEL - 4-part assembly ──────────────────────────────────────
           // 1. Hub (at axle interface, small diameter)
           const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.145, 20), matHub);
           hub.rotation.z = Math.PI / 2; hub.position.set(wx, 0.43, az); bg.add(hub);
 
-          // 2. Disc/web (tapered from hub to rim — conical section)
+          // 2. Disc/web (tapered from hub to rim - conical section)
           const webGeo = new THREE.CylinderGeometry(0.43, 0.095, 0.06, 28);
           const web = new THREE.Mesh(webGeo, matTread);
           web.rotation.z = ws > 0 ? Math.PI / 2 : -Math.PI / 2;
@@ -3618,7 +3604,7 @@
           web2.rotation.z = ws > 0 ? -Math.PI / 2 : Math.PI / 2;
           web2.position.set(ws > 0 ? wx + 0.02 : wx - 0.02, 0.43, az); bg.add(web2);
 
-          // 3. Tread (outer rim cylinder — main visible rolling surface)
+          // 3. Tread (outer rim cylinder - main visible rolling surface)
           const tread = new THREE.Mesh(new THREE.CylinderGeometry(0.430, 0.430, 0.135, 36), matTread);
           tread.rotation.z = Math.PI / 2; tread.position.set(wx, 0.43, az);
           tread.castShadow = true; bg.add(tread);
@@ -3679,7 +3665,7 @@
         // ── BRAKE SYSTEM (disc + caliper, properly straddling disc) ─────────
         for (let bs of [-1, 1]) {
           const discX = bs * 0.55; // disc between wheel and bogie centre
-          // Brake disc (ventilated — two rings with gap)
+          // Brake disc (ventilated - two rings with gap)
           const disc1 = new THREE.Mesh(new THREE.CylinderGeometry(0.335, 0.335, 0.022, 32), matBrakeDisc);
           disc1.rotation.z = Math.PI / 2; disc1.position.set(discX, 0.43, az); bg.add(disc1);
           const disc2 = new THREE.Mesh(new THREE.CylinderGeometry(0.335, 0.335, 0.022, 32), matBrakeDisc);
@@ -3687,7 +3673,7 @@
           // Disc hat (inner face, darker)
           const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.065, 16), matHub);
           hat.rotation.z = Math.PI / 2; hat.position.set(discX, 0.43, az); bg.add(hat);
-          // Ventilation vanes (between the two disc faces — dark)
+          // Ventilation vanes (between the two disc faces - dark)
           const vnMat = new THREE.MeshStandardMaterial({ color: 0x1A1E24, roughness: 0.9 });
           for (let vi = 0; vi < 8; vi++) {
             const vane = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.18, 0.022), vnMat);
@@ -3792,13 +3778,13 @@
     embankment.receiveShadow = true;
     trackGroup.add(embankment);
 
-    // Ballastless slab track (MAHSR standard — concrete slab)
+    // Ballastless slab track (MAHSR standard - concrete slab)
     const slab = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.28, 4000), matConcrete);
     slab.position.y = -0.26;
     slab.receiveShadow = true;
     trackGroup.add(slab);
 
-    // Slab panel joints — InstancedMesh (800 joints, zero cost)
+    // Slab panel joints - InstancedMesh (800 joints, zero cost)
     const numJoints = Math.floor(4000 / 5);
     const jointInst = new THREE.InstancedMesh(
       new THREE.BoxGeometry(4.8, 0.29, 0.025),
@@ -3814,7 +3800,7 @@
     jointInst.instanceMatrix.needsUpdate = true;
     trackGroup.add(jointInst);
 
-    // PSC Concrete Sleepers — InstancedMesh (6666 sleepers, single draw call)
+    // PSC Concrete Sleepers - InstancedMesh (6666 sleepers, single draw call)
     const sleeperGeo = new THREE.BoxGeometry(2.7, 0.20, 0.26);
     const numSleepers = Math.floor(4000 / 0.6);
     const sleeperInst = new THREE.InstancedMesh(sleeperGeo, matConcrete, numSleepers);
@@ -3828,7 +3814,7 @@
     sleeperInst.receiveShadow = true;
     trackGroup.add(sleeperInst);
 
-    // Rail clips — InstancedMesh per rail (NOT individual meshes!)
+    // Rail clips - InstancedMesh per rail (NOT individual meshes!)
     const clipGeo = new THREE.BoxGeometry(0.22, 0.04, 0.07);
     const numClips = Math.floor(4000 / 0.6);
     const dummyC = new THREE.Object3D();
@@ -3843,7 +3829,7 @@
       trackGroup.add(clipInst);
     }
 
-    // Rails — UIC-60 profile. Head top at y=0 = wheel contact level
+    // Rails - UIC-60 profile. Head top at y=0 = wheel contact level
     for (let x of [-0.7175, 0.7175]) {
       // Rail foot
       const foot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 4000), matSteel);
@@ -4012,8 +3998,6 @@
       if (typeof updateStationObjects === 'function') updateStationObjects();
 
       renderer.render(scene, camera);
-      // CFD overlay
-      if (S.cfd) updateCFDOverlay(dyn);
     }
 
     window.addEventListener('resize', () => {
@@ -4039,178 +4023,17 @@
       });
     });
 
-    // ─── CFD mode ─────────────────────────────────────────────────────────────
-    const cfdCanvas = document.getElementById('cfd-canvas');
-    const cfdLegend = document.getElementById('cfd-legend');
-    const cfdSpeedLabel = document.getElementById('cfd-speed-label');
-    let cfdCtx = null;
-
-    // Streamline particles
-    const CFD_PARTICLES = 320;
-    const cfdParts = Array.from({ length: CFD_PARTICLES }, () => ({
-      x: Math.random(), y: Math.random(), age: Math.random(), speed: 0.004 + Math.random() * 0.006
-    }));
-
-    function pressureColor(p) {
-      // p in [0,1]: 0=low (blue), 0.5=neutral (green), 1=high (red)
-      if (p < 0.25) {
-        const t = p / 0.25;
-        return `rgba(${Math.round(26 + t*0)},${Math.round(26 + t*183)},${Math.round(255-t*0)},0.82)`;
-      } else if (p < 0.5) {
-        const t = (p - 0.25) / 0.25;
-        return `rgba(${Math.round(26+t*0)},${Math.round(207+t*48)},${Math.round(255-t*119)},0.82)`;
-      } else if (p < 0.75) {
-        const t = (p - 0.5) / 0.25;
-        return `rgba(${Math.round(26+t*230)},${Math.round(255-t*21)},${Math.round(136-t*136)},0.82)`;
-      } else {
-        const t = (p - 0.75) / 0.25;
-        return `rgba(${Math.round(256-t*22)},${Math.round(234-t*166)},${Math.round(0)},0.82)`;
-      }
-    }
-
-    function updateCFDOverlay(dyn) {
-      if (!cfdCtx) return;
-      const W = cfdCanvas.width, H = cfdCanvas.height;
-      cfdCtx.clearRect(0, 0, W, H);
-
-      const v = dyn ? dyn.v_kmh : 0;
-      const vn = Math.min(1, v / 350); // 0..1 normalized speed
-
-      // ── Pressure heatmap zones over train silhouette ──────────────────────
-      // Project approximate train position onto 2D canvas
-      // Train occupies roughly center of viewport, we paint zones in screen space
-      const numCars = Math.min(S.coaches, 16);
-      const carSpc = 26;
-      const trainWorldLen = numCars * carSpc;
-
-      // Approximate 2D bounding box of train from camera projection
-      const toScreen = (wx, wy, wz) => {
-        const v3 = new THREE.Vector3(wx, wy, wz);
-        v3.project(camera);
-        return { sx: (v3.x + 1) / 2 * W, sy: (1 - (v3.y + 1) / 2) * H };
-      };
-      const startZ = ((numCars - 1) * carSpc) / 2 + (5 + S.nose);
-      const endZ = -startZ;
-      const sFront = toScreen(0, 2.5, startZ);
-      const sRear  = toScreen(0, 2.5, endZ);
-      const sTop   = toScreen(0, 4.5, 0);
-      const sBot   = toScreen(0, 0.5, 0);
-
-      const trainLeft  = Math.min(sFront.sx, sRear.sx);
-      const trainRight = Math.max(sFront.sx, sRear.sx);
-      const trainTop   = Math.min(sTop.sy, sBot.sy);
-      const trainBot   = Math.max(sTop.sy, sBot.sy);
-      const trainW = trainRight - trainLeft;
-      const trainH = trainBot - trainTop;
-
-      if (trainW > 10 && v > 0) {
-        // Nose stagnation — high pressure front
-        const noseX = trainLeft;
-        const noseGrad = cfdCtx.createRadialGradient(noseX, (trainTop+trainBot)/2, 2, noseX, (trainTop+trainBot)/2, trainW * 0.18);
-        noseGrad.addColorStop(0, `rgba(255,60,0,${0.55*vn})`);
-        noseGrad.addColorStop(0.5, `rgba(255,160,0,${0.35*vn})`);
-        noseGrad.addColorStop(1, 'rgba(0,0,0,0)');
-        cfdCtx.fillStyle = noseGrad;
-        cfdCtx.fillRect(0, 0, W, H);
-
-        // Roof suction — low pressure top
-        const roofGrad = cfdCtx.createLinearGradient(trainLeft + trainW*0.1, trainTop-10, trainLeft + trainW*0.9, trainTop+20);
-        roofGrad.addColorStop(0, 'rgba(0,0,0,0)');
-        roofGrad.addColorStop(0.3, `rgba(0,120,255,${0.22*vn})`);
-        roofGrad.addColorStop(0.7, `rgba(0,200,255,${0.18*vn})`);
-        roofGrad.addColorStop(1, 'rgba(0,0,0,0)');
-        cfdCtx.fillStyle = roofGrad;
-        cfdCtx.fillRect(trainLeft, trainTop-15, trainW*0.9, trainH * 0.35);
-
-        // Undercar turbulence — medium pressure
-        const underGrad = cfdCtx.createLinearGradient(trainLeft, trainBot, trainLeft, trainBot+20);
-        underGrad.addColorStop(0, `rgba(0,220,120,${0.2*vn})`);
-        underGrad.addColorStop(1, 'rgba(0,0,0,0)');
-        cfdCtx.fillStyle = underGrad;
-        cfdCtx.fillRect(trainLeft + trainW*0.1, trainBot-8, trainW*0.8, trainH * 0.3);
-
-        // Wake — turbulent low pressure behind nose
-        const wakeX = trainRight;
-        const wakeGrad = cfdCtx.createRadialGradient(wakeX, (trainTop+trainBot)/2, 5, wakeX + trainW*0.08, (trainTop+trainBot)/2, trainW * 0.28);
-        wakeGrad.addColorStop(0, `rgba(80,0,180,${0.42*vn})`);
-        wakeGrad.addColorStop(0.5, `rgba(0,80,220,${0.22*vn})`);
-        wakeGrad.addColorStop(1, 'rgba(0,0,0,0)');
-        cfdCtx.fillStyle = wakeGrad;
-        cfdCtx.fillRect(0, 0, W, H);
-      }
-
-      // ── Streamline particles ──────────────────────────────────────────────
-      const pSpeed = 0.003 + vn * 0.018;
-      cfdParts.forEach(p => {
-        p.age += pSpeed * (0.8 + Math.random() * 0.4);
-        if (p.age > 1) { p.age = 0; p.x = 0; p.y = 0.05 + Math.random() * 0.9; }
-
-        // Streamline path: flow mostly left→right, deflect around train center
-        const cx = 0.5, cy = 0.5;
-        const dx = p.x - cx, dy = p.y - cy;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-
-        // Move right (flow direction)
-        p.x += pSpeed * (1 + 0.3 / (dist + 0.15));
-        // Deflect around train (potential flow approximation)
-        if (dist < 0.28 && p.x > 0.1 && p.x < 0.9) {
-          p.y += (dy / (dist + 0.01)) * pSpeed * 0.9;
-          p.x += (dx / (dist + 0.01)) * pSpeed * 0.3;
-        }
-        if (p.x > 1.05) { p.x = 0; p.y = 0.05 + Math.random() * 0.9; p.age = 0; }
-
-        // Color by speed: faster near train = cyan, far = blue
-        const localSpeed = Math.min(1, 0.3 / (dist + 0.1));
-        const alpha = v > 1 ? (0.4 + localSpeed * 0.4) : 0;
-        const r = Math.round(0 + localSpeed * 0);
-        const g2 = Math.round(120 + localSpeed * 135);
-        const b2 = Math.round(200 + localSpeed * 55);
-        cfdCtx.beginPath();
-        cfdCtx.arc(p.x * W, p.y * H, 1.2 + localSpeed * 1.5, 0, Math.PI * 2);
-        cfdCtx.fillStyle = `rgba(${r},${g2},${b2},${alpha})`;
-        cfdCtx.fill();
-      });
-
-      // ── Update label ─────────────────────────────────────────────────────
-      if (cfdSpeedLabel) {
-        const Cd = lastConsts ? (0.12 - 0.004 * S.nose + 0.003 * S.af / 10).toFixed(3) : '--';
-        const q = 0.5 * S.rho * (v/3.6)**2; // Pa
-        cfdSpeedLabel.textContent = `v = ${v.toFixed(0)} km/h  |  Cd ≈ ${Cd}  |  q = ${(q/1000).toFixed(1)} kPa`;
-      }
-    }
-
-    function initCFDCanvas() {
-      cfdCanvas.width  = canvasWrap.clientWidth;
-      cfdCanvas.height = canvasWrap.clientHeight;
-      cfdCtx = cfdCanvas.getContext('2d');
-    }
-    window.addEventListener('resize', () => {
-      cfdCanvas.width  = canvasWrap.clientWidth;
-      cfdCanvas.height = canvasWrap.clientHeight;
-    });
-    initCFDCanvas();
-
-    document.getElementById('bCFD').addEventListener('click', function() {
-      S.cfd = !S.cfd;
-      this.classList.toggle('on', S.cfd);
-      cfdCanvas.style.display = S.cfd ? 'block' : 'none';
-      cfdLegend.style.display = S.cfd ? 'block' : 'none';
-      if (!S.cfd && cfdCtx) cfdCtx.clearRect(0, 0, cfdCanvas.width, cfdCanvas.height);
-    });
-    // Initialise to on (button starts with class 'on')
-    cfdCanvas.style.display = 'block';
-    cfdLegend.style.display = 'block';
 
     requestAnimationFrame(simulationLoop);
 
     // ══════════════════════════════════════════════════════════════════════
     // MAHSR CAB-BASED SIGNALLING (ATC/ATP) + STATION APPROACH SYSTEM
-    // HSR has no wayside signals — all signalling is cab-based (ETCS L2 /
+    // HSR has no wayside signals - all signalling is cab-based (ETCS L2 /
     // Shinkansen ATC). Stations are visible as platforms, no signal posts.
     // Sources: NHSRCL Project Report, JICA MAHSR DPR, Shinkansen ATC spec.
     // ══════════════════════════════════════════════════════════════════════
 
-    // ── MAHSR Station Layout — Official NHSRCL Data, 508 km Corridor ──────
+    // ── MAHSR Station Layout - Official NHSRCL Data, 508 km Corridor ──────
     // Source: NHSRCL DPR, Ministry of Railways, Govt. of India
     // Distances 1:1 in metres (S.x_m is metres from BKC)
     const MAHSR_STATIONS = [
@@ -4230,7 +4053,7 @@
     // Total corridor length (NHSRCL official: 508.17 km)
     const CORRIDOR_KM = 508;
 
-    // ── MAHSR Horizontal Curve Profile — NHSRCL Alignment Data ────────────
+    // ── MAHSR Horizontal Curve Profile - NHSRCL Alignment Data ────────────
     // s/e in metres from BKC; R = radius (m); cant in mm; dir: L or R
     // Min design radius for 320 km/h: 7000 m (JICA spec); approach zones R≥5000 m
     const MAHSR_CURVES = [
@@ -4251,9 +4074,9 @@
       { s: 497000, e: 504000, R: 5500, cant: 160, dir: 'L', desc: 'Sabarmati Approach' },
     ];
 
-    // ── Station data only — NO 3D objects in scene (causes geometry glitches) ──
+    // ── Station data only - NO 3D objects in scene (causes geometry glitches) ──
     // Station info shown via sta-hud overlay + cab view panel only.
-    const stationObjects = []; // kept empty — no 3D meshes added to scene
+    const stationObjects = []; // kept empty - no 3D meshes added to scene
 
     // ── Station position update (called each frame) ────────────────────────
     function updateStationObjects() {
@@ -4312,7 +4135,7 @@
       // ── Find next station ─────────────────────────────────────────────
       let nextSta = null, nextDist = Infinity;
       MAHSR_STATIONS.forEach(sta => {
-        // Only show stations strictly ahead (> 50m) — fixes BKC at-start bug
+        // Only show stations strictly ahead (> 50m) - fixes BKC at-start bug
         const d = sta.dist_m - x_m;
         if (d > 50 && d < nextDist) { nextDist = d; nextSta = sta; }
       });
@@ -4331,22 +4154,22 @@
       let atpPermitted = 320, atpTarget = 320, atpStatusTxt = 'LINE CLEAR', atpClass = 'atp-status-bar atp-clear';
       if (nextSta) {
         if (!canStop && nextDist < stopDist * 1.3) {
-          atpPermitted = 40;   atpStatusTxt = 'ATP INTERVENTION — APPLY BRAKES'; atpClass = 'atp-status-bar atp-danger';
+          atpPermitted = 40;   atpStatusTxt = 'ATP INTERVENTION - APPLY BRAKES'; atpClass = 'atp-status-bar atp-danger';
         } else if (nextDist < 500) {
-          atpPermitted = 40;   atpStatusTxt = 'PLATFORM LIMIT — 40 km/h MAX';   atpClass = 'atp-status-bar atp-stop';
+          atpPermitted = 40;   atpStatusTxt = 'PLATFORM LIMIT - 40 km/h MAX';   atpClass = 'atp-status-bar atp-stop';
         } else if (nextDist < 2000) {
-          atpPermitted = 160;  atpStatusTxt = 'CAUTION APPROACH — REDUCE SPEED'; atpClass = 'atp-status-bar atp-warn';
+          atpPermitted = 160;  atpStatusTxt = 'CAUTION APPROACH - REDUCE SPEED'; atpClass = 'atp-status-bar atp-warn';
         } else if (nextDist < 5000) {
-          atpPermitted = 250;  atpStatusTxt = 'APPROACH WARNING — 250 km/h';     atpClass = 'atp-status-bar atp-warn';
+          atpPermitted = 250;  atpStatusTxt = 'APPROACH WARNING - 250 km/h';     atpClass = 'atp-status-bar atp-warn';
         } else {
-          atpPermitted = 320;  atpStatusTxt = 'LINE CLEAR — 320 km/h';            atpClass = 'atp-status-bar atp-clear';
+          atpPermitted = 320;  atpStatusTxt = 'LINE CLEAR - 320 km/h';            atpClass = 'atp-status-bar atp-clear';
         }
       }
 
       const g = id => document.getElementById(id);
       if (!g('cab-atp-perm')) return;
 
-      // ATP panel — speed limit + status
+      // ATP panel - speed limit + status
       const permEl = g('cab-atp-perm');
       if (permEl) {
         permEl.textContent = atpPermitted + ' km/h';
@@ -4377,13 +4200,13 @@
         const surplus = nextDist - stopDist;
         if (advEl) {
           if (nextDist < 80 && v_ms < 3) {
-            advEl.textContent = 'AT PLATFORM — TRAIN HALTED';    advEl.className = 'cab-sta-adv safe';
+            advEl.textContent = 'AT PLATFORM - TRAIN HALTED';    advEl.className = 'cab-sta-adv safe';
           } else if (canStop && surplus > 500) {
-            advEl.textContent = 'CAN STOP — ON SCHEDULE';         advEl.className = 'cab-sta-adv safe';
+            advEl.textContent = 'CAN STOP - ON SCHEDULE';         advEl.className = 'cab-sta-adv safe';
           } else if (canStop && surplus >= 0) {
-            advEl.textContent = 'BRAKE NOW — LOW MARGIN';          advEl.className = 'cab-sta-adv warn';
+            advEl.textContent = 'BRAKE NOW - LOW MARGIN';          advEl.className = 'cab-sta-adv warn';
           } else {
-            advEl.textContent = 'OVERRUN RISK — EMERGENCY BRAKE'; advEl.className = 'cab-sta-adv danger';
+            advEl.textContent = 'OVERRUN RISK - EMERGENCY BRAKE'; advEl.className = 'cab-sta-adv danger';
           }
         }
         const sb = el('cab-sta-bstart'); if (sb) sb.textContent = stopDist > 0 ? (stopDist/1000).toFixed(2)+' km' : '--';
@@ -4445,19 +4268,19 @@
             curveAlert.style.background = Math.abs(a_lat) > 2.0 ? '#FFEBEE' : Math.abs(a_lat) > 1.0 ? '#FFF3CD' : '#E8F5E9';
             curveAlert.style.borderColor = Math.abs(a_lat) > 2.0 ? '#CC0000' : Math.abs(a_lat) > 1.0 ? '#E8A000' : '#138808';
             curveAlert.style.color = Math.abs(a_lat) > 2.0 ? '#7A0000' : Math.abs(a_lat) > 1.0 ? '#7A4F00' : '#0A4200';
-            const alertLbl = g('cab-curve-alert'); if (alertLbl) alertLbl.firstChild.textContent = 'IN CURVE — ';
+            const alertLbl = g('cab-curve-alert'); if (alertLbl) alertLbl.firstChild.textContent = 'IN CURVE - ';
           }
         } else {
           if (curveR)    { curveR.textContent = 'STRAIGHT'; curveR.style.color = '#003380'; }
           if (curveCant) { curveCant.textContent = '0 / 0.00 m/s²'; curveCant.style.color = '#003380'; }
           if (nextCurve && nextCurveDist < 5000) {
             if (curveAlert && curveAlertTxt) {
-              curveAlertTxt.textContent = 'AHEAD ' + (nextCurveDist / 1000).toFixed(1) + ' km — ' + nextCurve.desc + ' · R ' + nextCurve.R + ' m · CANT ' + nextCurve.cant + ' mm';
+              curveAlertTxt.textContent = 'AHEAD ' + (nextCurveDist / 1000).toFixed(1) + ' km - ' + nextCurve.desc + ' · R ' + nextCurve.R + ' m · CANT ' + nextCurve.cant + ' mm';
               curveAlert.style.display = 'block';
               curveAlert.style.background = '#E3F2FD';
               curveAlert.style.borderColor = '#1565C0';
               curveAlert.style.color = '#0A2A6E';
-              const alertLbl = g('cab-curve-alert'); if (alertLbl) alertLbl.firstChild.textContent = 'CURVE AHEAD — ';
+              const alertLbl = g('cab-curve-alert'); if (alertLbl) alertLbl.firstChild.textContent = 'CURVE AHEAD - ';
             }
           } else if (curveAlert) {
             curveAlert.style.display = 'none';
@@ -4471,7 +4294,7 @@
         hudEl.style.display = 'block';
         g('sh-name').textContent = nextSta.name;
         g('sh-dist').textContent = nextDist > 1000 ? (nextDist/1000).toFixed(2)+' km' : nextDist.toFixed(0)+' m';
-        const advTxt = !canStop ? 'OVERRUN RISK — EMERGENCY BRAKE' : (nextDist < stopDist * 1.3 ? 'BRAKE NOW — LOW MARGIN' : 'ON SCHEDULE — CAN STOP');
+        const advTxt = !canStop ? 'OVERRUN RISK - EMERGENCY BRAKE' : (nextDist < stopDist * 1.3 ? 'BRAKE NOW - LOW MARGIN' : 'ON SCHEDULE - CAN STOP');
         const advColor = !canStop ? '#CC0000' : (nextDist < stopDist * 1.3 ? '#B06000' : '#1A6B2D');
         g('sh-adv').textContent = advTxt; g('sh-adv').style.color = advColor;
         hudEl.style.borderLeftColor = !canStop ? '#CC0000' : '#003380';
@@ -4481,7 +4304,7 @@
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // LIVE ANALYSIS PANEL — all content from vb_live_analysis.html
+    // LIVE ANALYSIS PANEL - all content from vb_live_analysis.html
     // ══════════════════════════════════════════════════════════════════════
     (function () {
 
@@ -4718,17 +4541,17 @@
       </div>
     </div>
 
-    <!-- Physics Parametric Analysis — VB Baseline vs Current Config vs MAHSR Target -->
+    <!-- Physics Parametric Analysis - VB Baseline vs Current Config vs MAHSR Target -->
     <div id="lap-physics" class="lap-page">
       <div class="lap-chart-grid" style="grid-template-columns:repeat(auto-fill,minmax(360px,1fr));">
         <div class="lap-cc"><div class="lap-cc-hdr"><span>① TE &amp; Resistance vs Speed (kN)</span><div class="live-dot"></div></div><canvas id="c0"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>② Accel / Brake vs Speed (m/s²)</span><div class="live-dot"></div></div><canvas id="c1"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>③ Creep Force vs Creepage</span><div class="live-dot"></div></div><canvas id="c2"></canvas></div>
-        <div class="lap-cc"><div class="lap-cc-hdr"><span>④ Hunting Stability — Vc vs Conicity</span></div><canvas id="c3"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>④ Hunting Stability - Vc vs Conicity</span></div><canvas id="c3"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>⑤ Sperling Wz vs Speed</span><div class="live-dot"></div></div><canvas id="c4"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>⑥ Energy Consumption (kWh/100 km)</span><div class="live-dot"></div></div><canvas id="c5"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>⑦ Emergency Stopping Distance (m)</span><div class="live-dot"></div></div><canvas id="c6"></canvas></div>
-        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑧ Suspension FRF — Secondary Transmissibility</span></div><canvas id="c7"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><span>⑧ Suspension FRF - Secondary Transmissibility</span></div><canvas id="c7"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>⑨ Brake Disc Temp Rise vs Time (°C)</span></div><canvas id="c8"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><span>⑩ Archard Wear Rate vs Speed (mm³/km)</span><div class="live-dot"></div></div><canvas id="c9"></canvas></div>
       </div>
@@ -4737,7 +4560,7 @@
     <!-- Contact Mechanics -->
     <div id="lap-contact" class="lap-page">
       <div class="lap-sect">
-        <div class="lap-sect-hdr">Hertzian Contact — Elliptical Theory</div>
+        <div class="lap-sect-hdr">Hertzian Contact - Elliptical Theory</div>
         <div class="lap-mat-grid">
           <div class="lap-card">
             <div class="lap-card-title">CONTACT GEOMETRY</div>
@@ -4786,7 +4609,7 @@
     <!-- Materials -->
     <div id="lap-material" class="lap-page">
       <div class="lap-sect">
-        <div class="lap-sect-hdr">Wheel — ER9 (EN 13262) &amp; Rail — R350HT (EN 13674-1)</div>
+        <div class="lap-sect-hdr">Wheel - ER9 (EN 13262) &amp; Rail - R350HT (EN 13674-1)</div>
         <div class="lap-mat-grid">
           <div class="lap-card">
             <div class="lap-card-title">ER9 WHEEL STEEL</div>
@@ -4858,7 +4681,7 @@
     <!-- Heat Treatment -->
     <div id="lap-heat" class="lap-page">
       <div class="lap-sect">
-        <div class="lap-sect-hdr">Wheel Heat Treatment — EN 13262 (ER9 Grade)</div>
+        <div class="lap-sect-hdr">Wheel Heat Treatment - EN 13262 (ER9 Grade)</div>
         <div class="lap-mat-grid">
           <div class="lap-card">
             <div class="lap-card-title">MANUFACTURING SEQUENCE</div>
@@ -4887,7 +4710,7 @@
         </div>
       </div>
       <div class="lap-sect">
-        <div class="lap-sect-hdr">Rail Inline Head Hardening — R350HT (IHH Process)</div>
+        <div class="lap-sect-hdr">Rail Inline Head Hardening - R350HT (IHH Process)</div>
         <div class="lap-mat-grid">
           <div class="lap-card">
             <div class="lap-card-title">IHH PROCESS PARAMETERS</div>
@@ -4910,7 +4733,7 @@
         </div>
       </div>
     </div>
-    <!-- ═══ BRAKING LAB — 15 Charts: 5 Live + 10 Analysis ═══ -->
+    <!-- ═══ BRAKING LAB - 15 Charts: 5 Live + 10 Analysis ═══ -->
     <div id="lap-brake" class="lap-page">
 
       <!-- System Selector Bar -->
@@ -4943,7 +4766,7 @@
       </div>
 
       <!-- LIVE CHARTS SECTION -->
-      <div class="bk-section-hdr"><span class="bk-sec-num">LIVE</span> REAL-TIME MONITORING — updates every 200ms</div>
+      <div class="bk-section-hdr"><span class="bk-sec-num">LIVE</span> REAL-TIME MONITORING - updates every 200ms</div>
       <div class="lap-chart-grid">
         <div class="lap-cc" id="bk-cc-0"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">L1</span>Speed &amp; Phase (km/h)<div class="live-dot" style="margin-left:6px"></div></div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-0','blc-spd')">⤢</button></div><canvas id="blc-spd"></canvas></div>
         <div class="lap-cc" id="bk-cc-1"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">L2</span>Force Breakdown (kN)<div class="live-dot" style="margin-left:6px"></div></div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-1','blc-force')">⤢</button></div><canvas id="blc-force"></canvas></div>
@@ -4953,7 +4776,7 @@
       </div>
 
       <!-- ANALYSIS CHARTS SECTION -->
-      <div class="bk-section-hdr"><span class="bk-sec-num">ANALYSIS</span> PHYSICS CHARTS — live-reload on parameter change</div>
+      <div class="bk-section-hdr"><span class="bk-sec-num">ANALYSIS</span> PHYSICS CHARTS - live-reload on parameter change</div>
       <div class="lap-chart-grid">
         <div class="lap-cc" id="bk-cc-5"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A1</span>Braking Force vs Speed (all types)</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-5','bac-force')">⤢</button></div><canvas id="bac-force"></canvas></div>
         <div class="lap-cc" id="bk-cc-6"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A2</span>Deceleration vs Speed</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-6','bac-decel')">⤢</button></div><canvas id="bac-decel"></canvas></div>
@@ -4961,14 +4784,14 @@
         <div class="lap-cc" id="bk-cc-8"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A4</span>Blended Priority Stack (% of total)</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-8','bac-blend')">⤢</button></div><canvas id="bac-blend"></canvas></div>
         <div class="lap-cc" id="bk-cc-9"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A5</span>Regen Energy + OHE Supply vs Speed</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-9','bac-regen')">⤢</button></div><canvas id="bac-regen"></canvas></div>
         <div class="lap-cc" id="bk-cc-10"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A6</span>Eddy Current Force Characteristic</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-10','bac-eddy')">⤢</button></div><canvas id="bac-eddy"></canvas></div>
-        <div class="lap-cc" id="bk-cc-11"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A7</span>Disc Brake Fade — µ vs Temperature</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-11','bac-fade')">⤢</button></div><canvas id="bac-fade"></canvas></div>
-        <div class="lap-cc" id="bk-cc-12"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A8</span>Disc Temp Rise — Emergency Stop</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-12','bac-thermal')">⤢</button></div><canvas id="bac-thermal"></canvas></div>
+        <div class="lap-cc" id="bk-cc-11"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A7</span>Disc Brake Fade - µ vs Temperature</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-11','bac-fade')">⤢</button></div><canvas id="bac-fade"></canvas></div>
+        <div class="lap-cc" id="bk-cc-12"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A8</span>Disc Temp Rise - Emergency Stop</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-12','bac-thermal')">⤢</button></div><canvas id="bac-thermal"></canvas></div>
         <div class="lap-cc" id="bk-cc-13"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A9</span>Energy Dissipation per Stop (kWh)</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-13','bac-energy')">⤢</button></div><canvas id="bac-energy"></canvas></div>
-        <div class="lap-cc" id="bk-cc-14"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A10</span>Scenario Comparison — Decel @160km/h</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-14','bac-cmp')">⤢</button></div><canvas id="bac-cmp"></canvas></div>
+        <div class="lap-cc" id="bk-cc-14"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num">A10</span>Scenario Comparison - Decel @160km/h</div><button class="rw-expand-btn" onclick="expandRWChart('bk-cc-14','bac-cmp')">⤢</button></div><canvas id="bac-cmp"></canvas></div>
       </div>
     </div>
 
-    <!-- Rail-Wheel Analysis Lab — 15 Charts -->
+    <!-- Rail-Wheel Analysis Lab - 15 Charts -->
     <div id="lap-rw" class="lap-page">
       <div style="background:#fff;padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--txt2);">
         All charts update live when you adjust Rail-Wheel Lab parameters in the left sidebar. X-axis = wheel diameter, speed, or conicity as relevant.
@@ -4988,7 +4811,7 @@
         <div class="lap-cc" id="rw-cc-11"><div class="lap-cc-hdr"><span>⑫  Sperling Wz vs Speed</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-11','rwc11')">⤢ EXPAND</button></div></div><canvas id="rwc11"></canvas></div>
         <div class="lap-cc" id="rw-cc-12"><div class="lap-cc-hdr"><span>⑬  Rolling Resistance vs Speed</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-12','rwc12')">⤢ EXPAND</button></div></div><canvas id="rwc12"></canvas></div>
         <div class="lap-cc" id="rw-cc-13"><div class="lap-cc-hdr"><span>⑭  Brake Disc Temp vs Braking Effort</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-13','rwc13')">⤢ EXPAND</button></div></div><canvas id="rwc13"></canvas></div>
-        <div class="lap-cc" id="rw-cc-14"><div class="lap-cc-hdr"><span>⑮  Shakedown Map — p₀ vs Axle Load</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-14','rwc14')">⤢ EXPAND</button></div></div><canvas id="rwc14"></canvas></div>
+        <div class="lap-cc" id="rw-cc-14"><div class="lap-cc-hdr"><span>⑮  Shakedown Map - p₀ vs Axle Load</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-14','rwc14')">⤢ EXPAND</button></div></div><canvas id="rwc14"></canvas></div>
         <div class="lap-cc" id="rw-cc-15"><div class="lap-cc-hdr"><span>⑯  Wear Regime (Tγ/A) vs Speed</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-15','rwc15')">⤢ EXPAND</button></div></div><canvas id="rwc15"></canvas></div>
         <div class="lap-cc" id="rw-cc-16"><div class="lap-cc-hdr"><span>⑰  Contact Ellipticity vs Wheel Diameter</span><div style="display:flex;align-items:center;gap:6px"><div class="live-dot"></div><button class="rw-expand-btn" onclick="expandRWChart('rw-cc-16','rwc16')">⤢ EXPAND</button></div></div><canvas id="rwc16"></canvas></div>
       </div>
@@ -5015,43 +4838,43 @@
       <!-- LIVE VIBRATION CHARTS (6) -->
       <div class="vib-section-hdr" style="background:linear-gradient(90deg,#004D40,#00796B);">
         <span class="vib-sec-num" style="color:#00796B;">LIVE</span>
-        VIBRATION TYPES — REAL-TIME MULTI-AXIS MONITORING
+        VIBRATION TYPES - REAL-TIME MULTI-AXIS MONITORING
         <span style="font-size:8px;opacity:.8;margin-left:auto;">ISO 2631-1 · EN 12299 · UIC 513</span>
       </div>
       <div class="lap-chart-grid">
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#00796B;">L1</span>Vertical Bounce az (m/s²)</div><div class="live-dot"></div></div><canvas id="vlc-az"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1565C0;">L2</span>Lateral Sway / Hunting ay (m/s²)</div><div class="live-dot"></div></div><canvas id="vlc-ay"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#F57F17;">L3</span>Longitudinal Lurch / Jerk (m/s³)</div><div class="live-dot"></div></div><canvas id="vlc-jerk"></canvas></div>
-        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#6A1B9A;">L4</span>Bogie Yaw Rate — Hunting (°/s)</div><div class="live-dot"></div></div><canvas id="vlc-yaw"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#6A1B9A;">L4</span>Bogie Yaw Rate - Hunting (°/s)</div><div class="live-dot"></div></div><canvas id="vlc-yaw"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">L5</span>Car Body Roll (mrad)</div><div class="live-dot"></div></div><canvas id="vlc-roll"></canvas></div>
-        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#4E342E;">L6</span>Car Body Pitch — TE/BE (mrad)</div><div class="live-dot"></div></div><canvas id="vlc-pitch"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#4E342E;">L6</span>Car Body Pitch - TE/BE (mrad)</div><div class="live-dot"></div></div><canvas id="vlc-pitch"></canvas></div>
       </div>
 
       <!-- ANALYSIS CHARTS vs SPEED (4) -->
       <div class="vib-section-hdr" style="background:linear-gradient(90deg,#1B5E20,#2E7D32);">
         <span class="vib-sec-num" style="color:#1B5E20;">ANALYSIS</span>
-        VIBRATION vs SPEED — VB BASELINE (BLUE) vs MAHSR TARGET (GREEN) vs CURRENT (RED)
+        VIBRATION vs SPEED - VB BASELINE (BLUE) vs MAHSR TARGET (GREEN) vs CURRENT (RED)
       </div>
       <div class="lap-chart-grid">
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A1</span>Vertical az RMS vs Speed (m/s²)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-0','vac-az')">⤢</button></div><canvas id="vac-az"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A2</span>Lateral ay RMS vs Speed (m/s²)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-1','vac-ay')">⤢</button></div><canvas id="vac-ay"></canvas></div>
-        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A3</span>Suspension FRF — Transmissibility (dB)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-2','vac-frf')">⤢</button></div><canvas id="vac-frf"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A3</span>Suspension FRF - Transmissibility (dB)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-2','vac-frf')">⤢</button></div><canvas id="vac-frf"></canvas></div>
         <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#1B5E20;">A4</span>Jerk / Lurch Intensity vs Speed (m/s³)</div><button class="rw-expand-btn" onclick="expandRWChart('vib-ac-3','vac-jerk')">⤢</button></div><canvas id="vac-jerk"></canvas></div>
       </div>
 
       <!-- DAMPER SECTION -->
       <div class="lap-sect">
-        <div class="lap-sect-hdr">Bogie Suspension System — Damper Engineering (VB vs MAHSR)</div>
+        <div class="lap-sect-hdr">Bogie Suspension System - Damper Engineering (VB vs MAHSR)</div>
         <div class="lap-mat-grid">
           <div class="lap-card">
             <div class="lap-card-title" style="color:#1565C0;">PRIMARY SUSPENSION DAMPERS</div>
             <div class="prop-row2"><span class="prop-k">Function</span><span class="prop-v">Isolate wheelset from bogie frame</span></div>
             <div class="prop-row2"><span class="prop-k">Type</span><span class="prop-v">Hydraulic telescopic dashpot</span></div>
             <div class="prop-row2"><span class="prop-k">Axes controlled</span><span class="prop-v">Vertical + lateral (axle box)</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Vert. damping c₁</span><span class="prop-v ok">15–25 kNs/m</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Lat. damping c₁_L</span><span class="prop-v ok">5–10 kNs/m</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — Vert. c₁</span><span class="prop-v warn">25–40 kNs/m (stiffer)</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — Lat. c₁_L</span><span class="prop-v warn">10–18 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Vert. damping c₁</span><span class="prop-v ok">15–25 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Lat. damping c₁_L</span><span class="prop-v ok">5–10 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - Vert. c₁</span><span class="prop-v warn">25–40 kNs/m (stiffer)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - Lat. c₁_L</span><span class="prop-v warn">10–18 kNs/m</span></div>
             <div class="prop-row2"><span class="prop-k">Damping ratio ζ₁</span><span class="prop-v">0.15–0.25 (primary)</span></div>
             <div class="prop-row2"><span class="prop-k">Resonance isolation</span><span class="prop-v ok">Attenuates 5–50 Hz input</span></div>
           </div>
@@ -5059,31 +4882,31 @@
             <div class="lap-card-title" style="color:#C62828;">SECONDARY SUSPENSION DAMPERS</div>
             <div class="prop-row2"><span class="prop-k">Function</span><span class="prop-v">Isolate car body from bogie</span></div>
             <div class="prop-row2"><span class="prop-k">Sprung element</span><span class="prop-v">Air springs (bellows) + steel coil (VB)</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Secondary ks</span><span class="prop-v ok">0.2–0.4 kN/mm (air spring)</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Vert. damping c₂</span><span class="prop-v ok">20–40 kNs/m</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Body bounce f_n</span><span class="prop-v ok">0.8–1.1 Hz</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — ks</span><span class="prop-v warn">0.25–0.50 kN/mm (active-tuned)</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — c₂ (semi-active)</span><span class="prop-v warn">30–80 kNs/m (variable)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Secondary ks</span><span class="prop-v ok">0.2–0.4 kN/mm (air spring)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Vert. damping c₂</span><span class="prop-v ok">20–40 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Body bounce f_n</span><span class="prop-v ok">0.8–1.1 Hz</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - ks</span><span class="prop-v warn">0.25–0.50 kN/mm (active-tuned)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - c₂ (semi-active)</span><span class="prop-v warn">30–80 kNs/m (variable)</span></div>
             <div class="prop-row2"><span class="prop-k">MAHSR body f_n</span><span class="prop-v warn">0.9–1.3 Hz</span></div>
             <div class="prop-row2"><span class="prop-k">Damping ratio ζ₂</span><span class="prop-v">VB: 0.22–0.28 / MAHSR: 0.28–0.38</span></div>
           </div>
           <div class="lap-card">
-            <div class="lap-card-title" style="color:#6A1B9A;">YAW DAMPERS — HUNTING SUPPRESSION</div>
+            <div class="lap-card-title" style="color:#6A1B9A;">YAW DAMPERS - HUNTING SUPPRESSION</div>
             <div class="prop-row2"><span class="prop-k">Function</span><span class="prop-v">Suppress bogie yaw oscillation (hunting)</span></div>
             <div class="prop-row2"><span class="prop-k">Type</span><span class="prop-v">Hydraulic linkage (diagonal, body↔bogie)</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Yaw stiffness ky</span><span class="prop-v ok">4–8 MNm/rad</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Yaw damper c_yaw</span><span class="prop-v ok">500–1500 kNs/m</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — Hunting Vc target</span><span class="prop-v ok">&gt; 250 km/h (1.56× service)</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — Yaw ky</span><span class="prop-v warn">10–15 MNm/rad (much stiffer)</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — c_yaw</span><span class="prop-v warn">2000–5000 kNs/m</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — Hunting Vc target</span><span class="prop-v warn">&gt; 400 km/h (1.25× service)</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Yaw stiffness ky</span><span class="prop-v ok">4–8 MNm/rad</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Yaw damper c_yaw</span><span class="prop-v ok">500–1500 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - Hunting Vc target</span><span class="prop-v ok">&gt; 250 km/h (1.56× service)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - Yaw ky</span><span class="prop-v warn">10–15 MNm/rad (much stiffer)</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - c_yaw</span><span class="prop-v warn">2000–5000 kNs/m</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - Hunting Vc target</span><span class="prop-v warn">&gt; 400 km/h (1.25× service)</span></div>
             <div class="prop-row2"><span class="prop-k">Hunting onset limit</span><span class="prop-v hi">λ &gt; 0.25 causes instability below Vc</span></div>
           </div>
           <div class="lap-card">
             <div class="lap-card-title" style="color:#00796B;">ANTI-ROLL BAR &amp; LATERAL DAMPERS</div>
             <div class="prop-row2"><span class="prop-k">Anti-roll bar function</span><span class="prop-v">Resists car body roll in curves</span></div>
-            <div class="prop-row2"><span class="prop-k">VB — ARB stiffness</span><span class="prop-v ok">150–300 kNm/rad</span></div>
-            <div class="prop-row2"><span class="prop-k">MAHSR — ARB stiffness</span><span class="prop-v warn">300–600 kNm/rad</span></div>
+            <div class="prop-row2"><span class="prop-k">VB - ARB stiffness</span><span class="prop-v ok">150–300 kNm/rad</span></div>
+            <div class="prop-row2"><span class="prop-k">MAHSR - ARB stiffness</span><span class="prop-v warn">300–600 kNm/rad</span></div>
             <div class="prop-row2"><span class="prop-k">Roll limit (EN 12299)</span><span class="prop-v">Car body &lt; 6° in R=3000m curve</span></div>
             <div class="prop-row2"><span class="prop-k">Lateral damper type</span><span class="prop-v">Horizontal hydraulic (bogie frame)</span></div>
             <div class="prop-row2"><span class="prop-k">VB lateral c_lat</span><span class="prop-v ok">30–60 kNs/m</span></div>
@@ -5115,7 +4938,7 @@
               <tr><td><b>Body Roll</b></td><td>φ (roll)</td><td>Coupled to ay</td><td>Lateral force × CG height / roll stiffness</td><td>≈ 5–20 mrad</td><td>≤ 12 mrad</td><td class="ok">Roll angle ≤ 6° at R=3000m</td></tr>
               <tr><td><b>Body Pitch</b></td><td>θ (pitch)</td><td>Quasi-static</td><td>TE/BE weight transfer, grade changes</td><td>≈ 3–15 mrad</td><td>≤ 8 mrad</td><td class="ok">Linked to Wz comfort index</td></tr>
               <tr><td><b>Bogie Bounce</b></td><td>az bogie</td><td>5–15 Hz</td><td>Wheel/rail roughness → primary spring</td><td>≈ 0.5–2.0 m/s²</td><td>≤ 1.5 m/s²</td><td class="ok">Isolated by primary damper</td></tr>
-              <tr><td><b>Corrugation</b></td><td>az high-f</td><td>50–200 Hz</td><td>Stick-slip wear — short pitch rail corrugation</td><td>≤ 5 m/s² (RMS)</td><td>≤ 3 m/s²</td><td class="warn">Grinding maintenance required</td></tr>
+              <tr><td><b>Corrugation</b></td><td>az high-f</td><td>50–200 Hz</td><td>Stick-slip wear - short pitch rail corrugation</td><td>≤ 5 m/s² (RMS)</td><td>≤ 3 m/s²</td><td class="warn">Grinding maintenance required</td></tr>
             </tbody>
           </table>
         </div>
@@ -5124,7 +4947,7 @@
       <!-- BEARING TEMPERATURE SECTION -->
       <div class="vib-section-hdr" style="background:linear-gradient(90deg,#B71C1C,#C62828);">
         <span class="vib-sec-num" style="color:#B71C1C;">BEARING</span>
-        AXLE BOX BEARING TEMPERATURE — EN 12082 HOTBOX DETECTION
+        AXLE BOX BEARING TEMPERATURE - EN 12082 HOTBOX DETECTION
         <span style="font-size:8px;opacity:.8;margin-left:auto;">UIC 515-3 · SKF CTSD · TACHO-based</span>
       </div>
       <!-- Bearing KPI -->
@@ -5141,17 +4964,17 @@
         </div>
       </div>
       <div class="lap-chart-grid">
-        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">B1</span>Bearing Temp — Live (°C)</div><div class="live-dot"></div></div><canvas id="blc-bearing"></canvas></div>
-        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">B2</span>Bearing Temp vs Speed — VB vs MAHSR</div><button class="rw-expand-btn" onclick="expandRWChart('bear-ac-0','bac-bearing')">⤢</button></div><canvas id="bac-bearing"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">B1</span>Bearing Temp - Live (°C)</div><div class="live-dot"></div></div><canvas id="blc-bearing"></canvas></div>
+        <div class="lap-cc"><div class="lap-cc-hdr"><div class="lap-cc-hdr-l"><span class="chart-num" style="background:#C62828;">B2</span>Bearing Temp vs Speed - VB vs MAHSR</div><button class="rw-expand-btn" onclick="expandRWChart('bear-ac-0','bac-bearing')">⤢</button></div><canvas id="bac-bearing"></canvas></div>
       </div>
 
       <!-- Bearing spec info -->
       <div class="lap-sect">
-        <div class="lap-sect-hdr">Rolling Element Bearing Specifications — EN 12082 &amp; UIC 515-3</div>
+        <div class="lap-sect-hdr">Rolling Element Bearing Specifications - EN 12082 &amp; UIC 515-3</div>
         <div class="lap-mat-grid">
           <div class="lap-card">
-            <div class="lap-card-title" style="color:#1565C0;">VB EXPRESS — AXLE BOX BEARING</div>
-            <div class="prop-row2"><span class="prop-k">Bearing type</span><span class="prop-v">Cylindrical Roller Bearing (CRB) — SKF/NBC</span></div>
+            <div class="lap-card-title" style="color:#1565C0;">VB EXPRESS - AXLE BOX BEARING</div>
+            <div class="prop-row2"><span class="prop-k">Bearing type</span><span class="prop-v">Cylindrical Roller Bearing (CRB) - SKF/NBC</span></div>
             <div class="prop-row2"><span class="prop-k">Bore × OD × Width</span><span class="prop-v">130 × 230 × 64 mm (typ. NU2226)</span></div>
             <div class="prop-row2"><span class="prop-k">Axle load per bearing</span><span class="prop-v">35–55 kN (service, half-axle)</span></div>
             <div class="prop-row2"><span class="prop-k">Max speed rating</span><span class="prop-v ok">3000 rpm → ~240 km/h (wheel Ø860)</span></div>
@@ -5163,8 +4986,8 @@
             <div class="prop-row2"><span class="prop-k">Emergency stop trigger</span><span class="prop-v hi">130°C abs or +10°C/min rate</span></div>
           </div>
           <div class="lap-card">
-            <div class="lap-card-title" style="color:#FF9933;">MAHSR — HIGH-SPEED AXLE BOX BEARING</div>
-            <div class="prop-row2"><span class="prop-k">Bearing type</span><span class="prop-v">Double-row Tapered Roller Bearing (TRB) — NSK/JTEKT</span></div>
+            <div class="lap-card-title" style="color:#FF9933;">MAHSR - HIGH-SPEED AXLE BOX BEARING</div>
+            <div class="prop-row2"><span class="prop-k">Bearing type</span><span class="prop-v">Double-row Tapered Roller Bearing (TRB) - NSK/JTEKT</span></div>
             <div class="prop-row2"><span class="prop-k">Bore × OD × Width</span><span class="prop-v">130 × 200 × 90 mm (compact heavy-duty)</span></div>
             <div class="prop-row2"><span class="prop-k">Axle load per bearing</span><span class="prop-v">40–60 kN (heavier MAHSR axle)</span></div>
             <div class="prop-row2"><span class="prop-k">Max speed rating</span><span class="prop-v warn">5000 rpm → ~500 km/h (design margin)</span></div>
@@ -5179,7 +5002,7 @@
             <div class="lap-card-title" style="color:#4E342E;">BEARING FAILURE MODES &amp; CAUSES</div>
             <div class="prop-row2"><span class="prop-k">Fatigue spalling</span><span class="prop-v">Subsurface cracks → surface pitting after 300–500 Mcycles</span></div>
             <div class="prop-row2"><span class="prop-k">Abrasive wear</span><span class="prop-v">Contamination ingress, seal failure, grit particles</span></div>
-            <div class="prop-row2"><span class="prop-k">Fretting corrosion</span><span class="prop-v">Micro-slip at bore/axle fit — improper press fit</span></div>
+            <div class="prop-row2"><span class="prop-k">Fretting corrosion</span><span class="prop-v">Micro-slip at bore/axle fit - improper press fit</span></div>
             <div class="prop-row2"><span class="prop-k">Grease degradation</span><span class="prop-v">Oxidation, water ingress, thermal breakdown &gt;120°C</span></div>
             <div class="prop-row2"><span class="prop-k">Electrical erosion</span><span class="prop-v">Stray traction currents → pitting (EDM damage)</span></div>
             <div class="prop-row2"><span class="prop-k">False brinelling</span><span class="prop-v">Standstill vibration during transport/storage</span></div>
@@ -5187,7 +5010,7 @@
             <div class="prop-row2"><span class="prop-k">Detection method</span><span class="prop-v ok">IR hotbox detectors + vibration signature + SPM analysis</span></div>
           </div>
           <div class="lap-card">
-            <div class="lap-card-title" style="color:#1B5E20;">BRAKE DISC TEMP — PHYSICS &amp; COOLING</div>
+            <div class="lap-card-title" style="color:#1B5E20;">BRAKE DISC TEMP - PHYSICS &amp; COOLING</div>
             <div class="prop-row2"><span class="prop-k">Disc material</span><span class="prop-v">Cast iron (VB) / SiC-reinforced (MAHSR)</span></div>
             <div class="prop-row2"><span class="prop-k">Thermal capacity</span><span class="prop-v">m_disc × Cp = 40 kg × 490 J/kgK = 19.6 kJ/K per disc</span></div>
             <div class="prop-row2"><span class="prop-k">Heat generation</span><span class="prop-v">P = F_disc × v (kW per disc during braking)</span></div>
@@ -5196,7 +5019,7 @@
             <div class="prop-row2"><span class="prop-k">At rest (v=0) cooling</span><span class="prop-v warn">h_nat = 15 W/m²K → slow (natural conv. only)</span></div>
             <div class="prop-row2"><span class="prop-k">At 160 km/h cooling</span><span class="prop-v ok">h_forced ≈ 82 W/m²K → faster</span></div>
             <div class="prop-row2"><span class="prop-k">UIC 541-3 fade limit</span><span class="prop-v warn">350°C continuous (µ_pad degrades above)</span></div>
-            <div class="prop-row2"><span class="prop-k">Design max temp</span><span class="prop-v hi">500°C (structural limit — disc distortion)</span></div>
+            <div class="prop-row2"><span class="prop-k">Design max temp</span><span class="prop-v hi">500°C (structural limit - disc distortion)</span></div>
             <div class="prop-row2"><span class="prop-k">Why slow to cool at rest</span><span class="prop-v">Natural convection only (h≈15 W/m²K). Use RESET TEMPS to start fresh calculations.</span></div>
           </div>
         </div>
@@ -5242,7 +5065,7 @@
       document.getElementById('lap-overlay').addEventListener('click', toggleLap);
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && lapOpen) toggleLap(); });
 
-      // Material Science header button — opens LAP panel on material tab
+      // Material Science header button - opens LAP panel on material tab
       const bMatSci = document.getElementById('bMatSci');
       if (bMatSci) {
         bMatSci.addEventListener('click', () => {
@@ -5428,7 +5251,7 @@
       // ─── hook into simulation loop ────────────────────────────────────────
       // We override the existing simulationLoop to also call updateLivePanel
       const _origLoop = simulationLoop;
-      // Instead, we call it from the existing loop — add a global hook
+      // Instead, we call it from the existing loop - add a global hook
       window._lapUpdateHook = updateLivePanel;
 
       // ─── 15 Rail-Wheel Analysis Charts ───────────────────────────────────
@@ -5444,7 +5267,7 @@
           rwCharts[id].update('none');
           return;
         }
-        // Merge y-axis options — beginAtZero defaults to true unless caller explicitly
+        // Merge y-axis options - beginAtZero defaults to true unless caller explicitly
         // sets min (which overrides it) or disables it via beginAtZero:false
         const yOpts = opts && opts.y ? opts.y : {};
         const yAxis = Object.assign({ beginAtZero: true }, yOpts);
@@ -5603,7 +5426,7 @@
         const wearAllowance = 140; // mm, new-to-condemn (radius allowance)
         // Volumetric-wear-to-radial-depth conversion, calibrated so the VB reference
         // point (0.05 mm³/km, see Chart 7 Archard wear rate) reproduces the VB
-        // reference wheel life (400,000 km) plotted as the target line below —
+        // reference wheel life (400,000 km) plotted as the target line below -
         // see documentation.html §8.3 for the derivation and its stated limits.
         const K_vol_to_depth = 0.007; // mm depth per km, per unit mm³/km volumetric rate
         mkRWChart('rwc7', 'line', wearRates.map(w => w.toFixed(3)),
@@ -5710,9 +5533,9 @@
           line('MAHSR Thermal Limit 500°C', brkPcts.map(() => 500), '#FF9933', [3, 5], 1)],
           'Brake Effort Applied (%)', 'Disc Temp Rise (°C)', { y: { min: 20 } });
 
-        // ⑮ Shakedown Map — p₀ vs axle load, with the Johnson (1989) regime bands and
+        // ⑮ Shakedown Map - p₀ vs axle load, with the Johnson (1989) regime bands and
         // the current operating point marked, so it shows AT WHAT AXLE LOAD each
-        // regime boundary is actually crossed for the current wheel/rail geometry —
+        // regime boundary is actually crossed for the current wheel/rail geometry -
         // not just a static readout of where today's point sits.
         const shakeLoads = Array.from({ length: 21 }, (_, i) => 8 + i * 1); // 8–28 t, matches Chart ②
         const curAxleT = curAxle / G; // curAxle is in kN; convert to tonnes to match this chart's t-based axis
@@ -5728,9 +5551,9 @@
           }],
           'Axle Load (t)', 'Hertz Stress p₀ (MPa)', { y: { min: 0, suggestedMax: 2500 } });
 
-        // ⑯ Wear Regime (Tγ/A) vs Speed — Lewis & Dwyer-Joyce twin-disc map
+        // ⑯ Wear Regime (Tγ/A) vs Speed - Lewis & Dwyer-Joyce twin-disc map
         // Shows the speed at which the current wheel/rail pair crosses from mild
-        // into severe, and severe into catastrophic, wear — directly visualising
+        // into severe, and severe into catastrophic, wear - directly visualising
         // the live classification shown on the Contact Mechanics tab.
         const { a: aRegime, b: bRegime } = hertzAt(S.wheel, curAxle);
         const areaRegimeMm2 = Math.PI * (aRegime * 1000) * (bRegime * 1000);
@@ -5740,7 +5563,7 @@
           line('Severe / Catastrophic boundary 77.2 N/mm²', spds.map(() => 77.2), '#B71C1C', [3, 5], 1.5)],
           'Speed (km/h)', 'Wear Index Tγ/A (N/mm²)', { y: { min: 0 } });
 
-        // ⑰ Contact Ellipticity — Timoshenko m,n coefficients vs Wheel Diameter
+        // ⑰ Contact Ellipticity - Timoshenko m,n coefficients vs Wheel Diameter
         // Visualises the in-app log-based approximation to the exact Hertz/Timoshenko
         // table (documentation.html §9.1) so the approximation's behaviour is visible,
         // not just asserted.
@@ -5765,7 +5588,7 @@
       window.buildRWCharts = buildRWCharts;
 
       // ═══════════════════════════════════════════════════════════════
-      // BRAKING LAB — Full analysis of all braking types
+      // BRAKING LAB - Full analysis of all braking types
       // Sources: RDSO/IRS-M-44, UIC 541-3, UIC 544-1, EN 14531,
       //  Kunze-Röhrs tread friction formula, Polach eddy current model,
       //  Shinkansen E5 braking specs (JR-East), IR emergency brake regs
@@ -5804,11 +5627,11 @@
       // Eddy current braking: electromagnetic non-contact brake on axle/track
       // Source: Polach RTRI 2000, Shinkansen 0-series linear eddy model
       // Bell-curve vs speed: peak ~150 km/h (41.7 m/s) for rotational type
-      // At high speed (>200km/h) linear type is effective — Shinkansen uses both
+      // At high speed (>200km/h) linear type is effective - Shinkansen uses both
       function bk_F_eddy(v, C) {
         if (!BK.eddy) return 0;
-        const v_peak_rot = 41.7;  // 150 km/h — peak for rotational eddy unit
-        const v_peak_lin = 88.9;  // 320 km/h — peak for linear eddy (track)
+        const v_peak_rot = 41.7;  // 150 km/h - peak for rotational eddy unit
+        const v_peak_lin = 88.9;  // 320 km/h - peak for linear eddy (track)
         const F_max_rot = C.W_N * 0.15; // rotational eddy: 15% of W (IR-style eddy)
         const F_max_lin = C.W_N * 0.18; // linear eddy: 18% of W (Shinkansen class)
         // Rotational eddy (bell curve, effective 30–200 km/h)
@@ -5831,7 +5654,7 @@
         return Math.min(C.W_N * mu_adh * 0.70, C.W_N * mu_mech);
       }
 
-      // Total blended braking force — WSP limits to 95% adhesion
+      // Total blended braking force - WSP limits to 95% adhesion
       function bk_F_total(v, C, T_disc) {
         if (v < 0.1) return 0;
         const mu = S.mu_base * (0.161 + 7.5 / (v * 3.6 + 44));
@@ -6118,7 +5941,7 @@
         }, { scales: { y: { min: 0, title: { display: true, text: 'Eddy Current Force (kN)', font: { family: 'JetBrains Mono', size: 9 } } } } });
         Object.assign(BK, eddySavedBK);
 
-        // ── A7: Disc Brake Fade — µ vs Temperature ─────────────────
+        // ── A7: Disc Brake Fade - µ vs Temperature ─────────────────
         // Source: Söderberg-Eriksson fade model, EN 14531 disc brake testing
         const tempArr = Array.from({ length: 51 }, (_, i) => 25 + i * 10);
         const fade_si = tempArr.map(T => +(T <= 300 ? 1.0 : Math.max(0.55, 1-(T-300)/1200)).toFixed(4));
@@ -6134,7 +5957,7 @@
           ]
         }, { scales: { y: { min: 0.1, suggestedMax: 0.5, title: { display: true, text: 'Effective Pad µ', font: { family: 'JetBrains Mono', size: 9 } } } } });
 
-        // ── A8: Disc Temperature Rise — Emergency Stop ─────────────
+        // ── A8: Disc Temperature Rise - Emergency Stop ─────────────
         // Simulates disc temp during a full emergency stop from different initial speeds
         const v0EmgArr = [160, 200, 250, 320];
         const emgColors = ['#1565C0', '#FF6F00', '#C62828', '#B71C1C'];
@@ -6349,7 +6172,7 @@
 
       // Build analysis when tab opens. The 'active' class (and with it, real
       // layout dimensions) is already applied synchronously by _bkTabOrig above,
-      // so chart creation/resize can happen immediately — no need to defer and
+      // so chart creation/resize can happen immediately - no need to defer and
       // race a timer or animation frame against the container becoming visible.
       const _bkTabOrig = lapSwitchTab;
       lapSwitchTab = function(id) {
@@ -6375,7 +6198,7 @@
     })(); // end IIFE
 
     // ══════════════════════════════════════════════════════════════════════
-    // VIBRATION & BEARING DYNAMICS LAB — Physics Models + Live Charts
+    // VIBRATION & BEARING DYNAMICS LAB - Physics Models + Live Charts
     // Sources: ISO 2631-1, EN 12299, UIC 513, EN 12082, UIC 515-3,
     //   Wickens "Dynamics of Railway Vehicles" (2003),
     //   Iwnicki "Handbook of Railway Vehicle Dynamics" (2006),
@@ -6416,7 +6239,7 @@
         return Math.sqrt(az_sq) * 0.00045;
       }
 
-      // Lateral sway RMS — similar model but includes hunting coupling
+      // Lateral sway RMS - similar model but includes hunting coupling
       function computeAyRms(v_ms, tq, w_n_lat, zeta_lat, Vc_ms) {
         if (v_ms < 0.5) return 0;
         // Base lateral from track alignment irregularity (similar PSD shape)
@@ -6427,7 +6250,7 @@
         return az * 0.65 + hunt_amp; // lateral somewhat less than vertical + hunting
       }
 
-      // Jerk (longitudinal) — from coupler slack + TE/BE step response
+      // Jerk (longitudinal) - from coupler slack + TE/BE step response
       // Primary source: coupler gap × spring constant / mass = impulse
       // Additional: TE step at notch changes
       function computeJerk(dyn, v_ms, dt) {
@@ -6455,7 +6278,7 @@
         return amp_deg * hunt_freq * 2 * Math.PI * (180 / Math.PI); // peak yaw rate in °/s (limit display)
       }
 
-      // Car body roll (mrad) — from lateral acceleration × CG height / roll stiffness
+      // Car body roll (mrad) - from lateral acceleration × CG height / roll stiffness
       function computeRoll(ay_ms2, v_ms) {
         // h_cg ≈ 1.5 m, roll stiffness from ARB + secondary: k_roll ≈ 500 kNm/rad
         const h_cg = 1.5, k_roll = 500e3; // Nm/rad
@@ -6464,7 +6287,7 @@
         return phi_rad * 1000; // mrad
       }
 
-      // Car body pitch (mrad) — from TE/BE weight transfer
+      // Car body pitch (mrad) - from TE/BE weight transfer
       function computePitch(a_ms2) {
         // Wheelbase ≈ 18 m, secondary stiffness vert: k_s_vert ≈ 400 kN/m
         // θ = M × a × h_cg / (k_s_vert × L_bogie_spacing) ... but use simulation value
@@ -6805,7 +6628,7 @@
           VH.pitch.map(() => 15),
           VH.pitch.map(() => 8));
 
-        // Bearing live chart (always update even when not on vibration tab — for KPI accuracy)
+        // Bearing live chart (always update even when not on vibration tab - for KPI accuracy)
         push(vibLiveCharts['blc-bearing'],
           VH.bearTemp,
           VH.discTemp,
@@ -6863,7 +6686,7 @@
 
 
     // Call the lap panel updater inside the simulation loop
-    // (Patching simulationLoop is complex — use a wrapper approach)
+    // (Patching simulationLoop is complex - use a wrapper approach)
     // We add updateLivePanel to the existing simulationLoop via the already-running RAF
     (function patchLoop() {
       const orig = window.requestAnimationFrame;
