@@ -1139,64 +1139,132 @@
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background: var(--bg-base);
+        background: linear-gradient(135deg, #07101e 0%, #03070f 100%);
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        padding: 24px;
+        overflow-y: auto;
+      }
+      #mobileBlock .mb-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 30px 24px;
+        width: 100%;
+        max-width: 440px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-        padding: 32px 28px;
-        gap: 14px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
       }
-      #mobileBlock svg { width: 40px; height: 40px; color: var(--ir-blue); margin-bottom: 6px; }
-      #mobileBlock h1 {
+      #mobileBlock .mb-logo-wrap {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #fff;
+        padding: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #mobileBlock .mb-logo {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      #mobileBlock .mb-org {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        color: var(--ir-amber-bright);
+        margin-bottom: 8px;
+      }
+      #mobileBlock .mb-title {
         font-family: 'Rajdhani', sans-serif;
-        font-size: 19px;
+        font-size: 21px;
         font-weight: 700;
-        color: var(--text-primary);
-        letter-spacing: 0.02em;
+        color: #ffffff;
+        line-height: 1.25;
+        letter-spacing: 0.01em;
+        margin-bottom: 4px;
       }
-      #mobileBlock p {
-        font-family: 'Barlow', sans-serif;
-        font-size: 14px;
-        line-height: 1.6;
-        color: var(--text-secondary);
-        max-width: 340px;
-      }
-      #mobileBlock .tag {
-        margin-top: 6px;
+      #mobileBlock .mb-subtitle {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 11px;
-        letter-spacing: 0.06em;
-        color: var(--ir-blue);
-        border: 1px solid var(--ir-blue-border);
-        background: var(--ir-blue-pale);
-        padding: 6px 14px;
-        border-radius: var(--radius-md);
+        font-weight: 500;
+        color: #8fa8bc;
+        margin-bottom: 18px;
+      }
+      #mobileBlock .mb-desc {
+        font-family: 'Barlow', sans-serif;
+        font-size: 13px;
+        line-height: 1.55;
+        color: #b0c2d4;
+        margin-bottom: 20px;
+      }
+      #mobileBlock .mb-notice-card {
+        background: rgba(232, 146, 10, 0.08);
+        border: 1px solid rgba(232, 146, 10, 0.25);
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        text-align: left;
+      }
+      #mobileBlock .mb-notice-card svg {
+        width: 22px;
+        height: 22px;
+        color: var(--ir-amber-bright);
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      #mobileBlock .mb-notice-card span {
+        font-family: 'Barlow', sans-serif;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #e2ebf3;
+      }
+      #mobileBlock .mb-notice-card strong {
+        color: #ffffff;
       }
       #mobileBlock .mb-doc-btn {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        margin-top: 10px;
-        padding: 11px 22px;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
         background: var(--ir-blue);
-        color: #fff;
+        color: #ffffff;
         font-family: 'Rajdhani', sans-serif;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.04em;
+        text-transform: uppercase;
         border: none;
-        border-radius: var(--radius-md);
+        border-radius: 6px;
         text-decoration: none;
         cursor: pointer;
+        width: 100%;
         transition: background 0.18s ease, transform 0.12s ease;
+        box-shadow: 0 4px 12px rgba(0, 63, 165, 0.3);
       }
       #mobileBlock .mb-doc-btn:hover {
         background: var(--ir-blue-mid);
         transform: translateY(-1px);
       }
       #mobileBlock .mb-doc-btn svg {
-        width: 16px; height: 16px; color: #fff; margin: 0;
+        width: 16px;
+        height: 16px;
+        color: #ffffff;
       }
     }
   </style>
@@ -1209,18 +1277,38 @@
 <body>
 
   <div id="mobileBlock">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="4" width="20" height="13" rx="1.5"></rect>
-      <line x1="8" y1="21" x2="16" y2="21"></line>
-      <line x1="12" y1="17" x2="12" y2="21"></line>
-    </svg>
-    <h1>This one needs a bigger screen</h1>
-    <p>This platform packs in live charts, a 3D train viewport and a lot of dense controls side by side. On a phone there just isn't enough room to lay all that out properly, so things will end up looking broken or cut off. Please open it on a laptop or desktop instead, it works a lot better there.</p>
-    <span class="tag">Best viewed on a PC</span>
-    <a href="documentation.html" target="_blank" class="mb-doc-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      Read Documentation
-    </a>
+    <!-- Beautiful card container with glassmorphic look -->
+    <div class="mb-card">
+      <!-- Indian Railways Logo Container -->
+      <div class="mb-logo-wrap">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Indian_railways_18_star_logo.jpg" class="mb-logo" alt="Indian Railways">
+      </div>
+      
+      <!-- Department and Organization Headers -->
+      <div class="mb-org">MINISTRY OF RAILWAYS &middot; GOI</div>
+      
+      <!-- Site title explaining what it is -->
+      <h1 class="mb-title">High Speed Rolling Stock Analysis Platform</h1>
+      <div class="mb-subtitle">RS-HSRA &middot; Performance &amp; Rail-Wheel Lab</div>
+      
+      <p class="mb-desc">This platform is an engineering simulation tool designed to analyze high-speed rolling stock dynamics, tractive effort, ride comfort, and rail-wheel contact mechanics in real-time.</p>
+      
+      <!-- Notice Section -->
+      <div class="mb-notice-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <span>This platform features a live 3D Train Viewport, physical telemetry charts, and high-fidelity control sliders. <strong>Please open it on a PC, Laptop or Tablet</strong> to experience the full interactive dashboard.</span>
+      </div>
+
+      <!-- Action Button -->
+      <a href="documentation.html" target="_blank" class="mb-doc-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Read Documentation
+      </a>
+    </div>
   </div>
 
   <div id="hdr">
