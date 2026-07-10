@@ -352,6 +352,8 @@
 <body>
 
 <header>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/220px-Emblem_of_India.svg.png" alt="Emblem of India" style="height:44px;object-fit:contain;">
+  <div style="width:1px;height:24px;background:#C8D4E8;margin:0 4px;"></div>
   <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Indian_railways_18_star_logo.jpg" alt="Indian Railways">
   <div class="hdr-divider"></div>
   <div class="hdr-text">
@@ -1483,8 +1485,6 @@ Interpretation:
 </ul>
 <p>All of the above were verified directly in the running application, not just read in the source, using a scripted browser check that opens each tab, reads the live DOM values and the underlying Chart.js data arrays, and confirms that both render correctly and compute physically sensible numbers.</p>
 
-<h3>14.3 Scope of This Verification</h3>
-<p>This platform's simulation engine spans roughly 6,500 lines of JavaScript across braking, thermal, vibration, tribology, and corridor-profile modules. This review focused specifically on the rail-wheel interaction chain (Hertz → creepage → Polach → Archard → hunting/Klingel) because that was the section explicitly requested for verification, plus a full pass over every formula box in this documentation file to check it against its source function. It is not a claim that every one of the thousands of individual calculations in the codebase has been independently re-derived - that would be a multi-week formal verification exercise, not a documentation review. Anyone extending this platform, or relying on it for anything beyond comparative engineering education, should treat each formula box's stated basis (exact theory / standard-based / engineering approximation / calibrated simplification) as the starting point for their own check, not as a substitute for it.</p>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <h2 id="author" style="margin-top:44px;">About the Author</h2>
