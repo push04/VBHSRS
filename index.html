@@ -2929,7 +2929,13 @@
       S.brakeTemp = Math.max(30, S.brakeTemp + ((dyn.E_thermal_rate - cooling) * dt) / (mass_disc * Cp));
 
       telemetryEls.bSpeed.innerHTML = `${dyn.v_kmh.toFixed(0)} <span>km/h</span>`;
-      telemetryEls.bPow.innerHTML = `${(S.teNotch * lastConsts.P_max_W / 1000).toFixed(0)} <span>kW</span>`;
+      // Actual delivered traction power = TE x v, not notch x nameplate max —
+      // dyn.TE already accounts for both the power-curve limit (P_max/v) and
+      // the adhesion limit (mu x W_N) at the current speed, so this correctly
+      // shows less than nameplate power whenever the train is adhesion-limited
+      // (e.g. accelerating hard from a near-standstill) instead of always
+      // reporting full nameplate power the instant TE MAX is selected.
+      telemetryEls.bPow.innerHTML = `${(dyn.TE * S.v_ms / 1000).toFixed(0)} <span>kW</span>`;
 
       if (telemetryEls.bDist) telemetryEls.bDist.innerHTML = `${(S.x_m / 1000).toFixed(2)} <span>km</span>`;
       if (telemetryEls.bBrakeDist) telemetryEls.bBrakeDist.innerHTML = `${(S.brakeDist_m || 0).toFixed(0)} <span>m</span>`;
@@ -3007,8 +3013,9 @@
         const bLbl = gc('cab-be-lbl'); if (bLbl) bLbl.textContent = ((dyn.BE || 0) / 1000).toFixed(1) + ' kN';
 
         // Col 5: Power & thermal - plain text, no HTML injection
+        // (actual delivered power TE x v, see bPow comment above for why not notch x nameplate)
         const powEl = gc('cab-pow');
-        if (powEl) powEl.textContent = (S.teNotch * lastConsts.P_max_W / 1000).toFixed(0) + ' kW';
+        if (powEl) powEl.textContent = (dyn.TE * S.v_ms / 1000).toFixed(0) + ' kW';
         const tempEl = gc('cab-temp');
         const tempC = S.brakeTemp;
         if (tempEl) {
@@ -3604,8 +3611,25 @@
     // --------------------------------------------------------------------------------------
     const canvasWrap = document.getElementById('canvas-wrap');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x8FA8BC);
-    scene.fog = new THREE.FogExp2(0x8FA8BC, 0.003);
+
+    // Cheap sky gradient - a single small canvas texture stretched as the
+    // scene backdrop instead of a flat color. Costs nothing extra per frame
+    // (same as a flat color background) but reads far less bland.
+    function createSkyGradient() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2; canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 256);
+      grad.addColorStop(0, '#4A7FB5');
+      grad.addColorStop(0.45, '#8FB4D9');
+      grad.addColorStop(0.8, '#C9DCE8');
+      grad.addColorStop(1, '#DCE7EC');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 2, 256);
+      return new THREE.CanvasTexture(canvas);
+    }
+    scene.background = createSkyGradient();
+    scene.fog = new THREE.FogExp2(0xC9DCE8, 0.003); // matches the gradient's horizon tone so distant objects fade in cleanly
 
     const camera = new THREE.PerspectiveCamera(45, canvasWrap.clientWidth / canvasWrap.clientHeight, 0.1, 2000);
     camera.position.set(20, 15, 30);
@@ -3748,41 +3772,79 @@
 
     function createPantograph() {
       const pGrp = new THREE.Group();
-      // Base & Insulators
+      const panSkip = new Set(); // dynamic parts (looked up by name every frame) must survive the merge below
+
+      // ── Base frame, pivot shaft & insulators ──────────────────────────────
       const base = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 1.8), matBlack);
       base.position.y = 3.4;
       pGrp.add(base);
+      // Rotating pivot shaft the lower arms hinge on
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.6, 10), matBogieFrame);
+      shaft.rotation.z = Math.PI / 2; shaft.position.set(0, 3.46, -0.5);
+      pGrp.add(shaft);
       for (let x of [-0.6, 0.6]) {
         for (let z of [-0.7, 0.7]) {
-          const insul = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.3, 8), matWhite);
-          insul.position.set(x, 3.55, z);
-          pGrp.add(insul);
+          // Ribbed composite insulator (stacked disks instead of a smooth rod)
+          const insulCore = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.3, 8), matWhite);
+          insulCore.position.set(x, 3.55, z);
+          pGrp.add(insulCore);
+          for (let ri = -1; ri <= 1; ri++) {
+            const rib = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.035, 8), matWhite);
+            rib.position.set(x, 3.55 + ri * 0.1, z);
+            pGrp.add(rib);
+          }
         }
       }
 
-      // Lower & Upper Arms (Z-Pan)
+      // ── Lower & upper arms (Z-pan articulated parallelogram) ──────────────
       const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.8), matSteel);
       lowerArm.position.set(0, 4.1, -0.5); lowerArm.rotation.x = Math.PI / 4;
       pGrp.add(lowerArm);
-      const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.8), matSteel);
+      // Pull/balance rod - thinner rod alongside the lower arm that keeps the
+      // pan head level as the arm rotates (what actually makes it a
+      // parallelogram linkage, not just a single hinged strut)
+      const pullRod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.75), matBogieFrame);
+      pullRod.position.set(0.22, 4.08, -0.5); pullRod.rotation.x = Math.PI / 4;
+      pGrp.add(pullRod);
+      // Main knuckle joint at the arm junction
+      const knuckle = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), matBogieFrame);
+      knuckle.position.set(0, 4.75, 0.3);
+      pGrp.add(knuckle);
+      const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.8), matSteel);
       upperArm.position.set(0, 4.8, 0); upperArm.rotation.x = -Math.PI / 4;
       pGrp.add(upperArm);
 
-      // Pan Head & Collector Shoe
-      const headFrame = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 0.2), matSteel);
+      // ── Pan head assembly - twin collector strips with curved guide horns ──
+      const headFrame = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.28), matSteel);
       headFrame.position.set(0, 5.0, 0.5);
       pGrp.add(headFrame);
-      const shoe = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.05, 0.05), matSteel);
-      shoe.position.set(0, 5.05, 0.5);
-      pGrp.add(shoe);
+      for (const sz of [-0.09, 0.09]) {
+        const strip = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.04, 0.035), matBogieShine);
+        strip.position.set(0, 5.05, 0.5 + sz);
+        pGrp.add(strip);
+        // Upturned horn ends (guide the contact wire onto the strip through junctions)
+        for (const hx of [-1, 1]) {
+          const horn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.04, 0.035), matBogieShine);
+          horn.position.set(hx * 0.88, 5.10, 0.5 + sz);
+          horn.rotation.z = -hx * 0.35;
+          pGrp.add(horn);
+        }
+      }
+      // Head suspension springs (pan head floats on the upper arm to track wire height)
+      for (const sx of [-0.5, 0.5]) {
+        const spring = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.18, 8), matBogieSpring);
+        spring.position.set(sx, 4.9, 0.4);
+        pGrp.add(spring);
+      }
 
-      // Friction Spark (Light + Mesh)
+      // Friction Spark (Light + Mesh) - dynamic, toggled every frame by name lookup
       const sparkGeo = new THREE.SphereGeometry(0.1, 4, 4);
       const sparkMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.8 });
       const spark = new THREE.Mesh(sparkGeo, sparkMat);
       spark.position.set(0, 5.05, 0.5);
-      spark.visible = false; // toggled in update loop
+      spark.visible = false;
       spark.name = "spark";
+      panSkip.add(spark);
 
       const sparkLight = new THREE.PointLight(0x88ccff, 2, 10);
       sparkLight.position.set(0, 5.05, 0.5);
@@ -3798,6 +3860,7 @@
       const f2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 3.0), matWhite);
       f2.position.set(1.0, 3.6, 0); pGrp.add(f2);
 
+      mergeByMaterial(pGrp, panSkip); // ~30 static parts down to a handful of draws; spark stays addressable by name
       pGrp.userData = { isPan: true };
       return pGrp;
     }
@@ -3844,24 +3907,41 @@
         }
       }
 
-      // HVAC (AC Unit) & Aerodynamic Fairings
-      const ac = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.4, 4.0), matWhite);
-      ac.position.set(0, 4.3, 0);
-      g.add(ac);
-      // AC roof vent grilles (visible detail on top of the HVAC pod)
-      for (let vz = -1.4; vz <= 1.4; vz += 1.4) {
-        const vent = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.04, 0.5), matUnderframe2);
-        vent.position.set(0, 4.51, vz); g.add(vent);
+      // HVAC - twin Roof-Mounted Package Units (RMPU), flanking the
+      // pantograph mount at car centre. Real EMU/Vande Bharat coaches carry
+      // two independent package units per car (not one long pod), each with
+      // its own tapered aerodynamic fairing and condenser grille.
+      for (const zCenter of [-bodyLen * 0.28, bodyLen * 0.28]) {
+        const unitLen = 2.6;
+        const rBody = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.42, unitLen), matWhite);
+        rBody.position.set(0, 4.29, zCenter);
+        g.add(rBody);
+        // Tapered aerodynamic end caps
+        const rmpuFairingGeo = new THREE.CylinderGeometry(0.4, 0.4, 2.0, 3, 1, false, 0, Math.PI);
+        for (const dz of [-unitLen / 2, unitLen / 2]) {
+          const cap = new THREE.Mesh(rmpuFairingGeo, matWhite);
+          cap.rotation.z = Math.PI / 2;
+          cap.position.set(0, 4.1, zCenter + dz);
+          g.add(cap);
+        }
+        // Condenser grille slats on both long sides
+        for (const sx of [-1.02, 1.02]) {
+          for (let gi = -1; gi <= 1; gi++) {
+            const slat = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.06, unitLen - 0.5), matUnderframe2);
+            slat.position.set(sx, 4.18 + gi * 0.12, zCenter);
+            g.add(slat);
+          }
+        }
+        // Roof exhaust vent grille + mushroom cap
+        const rvent = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.03, 0.5), matUnderframe2);
+        rvent.position.set(0, 4.51, zCenter); g.add(rvent);
+        const mushroom = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.10, 0.1, 10), matUnderframe2);
+        mushroom.position.set(0.55, 4.55, zCenter); g.add(mushroom);
       }
 
-      const fairingGeo = new THREE.CylinderGeometry(0.4, 0.4, 2.0, 3, 1, false, 0, Math.PI);
-      const fairingF = new THREE.Mesh(fairingGeo, matWhite);
-      fairingF.rotation.z = Math.PI / 2; fairingF.position.set(0, 4.1, 2.0); g.add(fairingF);
-      const fairingB = new THREE.Mesh(fairingGeo, matWhite);
-      fairingB.rotation.z = Math.PI / 2; fairingB.position.set(0, 4.1, -2.0); g.add(fairingB);
-
-      // Roof walkway strip (maintenance walkway line running the car length)
-      const walkway = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, bodyLen - 5), matUnderframe2);
+      // Roof walkway strip - runs the centre gap between the two RMPU units
+      // (real roof walkways route around/between roof equipment, not through it)
+      const walkway = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, Math.max(2, bodyLen * 0.56 - 2.6)), matUnderframe2);
       walkway.position.set(0, 4.62, 0); g.add(walkway);
 
       // Underframe equipment - slim boxes tucked above floor level (y=0.8), inside body width
@@ -4248,21 +4328,136 @@
     // Procedural Rolling Terrain
     const groundGeo = new THREE.PlaneGeometry(500, 4000, 64, 128);
     const pos = groundGeo.attributes.position;
+    // Natural vertex-colored terrain instead of one flat tint - costs nothing
+    // extra (same mesh, same draw call), just a per-vertex color attribute.
+    const terrainColors = new Float32Array(pos.count * 3);
+    const cOlive = new THREE.Color(0x8A9464), cGrass = new THREE.Color(0x5C7A4A), cRock = new THREE.Color(0x8C97A3);
+    const tmpColor = new THREE.Color();
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const y = pos.getY(i);
+      let noise = 0;
       if (Math.abs(x) > 8) { // Keep track area flat
         const dist = Math.abs(x) - 8;
-        const noise = Math.sin(y * 0.01) * Math.cos(x * 0.02) * dist * 0.15 + Math.sin(y * 0.05) * dist * 0.05;
+        noise = Math.sin(y * 0.01) * Math.cos(x * 0.02) * dist * 0.15 + Math.sin(y * 0.05) * dist * 0.05;
         pos.setZ(i, noise);
       }
+      const farT = Math.min(1, Math.abs(x) / 220);
+      tmpColor.copy(cOlive).lerp(cGrass, Math.min(1, farT * 2.2)).lerp(cRock, Math.max(0, (farT - 0.45) / 0.55));
+      tmpColor.lerp(cRock, Math.min(1, Math.max(0, noise / 12)) * 0.4);
+      // Farmland patchwork - subtle field-sized banding in the grassy zone,
+      // like the agricultural plots visible alongside real MAHSR corridor.
+      if (farT < 0.55) {
+        const patchX = Math.floor(x / 35), patchZ = Math.floor(y / 55);
+        const patchSeed = Math.abs((patchX * 928371 + patchZ * 123457) % 100) / 100;
+        tmpColor.offsetHSL(0, 0, (patchSeed - 0.5) * 0.12);
+      }
+      terrainColors[i * 3] = tmpColor.r; terrainColors[i * 3 + 1] = tmpColor.g; terrainColors[i * 3 + 2] = tmpColor.b;
     }
     groundGeo.computeVertexNormals();
-    const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ color: 0x7A9AAE, roughness: 0.9 }));
+    groundGeo.setAttribute('color', new THREE.BufferAttribute(terrainColors, 3));
+
+    // Fine tiled grain texture multiplied over the vertex colors - breaks up
+    // the flat-shaded look with almost no cost (one small 64x64 texture,
+    // repeated by the GPU; same single draw call as before).
+    function createGrainTexture() {
+      const size = 64;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const img = ctx.createImageData(size, size);
+      for (let i = 0; i < size * size; i++) {
+        const v = 200 + Math.floor(Math.random() * 55);
+        img.data[i * 4] = v; img.data[i * 4 + 1] = v; img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(80, 640);
+      return tex;
+    }
+    const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({
+      vertexColors: true, roughness: 0.9, map: createGrainTexture()
+    }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.1;
     ground.receiveShadow = true;
     trackGroup.add(ground);
+
+    // Scattered low-poly trees - two InstancedMeshes (trunk + canopy). Each
+    // is a single draw call no matter how many instances, so hundreds of
+    // trees cost about the same as one.
+    function terrainHeightAt(worldX, worldZ) {
+      const dist = Math.abs(worldX) - 8;
+      if (dist <= 0) return 0;
+      return Math.sin(worldZ * 0.01) * Math.cos(worldX * 0.02) * dist * 0.15 + Math.sin(worldZ * 0.05) * dist * 0.05;
+    }
+    {
+      const treeTrunkGeo = new THREE.CylinderGeometry(0.12, 0.18, 2.2, 5);
+      const treeCanopyGeo = new THREE.IcosahedronGeometry(1.4, 0);
+      const matTreeTrunk = new THREE.MeshStandardMaterial({ color: 0x5C4A34, roughness: 0.9 });
+      const matTreeCanopy = new THREE.MeshStandardMaterial({ color: 0x4A7A3C, roughness: 0.85 });
+      const numTrees = 420;
+      const trunkInst = new THREE.InstancedMesh(treeTrunkGeo, matTreeTrunk, numTrees);
+      const canopyInst = new THREE.InstancedMesh(treeCanopyGeo, matTreeCanopy, numTrees);
+      const dummyTree = new THREE.Object3D();
+      let tSeed = 918273;
+      const trnd = () => { tSeed = (tSeed * 9301 + 49297) % 233280; return tSeed / 233280; };
+      for (let i = 0; i < numTrees; i++) {
+        const side = trnd() < 0.5 ? -1 : 1;
+        // Keep trees within the grassy zone (|x| < ~95, matches the terrain
+        // color blend below) - beyond that the ground shades into bare rocky
+        // "mountain" terrain the color scheme already implies is treeless,
+        // so trees placed further out looked stranded on the mountainsides.
+        const xOff = side * (14 + trnd() * 80);
+        const z = -1980 + trnd() * 3960;
+        const scale = 0.7 + trnd() * 0.8;
+        const baseY = -0.1 + terrainHeightAt(xOff, z);
+
+        dummyTree.position.set(xOff, baseY + 1.1 * scale, z);
+        dummyTree.rotation.set(0, trnd() * Math.PI * 2, 0);
+        dummyTree.scale.setScalar(scale);
+        dummyTree.updateMatrix();
+        trunkInst.setMatrixAt(i, dummyTree.matrix);
+
+        dummyTree.position.y = baseY + 2.6 * scale;
+        dummyTree.updateMatrix();
+        canopyInst.setMatrixAt(i, dummyTree.matrix);
+      }
+      trunkInst.instanceMatrix.needsUpdate = true;
+      canopyInst.instanceMatrix.needsUpdate = true;
+      trackGroup.add(trunkInst);
+      trackGroup.add(canopyInst);
+    }
+
+    // A handful of low-poly clouds - one merged puff-cluster geometry,
+    // instanced so the whole sky costs a single extra draw call.
+    {
+      const puffGeo = new THREE.SphereGeometry(1, 7, 5);
+      const puffs = [[0, 0, 0, 1.6], [1.3, 0.15, 0.3, 1.1], [-1.2, 0.1, -0.2, 1.2], [0.3, 0.4, 0.7, 0.9], [-0.5, 0.35, -0.6, 1.0]];
+      const puffGeoms = puffs.map(([px, py, pz, s]) => {
+        const g = puffGeo.clone();
+        g.scale(s, s * 0.7, s);
+        g.translate(px, py, pz);
+        return g;
+      });
+      const cloudGeo = THREE.BufferGeometryUtils.mergeBufferGeometries(puffGeoms, false);
+      const matCloud = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.85, fog: false });
+      const numClouds = 16;
+      const cloudInst = new THREE.InstancedMesh(cloudGeo, matCloud, numClouds);
+      const dummyCloud = new THREE.Object3D();
+      let cSeed = 55219;
+      const crnd = () => { cSeed = (cSeed * 9301 + 49297) % 233280; return cSeed / 233280; };
+      for (let i = 0; i < numClouds; i++) {
+        dummyCloud.position.set((crnd() - 0.5) * 320, 55 + crnd() * 40, -1900 + crnd() * 3800);
+        dummyCloud.rotation.y = crnd() * Math.PI * 2;
+        dummyCloud.scale.setScalar(6 + crnd() * 10);
+        dummyCloud.updateMatrix();
+        cloudInst.setMatrixAt(i, dummyCloud.matrix);
+      }
+      cloudInst.instanceMatrix.needsUpdate = true;
+      scene.add(cloudInst);
+    }
 
     // Ground level is y=0 (wheel contact). Track built downward from there.
 
@@ -4346,43 +4541,56 @@
     const catWire = new THREE.Line(catenaryWireGeo, matWire);
     trackGroup.add(lineWire); trackGroup.add(catWire);
 
-    for (let z = -2000; z < 2000; z += 50) {
-      const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 8, 8), matSteel);
-      mast.position.set(-3, 4, z);
-      trackGroup.add(mast);
+    // OHE masts - InstancedMesh per part type (was 7 individual meshes x 80
+    // positions = 560 draw calls; now 6 draw calls total regardless of count).
+    {
+      const numMasts = Math.floor(4000 / 50);
+      const mastGeo = new THREE.CylinderGeometry(0.1, 0.15, 8, 8);
+      const arm1Geo = new THREE.CylinderGeometry(0.04, 0.04, 3.0);
+      const arm2Geo = new THREE.CylinderGeometry(0.03, 0.03, 3.0);
+      const strutGeo = new THREE.CylinderGeometry(0.02, 0.02, 3.4);
+      const insulGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.4, 8);
+      const dropperGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5);
 
-      // Cantilever Support (Top)
-      const arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.0), matSteel);
-      arm1.rotation.z = Math.PI / 2;
-      arm1.position.set(-1.5, 6.5, z);
-      trackGroup.add(arm1);
+      const mastInst = new THREE.InstancedMesh(mastGeo, matSteel, numMasts);
+      const arm1Inst = new THREE.InstancedMesh(arm1Geo, matSteel, numMasts);
+      const arm2Inst = new THREE.InstancedMesh(arm2Geo, matSteel, numMasts);
+      const strutInst = new THREE.InstancedMesh(strutGeo, matSteel, numMasts);
+      const insulInst = new THREE.InstancedMesh(insulGeo, matWhite, numMasts * 2);
+      const dropperInst = new THREE.InstancedMesh(dropperGeo, matWire, numMasts);
 
-      // Registration Arm (Bottom)
-      const arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 3.0), matSteel);
-      arm2.rotation.z = Math.PI / 2;
-      arm2.position.set(-1.5, 5.0, z);
-      trackGroup.add(arm2);
+      const dm = new THREE.Object3D();
+      let mi = 0;
+      for (let z = -2000; z < 2000; z += 50) {
+        dm.position.set(-3, 4, z); dm.rotation.set(0, 0, 0); dm.updateMatrix();
+        mastInst.setMatrixAt(mi, dm.matrix);
 
-      // Diagonal Strut
-      const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 3.4), matSteel);
-      strut.rotation.z = -Math.PI / 6;
-      strut.position.set(-1.5, 5.75, z);
-      trackGroup.add(strut);
+        dm.position.set(-1.5, 6.5, z); dm.rotation.set(0, 0, Math.PI / 2); dm.updateMatrix();
+        arm1Inst.setMatrixAt(mi, dm.matrix);
 
-      // Insulators
-      const insul1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 8), matWhite);
-      insul1.rotation.z = Math.PI / 2;
-      insul1.position.set(-2.8, 6.5, z);
-      trackGroup.add(insul1);
+        dm.position.set(-1.5, 5.0, z); dm.rotation.set(0, 0, Math.PI / 2); dm.updateMatrix();
+        arm2Inst.setMatrixAt(mi, dm.matrix);
 
-      const insul2 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 8), matWhite);
-      insul2.rotation.z = Math.PI / 2;
-      insul2.position.set(-2.8, 5.0, z);
-      trackGroup.add(insul2);
+        dm.position.set(-1.5, 5.75, z); dm.rotation.set(0, 0, -Math.PI / 6); dm.updateMatrix();
+        strutInst.setMatrixAt(mi, dm.matrix);
 
-      const dropper = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.5), matWire);
-      dropper.position.set(0, 5.75, z + 25);
-      trackGroup.add(dropper);
+        dm.position.set(-2.8, 6.5, z); dm.rotation.set(0, 0, Math.PI / 2); dm.updateMatrix();
+        insulInst.setMatrixAt(mi * 2, dm.matrix);
+        dm.position.set(-2.8, 5.0, z); dm.rotation.set(0, 0, Math.PI / 2); dm.updateMatrix();
+        insulInst.setMatrixAt(mi * 2 + 1, dm.matrix);
+
+        dm.position.set(0, 5.75, z + 25); dm.rotation.set(0, 0, 0); dm.updateMatrix();
+        dropperInst.setMatrixAt(mi, dm.matrix);
+
+        mi++;
+      }
+      mastInst.instanceMatrix.needsUpdate = true;
+      arm1Inst.instanceMatrix.needsUpdate = true;
+      arm2Inst.instanceMatrix.needsUpdate = true;
+      strutInst.instanceMatrix.needsUpdate = true;
+      insulInst.instanceMatrix.needsUpdate = true;
+      dropperInst.instanceMatrix.needsUpdate = true;
+      trackGroup.add(mastInst, arm1Inst, arm2Inst, strutInst, insulInst, dropperInst);
     }
 
     // Tunnel & Viaduct
@@ -4612,9 +4820,145 @@
       { s: 497000, e: 504000, R: 5500, cant: 160, dir: 'L', desc: 'Sabarmati Approach' },
     ];
 
-    // ── Station data only - NO 3D objects in scene (causes geometry glitches) ──
-    // Station info shown via sta-hud overlay + cab view panel only.
-    const stationObjects = []; // kept empty - no 3D meshes added to scene
+    // ── Station platforms - built ONCE per station (only 12 total), then just
+    // repositioned/toggled each frame by updateStationObjects() below. The
+    // earlier "geometry glitches" comment here referred to rebuilding this
+    // per frame; building it once at load and only touching .position/.visible
+    // afterwards is cheap and safe (same pattern already used for the train).
+    const matPlatform = new THREE.MeshStandardMaterial({ color: 0xC7C3B6, roughness: 0.85 });
+    const matPlatformEdge = new THREE.MeshStandardMaterial({ color: 0xE8B923, roughness: 0.6 });
+    const matCanopy = new THREE.MeshStandardMaterial({ color: 0x1E2228, roughness: 0.55, metalness: 0.3 });
+    const matPillar = matSteel;
+    const matBench = new THREE.MeshStandardMaterial({ color: 0x3A4356, roughness: 0.7 });
+    const matLightPole = new THREE.MeshStandardMaterial({ color: 0x2A2E35, roughness: 0.5, metalness: 0.6 });
+    const matLampGlow = new THREE.MeshBasicMaterial({ color: 0xFFF3C4 });
+    const matBuilding = new THREE.MeshStandardMaterial({ color: 0xE8E6DE, roughness: 0.8 });
+    const matBuildingRoof = new THREE.MeshStandardMaterial({ color: 0x8B3020, roughness: 0.7 });
+
+    function createNameBoardTexture(text) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512; canvas.height = 96;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0B4C93'; ctx.fillRect(0, 0, 512, 96);
+      ctx.strokeStyle = '#E84C1F'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, 506, 90);
+      ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 44px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 50);
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    function createDisplayTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400; canvas.height = 120;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0A0A0A'; ctx.fillRect(0, 0, 400, 120);
+      ctx.fillStyle = '#FFA000'; ctx.font = 'bold 24px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('NEXT: HSR EXPRESS', 200, 42);
+      ctx.fillStyle = '#00CC66'; ctx.font = 'bold 20px monospace';
+      ctx.fillText('ON TIME', 200, 82);
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    function createStationPlatform(sta) {
+      const grp = new THREE.Group();
+      const platLen = 420, platY = 1.1, platWidth = 6.2;
+      const boardMat = new THREE.MeshBasicMaterial({ map: createNameBoardTexture(sta.name) });
+      const dispMat = new THREE.MeshBasicMaterial({ map: createDisplayTexture() });
+
+      for (const side of [-1, 1]) {
+        const px = side * 5.6;
+
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(platWidth, platY, platLen), matPlatform);
+        slab.position.set(px, platY / 2, 0);
+        grp.add(slab);
+
+        const edge = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, platLen), matPlatformEdge);
+        edge.position.set(px - side * (platWidth / 2 - 0.15), platY + 0.01, 0);
+        grp.add(edge);
+
+        // Canopy pillars only - no flat roof panel. A solid roof here looked
+        // fine from outside the train, but in cab view (looking straight down
+        // the platform while approaching) its underside filled most of the
+        // screen as an oppressive black wedge. The pillars alone still read
+        // clearly as a platform structure without that problem.
+        const canopyY = 7.3, pillarH = canopyY - 0.075 - platY;
+        const numPillars = Math.floor((platLen - 20) / 24);
+        for (let p = 0; p <= numPillars; p++) {
+          const pz = -((platLen - 20) / 2) + p * 24;
+          const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, pillarH, 8), matPillar);
+          pillar.position.set(px, platY + pillarH / 2, pz);
+          grp.add(pillar);
+        }
+
+        // Platform lighting - poles near the outer edge, spaced along the length
+        const numLights = Math.floor((platLen - 40) / 60);
+        for (let l = 0; l <= numLights; l++) {
+          const lz = -((platLen - 40) / 2) + l * 60;
+          const lx = px + side * (platWidth / 2 - 0.4);
+          const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 5.5, 8), matLightPole);
+          pole.position.set(lx, platY + 2.75, lz);
+          grp.add(pole);
+          const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 6), matLightPole);
+          arm.rotation.z = Math.PI / 2;
+          arm.position.set(lx - side * 0.45, platY + 5.4, lz);
+          grp.add(arm);
+          const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), matLampGlow);
+          lamp.position.set(lx - side * 0.9, platY + 5.3, lz);
+          grp.add(lamp);
+        }
+
+        // Benches, facing the track
+        const numBenches = Math.floor((platLen - 60) / 110);
+        for (let b = 0; b <= numBenches; b++) {
+          const bz = -((platLen - 60) / 2) + b * 110;
+          const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 1.6), matBench);
+          seat.position.set(px, platY + 0.45, bz);
+          grp.add(seat);
+          const back = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 1.6), matBench);
+          back.position.set(px + side * 0.22, platY + 0.68, bz);
+          grp.add(back);
+          for (const lz2 of [-0.6, 0.6]) {
+            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.44, 0.06), matBench);
+            leg.position.set(px, platY + 0.22, bz + lz2);
+            grp.add(leg);
+          }
+        }
+
+        const board = new THREE.Mesh(new THREE.PlaneGeometry(8, 1.4), boardMat);
+        board.position.set(px, 3.6, 0);
+        board.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+        grp.add(board);
+
+        // Digital departure display, off-centre so it doesn't clash with the name board
+        const disp = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.96), dispMat);
+        disp.position.set(px, 3.0, -70);
+        disp.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+        grp.add(disp);
+        const dispPole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.0, 8), matLightPole);
+        dispPole.position.set(px, platY + 1.5, -70);
+        grp.add(dispPole);
+      }
+
+      // Station building at one end, with the name board mounted on its face
+      const buildingZ = -(platLen / 2) - 15;
+      const building = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 14), matBuilding);
+      building.position.set(5.6, 2.5, buildingZ);
+      grp.add(building);
+      const bRoof = new THREE.Mesh(new THREE.BoxGeometry(11, 0.4, 15), matBuildingRoof);
+      bRoof.position.set(5.6, 5.2, buildingZ);
+      grp.add(bRoof);
+      const bldgBoardMat = new THREE.MeshBasicMaterial({ map: createNameBoardTexture(sta.name) });
+      const bldgBoard = new THREE.Mesh(new THREE.PlaneGeometry(6, 1.1), bldgBoardMat);
+      bldgBoard.position.set(5.6, 4.0, buildingZ + 7.01);
+      grp.add(bldgBoard);
+
+      mergeByMaterial(grp); // ~150 static parts per station down to a handful of draws
+      grp.visible = false;
+      grp.userData = { station: sta };
+      scene.add(grp);
+      return grp;
+    }
+
+    const stationObjects = MAHSR_STATIONS.map(createStationPlatform);
 
     // ── Station position update (called each frame) ────────────────────────
     function updateStationObjects() {
